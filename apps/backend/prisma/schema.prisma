@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  CREATED
+  STORY_GENERATING
+  STORY_COMPLETE
+  IMAGES_GENERATING
+  IMAGES_COMPLETE
+  PDF_GENERATING
+  PREVIEW_READY
+  PAYMENT_PENDING
+  PAID
+  PRINTING
+  SHIPPED
+  DELIVERED
+  FAILED
+}
+
+enum PageStatus {
+  PENDING
+  GENERATING
+  COMPLETE
+  FAILED
+}
+
+enum ChildGender {
+  boy
+  girl
+  other
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  childName         String
+  childAge          Int
+  childGender       ChildGender
+  theme             String
+  photoUrl          String
+  email             String?
+  status            OrderStatus @default(CREATED)
+  storyJson         Json?
+  referenceSheetUrl String?
+  interiorPdfUrl    String?
+  coverPdfUrl       String?
+
+  // Payment
+  paymentId         String?     @unique
+  paymentProvider   String?
+  amountPaid        Int?        // in smallest currency unit (paise/cents)
+  currency          String?
+
+  // Shipping
+  shippingName      String?
+  shippingLine1     String?
+  shippingLine2     String?
+  shippingCity      String?
+  shippingState     String?
+  shippingPostal    String?
+  shippingCountry   String?
+  shippingPhone     String?
+
+  // Fulfillment
+  luluJobId         String?     @unique
+  trackingNumber    String?
+
+  pages             Page[]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Page {
+  id               String     @id @default(uuid())
+  orderId          String
+  pageNumber       Int
+  text             String
+  imagePrompt      String
+  sceneDescription String     @default("")
+  layout           String     @default("full-bleed-text-bottom")
+  imageUrl         String?
+  status           PageStatus @default(PENDING)
+  retryCount       Int        @default(0)
+
+  order            Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@unique([orderId, pageNumber])
+  @@index([orderId])
+  @@index([status])
+}

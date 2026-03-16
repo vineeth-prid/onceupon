@@ -1,0 +1,24 @@
+import { api } from './client';
+import type { CreateOrderInput } from '@bookmagic/shared';
+
+export async function uploadPhoto(file: File): Promise<{ url: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await api.post('/upload/photo', form);
+  return data;
+}
+
+export async function createOrder(input: CreateOrderInput) {
+  const { data } = await api.post('/orders', input);
+  return data;
+}
+
+export async function getAllOrders() {
+  const { data } = await api.get('/orders');
+  return data;
+}
+
+export async function getOrder(id: string) {
+  const { data } = await api.get(`/orders/${id}`);
+  return data;
+}

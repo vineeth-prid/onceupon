@@ -16,9 +16,13 @@ STORY STRUCTURE:
 - Each page should have 2-3 sentences (simple words for the age group)
 - The story ends with ${childName} gently floating back to bed, with a special moon charm
 
-CHARACTER CONSISTENCY:
-- ${childName} should be described consistently throughout
-- The Moon Princess/Prince should be gentle and luminous
+CHARACTER CONSISTENCY (CRITICAL):
+- ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
+- ${childName} must NEVER be merged with, transformed into, or fused with any other character or creature
+- ${childName} must always have exactly two human arms, two human legs, and a normal human body
+- Describe ${childName}'s outfit consistently on EVERY page (e.g. "wearing a soft lavender nightgown/pajamas")
+- In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child"
+- The Moon Princess/Prince should be gentle and luminous and is a SEPARATE character from ${childName}
 
 For each page, provide:
 - pageNumber (1-16)

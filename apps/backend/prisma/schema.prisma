@@ -46,7 +46,8 @@ model Order {
   email             String?
   status            OrderStatus @default(CREATED)
   storyJson         Json?
-  referenceSheetUrl String?
+  referenceSheetUrl    String?
+  characterDescription String?
   interiorPdfUrl    String?
   coverPdfUrl       String?
 

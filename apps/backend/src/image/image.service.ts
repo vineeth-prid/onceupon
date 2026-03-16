@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Replicate from 'replicate';
+import { GoogleGenAI } from '@google/genai';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { STYLE_SUFFIX, NEGATIVE_PROMPT, IMAGE_GEN_CONFIG } from '@bookmagic/shared';
@@ -11,6 +12,7 @@ const UPLOADS_DIR = join(process.cwd(), 'uploads');
 export class ImageService {
   private readonly logger = new Logger(ImageService.name);
   private readonly replicate: Replicate;
+  private readonly genai: GoogleGenAI;
   private cachedFileUrl = '';
   private cachedFilePath = '';
 
@@ -18,6 +20,61 @@ export class ImageService {
     this.replicate = new Replicate({
       auth: this.config.getOrThrow<string>('REPLICATE_API_TOKEN'),
     });
+    this.genai = new GoogleGenAI({
+      apiKey: this.config.getOrThrow<string>('GEMINI_API_KEY'),
+    });
+  }
+
+  /**
+   * Analyze the child's photo using Gemini Vision to extract a detailed
+   * character description for consistent image generation across all pages.
+   */
+  async describeCharacter(photoUrl: string, childName: string, childAge: number, childGender: string): Promise<string> {
+    this.logger.log(`Describing character from photo for ${childName}`);
+
+    const filePath = photoUrl.startsWith('/') ? join(process.cwd(), photoUrl) : photoUrl;
+    const imageBytes = await readFile(filePath);
+    const base64Image = imageBytes.toString('base64');
+
+    const prompt = `You are analyzing a photo of a child for a children's storybook illustration project.
+Describe this child's visual appearance in precise detail for an illustrator.
+The child's name is ${childName}, age ${childAge}, ${childGender}.
+
+Provide a CONCISE but DETAILED visual description covering:
+1. Hair: color, style, length, texture (e.g. "short spiky dark brown hair")
+2. Skin tone (e.g. "warm brown skin", "light peach skin")
+3. Face shape and features (e.g. "round face, big brown eyes, small nose, rosy cheeks")
+4. Build (e.g. "small and slim for a 5-year-old")
+
+Then suggest a simple, memorable outfit that fits the character for a storybook:
+- A specific colored t-shirt/top
+- Specific pants/shorts/skirt
+- Shoes
+
+Format your response as a single paragraph, like:
+"${childName} is a [age]-year-old [gender] with [hair description], [skin tone], [face features]. [He/She/They] [wear/wears] [outfit description]."
+
+Keep it under 80 words. Be specific with colors. This description will be prepended to every image prompt to maintain character consistency across 16 book pages.`;
+
+    const response = await this.genai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              mimeType: 'image/png',
+              data: base64Image,
+            },
+          },
+          { text: prompt },
+        ],
+      }],
+    });
+
+    const description = response.text?.trim() || '';
+    this.logger.log(`Character description: ${description}`);
+    return description;
   }
 
   async generateReferenceSheet(photoUrl: string, orderId: string): Promise<string> {
@@ -37,14 +94,28 @@ export class ImageService {
     orderId: string,
     pageNumber: number,
     imageComposition?: string,
+    characterDescription?: string,
   ): Promise<string> {
-    let fullPrompt = imagePrompt.includes(STYLE_SUFFIX)
-      ? imagePrompt
-      : `${imagePrompt}, ${STYLE_SUFFIX}`;
+    // Prepend character description for consistency
+    let fullPrompt = '';
+    if (characterDescription) {
+      fullPrompt = `Main character: ${characterDescription}\n\nScene: ${imagePrompt}`;
+    } else {
+      fullPrompt = imagePrompt;
+    }
 
+    // Append style suffix if not already included
+    if (!fullPrompt.includes(STYLE_SUFFIX)) {
+      fullPrompt = `${fullPrompt}, ${STYLE_SUFFIX}`;
+    }
+
+    // Add composition guidance
     if (imageComposition) {
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
+
+    // Add anatomical safety instructions
+    fullPrompt = `${fullPrompt}. The child character must have a normal human body with exactly two arms, two legs, and five fingers on each hand. The child must NOT be merged with or transformed into any animal or creature.`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
     this.logger.log(`Generating image for order ${orderId}, page ${pageNumber}`);

@@ -15,9 +15,13 @@ STORY STRUCTURE:
 - Each page should have 2-3 sentences of text (simple words for the age group)
 - The story should have a happy, warm ending with ${childName} back in bed
 
-CHARACTER CONSISTENCY:
-- ${childName} should be described consistently throughout (same appearance, clothing)
-- The Tooth Fairy should be a friendly, sparkly character
+CHARACTER CONSISTENCY (CRITICAL):
+- ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
+- ${childName} must NEVER be merged with, transformed into, or fused with any other character
+- ${childName} must always have exactly two human arms, two human legs, and a normal human body
+- Describe ${childName}'s outfit consistently on EVERY page (e.g. "wearing cozy blue pajamas")
+- In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child"
+- The Tooth Fairy should be a friendly, sparkly character and is a SEPARATE character from ${childName}
 
 For each page, provide:
 - pageNumber (1-16)

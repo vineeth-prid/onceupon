@@ -16,9 +16,14 @@ STORY STRUCTURE:
 - Each page should have 2-3 sentences (simple words for the age group)
 - The story ends with ${childName} returning home with a special dinosaur gift/memory
 
-CHARACTER CONSISTENCY:
-- ${childName} should be described consistently throughout
-- The baby dinosaur should be cute and friendly (not scary)
+CHARACTER CONSISTENCY (CRITICAL):
+- ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
+- ${childName} must NEVER be merged with, transformed into, or fused with any animal or creature
+- ${childName} must always have exactly two human arms, two human legs, and a normal human body
+- Describe ${childName}'s outfit consistently on EVERY page (e.g. "wearing a bright orange t-shirt and brown shorts")
+- ${childName}'s body must always be clearly separate from any animals/dinosaurs in the scene
+- The baby dinosaur should be cute and friendly (not scary), and is a SEPARATE character from ${childName}
+- In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child" to prevent character confusion
 
 For each page, provide:
 - pageNumber (1-16)

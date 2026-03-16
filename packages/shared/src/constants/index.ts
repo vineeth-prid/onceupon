@@ -2,7 +2,7 @@ export const STYLE_SUFFIX =
   'children book illustration style, soft watercolor, warm lighting, friendly characters, vibrant colors, storybook art, high quality, detailed';
 
 export const NEGATIVE_PROMPT =
-  'scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs';
+  'scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, hybrid creature, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame';
 
 export const THEMES = [
   {
@@ -31,7 +31,7 @@ export const TOTAL_PAGES = 16;
 
 export const IMAGE_GEN_CONFIG = {
   model: 'bytedance/flux-pulid:8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b',
-  idWeight: 0.9,
+  idWeight: 0.75,
   startStep: 1,
   numSteps: 20,
   width: 1024,

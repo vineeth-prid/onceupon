@@ -63,7 +63,25 @@ export class OrchestratorProcessor extends WorkerHost {
       // 2. Generate images
       await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_GENERATING);
 
-      // Generate reference sheet
+      // 2a. Generate character description from the uploaded photo using Gemini Vision
+      let characterDescription = '';
+      try {
+        characterDescription = await this.imageService.describeCharacter(
+          order.photoUrl,
+          order.childName,
+          order.childAge,
+          order.childGender,
+        );
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { characterDescription },
+        });
+        this.logger.log(`Character description generated for ${order.childName}`);
+      } catch (error) {
+        this.logger.warn(`Character description failed, continuing without it: ${(error as Error).message}`);
+      }
+
+      // 2b. Generate reference sheet
       const refUrl = await this.imageService.generateReferenceSheet(
         order.photoUrl,
         orderId,
@@ -74,7 +92,7 @@ export class OrchestratorProcessor extends WorkerHost {
       });
       this.logger.log(`Reference sheet generated`);
 
-      // Generate page images sequentially
+      // 2c. Generate page images sequentially with character description
       const pages = await this.prisma.page.findMany({
         where: { orderId },
         orderBy: { pageNumber: 'asc' },
@@ -100,6 +118,7 @@ export class OrchestratorProcessor extends WorkerHost {
           order.photoUrl,
           page,
           storyPage?.imageComposition,
+          characterDescription,
         );
         // 12s delay between requests to stay within rate limit
         await new Promise((resolve) => setTimeout(resolve, 12000));
@@ -145,6 +164,7 @@ export class OrchestratorProcessor extends WorkerHost {
     photoUrl: string,
     page: { id: string; pageNumber: number; imagePrompt: string },
     imageComposition?: string,
+    characterDescription?: string,
   ): Promise<void> {
     try {
       await this.prisma.page.update({
@@ -158,6 +178,7 @@ export class OrchestratorProcessor extends WorkerHost {
         orderId,
         page.pageNumber,
         imageComposition,
+        characterDescription,
       );
 
       await this.prisma.page.update({

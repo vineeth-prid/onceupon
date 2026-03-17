@@ -13,6 +13,7 @@ export class OrdersService {
         childAge: dto.childAge,
         childGender: dto.childGender,
         theme: dto.theme,
+        customStoryPrompt: dto.customStoryPrompt,
         photoUrl: dto.photoUrl,
         status: 'CREATED',
       },

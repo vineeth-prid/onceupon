@@ -42,6 +42,7 @@ model Order {
   childAge          Int
   childGender       ChildGender
   theme             String
+  customStoryPrompt String?
   photoUrl          String
   email             String?
   status            OrderStatus @default(CREATED)

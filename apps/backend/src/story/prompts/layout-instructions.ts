@@ -11,15 +11,13 @@ You are also the book designer. For each page, choose a "layout" that controls h
 - "dramatic-image-only": Full illustration with NO text. The image tells the story alone. Use for the single most climactic/dramatic moment. Maximum 1 per book. The "text" field should be a very brief 5-8 word caption.
 - "text-heavy-vignette": Cream-colored page with generous text (3-4 sentences) and a small circular illustration. Best for: reflective moments, internal thoughts, transitions.
 
-LAYOUT RULES:
+LAYOUT RULES (for a 5-page book):
 - Page 1 MUST be "chapter-title"
 - Page 2 should be a strong visual opening ("full-bleed-text-bottom" or "full-bleed-text-center")
 - Never use the same layout more than 2 times in a row
-- Use "dramatic-image-only" once, for the climactic moment (around pages 11-13)
-- Use "text-heavy-vignette" for 1-2 reflective moments
-- Alternate "image-left-text-right" and "image-right-text-left" (never same twice in a row)
-- Page 16 should be "full-bleed-text-center" or "full-bleed-text-bottom" for the warm conclusion
-- Use at least 5 different layout types across the 16 pages
+- Use at least 3 different layout types across the 5 pages
+- Page 5 (final page) should be "full-bleed-text-center" or "full-bleed-text-bottom" for the warm conclusion
+- Use "dramatic-image-only" at most once, only if the story has a clear dramatic climax
 
 IMAGE COMPOSITION:
 For each page, provide an "imageComposition" hint that tells the image generator how to frame the image for the layout:

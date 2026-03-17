@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, forwardRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
-import { getOrder } from '../api/orders';
+import { getOrder, downloadPdf } from '../api/orders';
 
 const FONT_BODY = "'Crimson Text', 'Georgia', serif";
 const FONT_TITLE = "'Playfair Display', 'Georgia', serif";
@@ -233,6 +233,7 @@ export function PreviewPage() {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -482,7 +483,58 @@ export function PreviewPage() {
         marginTop: '1.2rem',
         position: 'relative',
         zIndex: 1,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
       }}>
+        <button
+          onClick={async () => {
+            if (!orderId) return;
+            setDownloading(true);
+            try {
+              const blob = await downloadPdf(orderId);
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${childName || 'storybook'}_storybook.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } catch {
+              alert('Failed to download PDF. Please try again.');
+            }
+            setDownloading(false);
+          }}
+          disabled={downloading}
+          style={{
+            padding: '0.6rem 1.8rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            fontFamily: FONT_UI,
+            borderRadius: 50,
+            border: '1px solid #FFD700',
+            background: downloading
+              ? 'rgba(255,215,0,0.1)'
+              : 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1))',
+            color: '#FFD700',
+            cursor: downloading ? 'wait' : 'pointer',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            if (!downloading) {
+              e.currentTarget.style.background = 'rgba(255,215,0,0.3)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!downloading) {
+              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1))';
+            }
+          }}
+        >
+          {downloading ? 'Generating PDF...' : 'Download PDF'}
+        </button>
+
         <button
           onClick={() => navigate('/')}
           style={{

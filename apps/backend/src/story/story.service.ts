@@ -20,8 +20,9 @@ export class StoryService {
     childAge: number,
     childGender: string,
     theme: string,
+    customStoryPrompt?: string,
   ): Promise<StoryOutputInput> {
-    const builder = getPromptBuilder(theme);
+    const builder = getPromptBuilder(theme, customStoryPrompt);
     const prompt = builder(childName, childAge, childGender);
 
     let lastError: Error | null = null;

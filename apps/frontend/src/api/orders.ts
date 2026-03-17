@@ -22,3 +22,8 @@ export async function getOrder(id: string) {
   const { data } = await api.get(`/orders/${id}`);
   return data;
 }
+
+export async function downloadPdf(id: string): Promise<Blob> {
+  const { data } = await api.get(`/orders/${id}/pdf`, { responseType: 'blob' });
+  return data;
+}

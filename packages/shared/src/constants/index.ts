@@ -23,6 +23,12 @@ export const THEMES = [
     description: 'A dreamy adventure to the moon and back',
     coverColor: '#D5E8F5',
   },
+  {
+    id: 'custom',
+    name: 'Write Your Own Story',
+    description: 'Tell us your story in your own words and we\'ll bring it to life',
+    coverColor: '#FFE0B2',
+  },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -32,7 +38,7 @@ export const TOTAL_PAGES = 5;
 export const IMAGE_GEN_CONFIG = {
   model: 'tencentarc/photomaker-style:467d062309da518648ba89d226490e02b8ed09b5abc15026e54e31c5a8cd0769',
   styleName: 'Disney Charactor' as const,
-  styleStrengthRatio: 35,
+  styleStrengthRatio: 40,
   numSteps: 30,
   guidanceScale: 5,
   numOutputs: 1,

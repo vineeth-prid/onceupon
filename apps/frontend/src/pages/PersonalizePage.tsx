@@ -7,12 +7,14 @@ const THEME_GRADIENTS: Record<string, string> = {
   'tooth-fairy': 'linear-gradient(135deg, #E8D5F5 0%, #F5E6FF 100%)',
   'dinosaur': 'linear-gradient(135deg, #C8F5D5 0%, #E6FFEC 100%)',
   'moon-princess': 'linear-gradient(135deg, #C4D9F5 0%, #E0EEFF 100%)',
+  'custom': 'linear-gradient(135deg, #FFE0B2 0%, #FFF3E0 100%)',
 };
 
 const THEME_ACCENTS: Record<string, string> = {
   'tooth-fairy': '#9B59B6',
   'dinosaur': '#27AE60',
   'moon-princess': '#3498DB',
+  'custom': '#E67E22',
 };
 
 export function PersonalizePage() {
@@ -26,9 +28,12 @@ export function PersonalizePage() {
   const [childGender, setChildGender] = useState<'boy' | 'girl' | 'other'>('boy');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [customStoryPrompt, setCustomStoryPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+
+  const isCustom = themeId === 'custom';
 
   if (!theme) {
     return <div style={{ padding: '4rem', textAlign: 'center', fontFamily: "'Nunito', sans-serif" }}>Theme not found</div>;
@@ -57,6 +62,10 @@ export function PersonalizePage() {
     e.preventDefault();
     if (!photo) { setError('Please upload a photo'); return; }
     if (!childName.trim()) { setError("Please enter your child's name"); return; }
+    if (isCustom && customStoryPrompt.trim().length < 20) {
+      setError('Please describe your story idea (at least 20 characters)');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -69,6 +78,7 @@ export function PersonalizePage() {
         childGender,
         theme: themeId as any,
         photoUrl,
+        ...(isCustom && { customStoryPrompt: customStoryPrompt.trim() }),
       });
       navigate(`/progress/${order.id}`);
     } catch (err: any) {
@@ -140,6 +150,63 @@ export function PersonalizePage() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
         }}>
           <form onSubmit={handleSubmit}>
+            {/* Custom story prompt */}
+            {isCustom && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.6rem',
+                  fontWeight: 700,
+                  fontFamily: "'Nunito', sans-serif",
+                  color: '#2d1b69',
+                  fontSize: '0.95rem',
+                }}>
+                  Tell Us Your Story
+                </label>
+                <p style={{
+                  margin: '0 0 0.6rem',
+                  fontFamily: "'Nunito', sans-serif",
+                  color: '#999',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.4,
+                }}>
+                  Describe your story idea in your own words — we'll turn it into a beautifully illustrated storybook!
+                </p>
+                <textarea
+                  value={customStoryPrompt}
+                  onChange={(e) => setCustomStoryPrompt(e.target.value)}
+                  placeholder="e.g. My child goes on an adventure to find a lost puppy in a magical forest. They meet friendly animals along the way who help them search..."
+                  maxLength={2000}
+                  rows={5}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 12,
+                    border: '2px solid #eee',
+                    fontSize: '0.95rem',
+                    fontFamily: "'Nunito', sans-serif",
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                    resize: 'vertical',
+                    minHeight: 100,
+                    lineHeight: 1.5,
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = accent}
+                  onBlur={(e) => e.currentTarget.style.borderColor = '#eee'}
+                />
+                <div style={{
+                  textAlign: 'right',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '0.75rem',
+                  color: customStoryPrompt.length > 1800 ? '#E67E22' : '#ccc',
+                  marginTop: '0.3rem',
+                }}>
+                  {customStoryPrompt.length}/2000
+                </div>
+              </div>
+            )}
+
             {/* Photo upload */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{

@@ -35,6 +35,7 @@ export class OrchestratorProcessor extends WorkerHost {
         order.childAge,
         order.childGender,
         order.theme,
+        order.customStoryPrompt || undefined,
       );
 
       // Save story JSON and create page records with layout

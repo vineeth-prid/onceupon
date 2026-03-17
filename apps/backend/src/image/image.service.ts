@@ -55,11 +55,16 @@ CRITICAL: Be extremely specific about SKIN TONE — this is the most important d
 Use exact descriptions like "medium brown skin", "dark brown skin", "tan olive skin", "warm caramel skin", "deep brown skin" etc.
 Do NOT use vague terms like "warm skin" — always include the actual color.
 
-Format your response as a single paragraph, like:
-"[hair description], [EXACT skin tone color], [face features], wearing [outfit description]."
+Format your response as TWO lines separated by "---":
 
-Keep it under 60 words. Start with hair, then skin, then face. No name needed.
-This will be injected directly after "A img child," in every image prompt.`;
+LINE 1 (IDENTITY TAG): A SHORT 10-15 word phrase with ONLY the most critical identity features: hair + skin + eyes.
+Example: "curly dark brown hair, medium brown skin, large dark brown eyes"
+
+LINE 2 (FULL DESCRIPTION): The complete description including outfit, up to 50 words.
+Example: "Long curly dark brown hair, medium brown skin, round face with large dark brown eyes, small nose, rosy cheeks, wearing a bright yellow t-shirt, denim shorts, and red canvas sneakers."
+
+CRITICAL: Be extremely specific about SKIN TONE and HAIR — these define the character's identity.
+The identity tag will be repeated multiple times in every image prompt to ensure consistency.`;
 
     const response = await this.genai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -117,12 +122,30 @@ This will be injected directly after "A img child," in every image prompt.`;
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    // Build prompt: "A img child, [physical features], in a scene: [scene without child references]"
-    let fullPrompt: string;
+    // Parse character description into identity tag + full description
+    // Format: "identity tag --- full description"
+    let identityTag = '';
+    let fullDescription = '';
     if (characterDescription) {
-      fullPrompt = `A img child, ${characterDescription}, in a scene: ${scenePrompt}`;
+      const parts = characterDescription.split('---').map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        identityTag = parts[0];
+        fullDescription = parts[1];
+      } else {
+        // Fallback: use whole description as both
+        identityTag = characterDescription.substring(0, 80);
+        fullDescription = characterDescription;
+      }
+    }
+
+    // PROMPT STRUCTURE: "A img child [identity], [scene], [identity reinforcement], style keywords"
+    // The identity tag appears TWICE — once right after "img" (where PhotoMaker anchors face)
+    // and once after the scene (reinforcement so model doesn't drift).
+    let fullPrompt: string;
+    if (identityTag) {
+      fullPrompt = `A img child with ${identityTag}, ${scenePrompt}, the child has ${fullDescription}`;
     } else {
-      fullPrompt = `A img child in a scene: ${scenePrompt}`;
+      fullPrompt = `A img child, ${scenePrompt}`;
     }
 
     // Add composition guidance

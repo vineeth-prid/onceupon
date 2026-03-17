@@ -14,11 +14,15 @@ export const createOrderSchema = z.object({
   childGender: z.enum(['boy', 'girl', 'other'], {
     errorMap: () => ({ message: 'Gender must be boy, girl, or other' }),
   }),
-  theme: z.enum(['tooth-fairy', 'dinosaur', 'moon-princess'], {
-    errorMap: () => ({ message: 'Theme must be one of: tooth-fairy, dinosaur, moon-princess' }),
+  theme: z.enum(['tooth-fairy', 'dinosaur', 'moon-princess', 'custom'], {
+    errorMap: () => ({ message: 'Theme must be one of: tooth-fairy, dinosaur, moon-princess, custom' }),
   }),
   photoUrl: z.string().min(1, 'Photo URL is required'),
-});
+  customStoryPrompt: z.string().max(2000, 'Story prompt must be under 2000 characters').optional(),
+}).refine(
+  (data) => data.theme !== 'custom' || (data.customStoryPrompt && data.customStoryPrompt.trim().length >= 20),
+  { message: 'Custom story prompt must be at least 20 characters', path: ['customStoryPrompt'] },
+);
 
 export const pageLayoutEnum = z.enum([
   'full-bleed-text-bottom',

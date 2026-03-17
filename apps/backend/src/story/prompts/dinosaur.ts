@@ -8,7 +8,7 @@ export function buildPrompt(childName: string, childAge: number, childGender: st
   return `You are a children's book author AND illustrator/designer. Write an exciting dinosaur adventure for a ${childAge}-year-old ${childGender} named ${childName}.
 
 STORY STRUCTURE:
-- Create exactly 16 pages
+- Create exactly 5 pages
 - ${childName} discovers a magical portal in ${possessive} backyard that leads to the land of dinosaurs
 - ${pronoun} befriends a baby dinosaur and together they explore the prehistoric world
 - They face a small challenge together (like helping the baby dino find its family)
@@ -26,9 +26,15 @@ CHARACTER CONSISTENCY (CRITICAL):
 - In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child" to prevent character confusion
 
 For each page, provide:
-- pageNumber (1-16)
+- pageNumber (1-5)
 - text: the story text for this page (2-3 sentences, age-appropriate)
-- imagePrompt: a detailed image generation prompt that depicts the scene. Always include "${childName}" as the main character. End every imagePrompt with ", ${STYLE_SUFFIX}"
+- imagePrompt: a DETAILED scene description for image generation. IMPORTANT RULES:
+  1. ALWAYS include SPECIFIC dinosaurs prominently in the scene — name the species and describe them visually (e.g. "a small cute green baby Brachiosaurus with big eyes", "a massive red T-Rex roaring in the background")
+  2. Describe the environment: jungle, volcano, river, cave, ferns, prehistoric plants, sky, lighting
+  3. Refer to ${childName} as "the child" — ONLY ONE human character allowed
+  4. NEVER include other human characters (no parents, adults, family members, friends, crowds)
+  5. The dinosaurs and environment should take up MOST of the scene description
+  Example: "A lush prehistoric jungle with towering ferns and an erupting volcano in the far distance, a cute small green baby Triceratops with stubby horns nuzzling the child who kneels beside it in a sun-dappled clearing, colorful pterodactyls soaring across the orange sunset sky"
 - sceneDescription: a brief description of what's happening in the scene
 - layout: the page layout type (see below)
 - imageComposition: how to compose the image for the chosen layout (see below)

@@ -2,7 +2,7 @@ export const STYLE_SUFFIX =
   'children book illustration style, soft watercolor, warm lighting, friendly characters, vibrant colors, storybook art, high quality, detailed';
 
 export const NEGATIVE_PROMPT =
-  'scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, hybrid creature, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame';
+  'multiple people, two people, crowd, group, adult, woman, man, couple, family photo, extra person, scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, hybrid creature, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame';
 
 export const THEMES = [
   {
@@ -27,16 +27,15 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]['id'];
 
-export const TOTAL_PAGES = 16;
+export const TOTAL_PAGES = 5;
 
 export const IMAGE_GEN_CONFIG = {
-  model: 'bytedance/flux-pulid:8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b',
-  idWeight: 0.75,
-  startStep: 1,
-  numSteps: 20,
-  width: 1024,
-  height: 1024,
-  guidanceScale: 4,
+  model: 'tencentarc/photomaker-style:467d062309da518648ba89d226490e02b8ed09b5abc15026e54e31c5a8cd0769',
+  styleName: 'Disney Charactor' as const,
+  styleStrengthRatio: 35,
+  numSteps: 30,
+  guidanceScale: 5,
+  numOutputs: 1,
 } as const;
 
 export const BOOK_DIMENSIONS = {

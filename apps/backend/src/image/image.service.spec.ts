@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ImageService } from './image.service';
-import { IMAGE_GEN_CONFIG, NEGATIVE_PROMPT, STYLE_SUFFIX } from '@bookmagic/shared';
+import { IMAGE_GEN_CONFIG, NEGATIVE_PROMPT } from '@bookmagic/shared';
 
 // Mock replicate
 jest.mock('replicate', () => {
@@ -11,10 +11,20 @@ jest.mock('replicate', () => {
   }));
 });
 
+// Mock @google/genai
+jest.mock('@google/genai', () => ({
+  GoogleGenAI: jest.fn().mockImplementation(() => ({
+    models: {
+      generateContent: jest.fn().mockResolvedValue({ text: 'A child with brown hair' }),
+    },
+  })),
+}));
+
 // Mock fs operations
 jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   mkdir: jest.fn().mockResolvedValue(undefined),
+  readFile: jest.fn().mockResolvedValue(Buffer.from('fake-image')),
 }));
 
 // Mock fetch for image download
@@ -36,7 +46,7 @@ describe('ImageService', () => {
         {
           provide: ConfigService,
           useValue: {
-            getOrThrow: jest.fn().mockReturnValue('test-replicate-token'),
+            getOrThrow: jest.fn().mockReturnValue('test-token'),
           },
         },
       ],
@@ -45,7 +55,7 @@ describe('ImageService', () => {
     service = module.get<ImageService>(ImageService);
     mockRun = Replicate.mock.results[Replicate.mock.results.length - 1].value.run;
     jest.clearAllMocks();
-    mockRun.mockResolvedValue('https://replicate.delivery/output/image.png');
+    mockRun.mockResolvedValue(['https://replicate.delivery/output/image.png']);
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       arrayBuffer: () => Promise.resolve(new ArrayBuffer(100)),
@@ -53,16 +63,16 @@ describe('ImageService', () => {
   });
 
   describe('generateReferenceSheet', () => {
-    it('should call replicate with correct model and config', async () => {
+    it('should call replicate with PhotoMaker config', async () => {
       await service.generateReferenceSheet('https://example.com/photo.jpg', 'order-1');
 
       expect(mockRun).toHaveBeenCalledWith(
         IMAGE_GEN_CONFIG.model,
         expect.objectContaining({
           input: expect.objectContaining({
-            main_face_image: 'https://example.com/photo.jpg',
-            id_weight: IMAGE_GEN_CONFIG.idWeight,
-            start_step: IMAGE_GEN_CONFIG.startStep,
+            input_image: 'https://example.com/photo.jpg',
+            style_name: IMAGE_GEN_CONFIG.styleName,
+            style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
             num_steps: IMAGE_GEN_CONFIG.numSteps,
             negative_prompt: NEGATIVE_PROMPT,
           }),
@@ -77,7 +87,7 @@ describe('ImageService', () => {
   });
 
   describe('generatePageImage', () => {
-    it('should append STYLE_SUFFIX if not already present', async () => {
+    it('should include img trigger word in prompt', async () => {
       await service.generatePageImage(
         'https://example.com/photo.jpg',
         'A child in a forest',
@@ -86,21 +96,21 @@ describe('ImageService', () => {
       );
 
       const callInput = mockRun.mock.calls[0][1].input;
-      expect(callInput.prompt).toContain(STYLE_SUFFIX);
+      expect(callInput.prompt).toContain('img');
     });
 
-    it('should not double-append STYLE_SUFFIX', async () => {
-      const promptWithSuffix = `A child in a forest, ${STYLE_SUFFIX}`;
+    it('should include character description when provided', async () => {
       await service.generatePageImage(
         'https://example.com/photo.jpg',
-        promptWithSuffix,
+        'A child in a forest',
         'order-1',
         1,
+        undefined,
+        'brown hair, blue eyes',
       );
 
       const callInput = mockRun.mock.calls[0][1].input;
-      const occurrences = callInput.prompt.split(STYLE_SUFFIX).length - 1;
-      expect(occurrences).toBe(1);
+      expect(callInput.prompt).toContain('brown hair, blue eyes');
     });
 
     it('should save with correct filename pattern', async () => {

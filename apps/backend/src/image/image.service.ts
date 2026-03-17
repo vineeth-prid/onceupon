@@ -4,7 +4,7 @@ import Replicate from 'replicate';
 import { GoogleGenAI } from '@google/genai';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
-import { STYLE_SUFFIX, NEGATIVE_PROMPT, IMAGE_GEN_CONFIG } from '@bookmagic/shared';
+import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG } from '@bookmagic/shared';
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
@@ -51,10 +51,15 @@ Then suggest a simple, memorable outfit that fits the character for a storybook:
 - Specific pants/shorts/skirt
 - Shoes
 
-Format your response as a single paragraph, like:
-"${childName} is a [age]-year-old [gender] with [hair description], [skin tone], [face features]. [He/She/They] [wear/wears] [outfit description]."
+CRITICAL: Be extremely specific about SKIN TONE — this is the most important detail.
+Use exact descriptions like "medium brown skin", "dark brown skin", "tan olive skin", "warm caramel skin", "deep brown skin" etc.
+Do NOT use vague terms like "warm skin" — always include the actual color.
 
-Keep it under 80 words. Be specific with colors. This description will be prepended to every image prompt to maintain character consistency across 16 book pages.`;
+Format your response as a single paragraph, like:
+"[hair description], [EXACT skin tone color], [face features], wearing [outfit description]."
+
+Keep it under 60 words. Start with hair, then skin, then face. No name needed.
+This will be injected directly after "A img child," in every image prompt.`;
 
     const response = await this.genai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -78,11 +83,11 @@ Keep it under 80 words. Be specific with colors. This description will be prepen
   }
 
   async generateReferenceSheet(photoUrl: string, orderId: string): Promise<string> {
-    const prompt = `Character reference sheet, full body, multiple angles, front view and side view, neutral pose, children's book character, ${STYLE_SUFFIX}`;
+    const prompt = `A full body character reference sheet of a img child, multiple angles, front view and side view, neutral pose, 3d CGI, Pixar style, children's book character`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
     this.logger.log(`Generating reference sheet for order ${orderId}`);
-    const imageUrl = await this.runFluxPulid(publicPhotoUrl, prompt);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt);
     const filename = `ref-${orderId}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/uploads/${filename}`;
@@ -96,17 +101,28 @@ Keep it under 80 words. Be specific with colors. This description will be prepen
     imageComposition?: string,
     characterDescription?: string,
   ): Promise<string> {
-    // Prepend character description for consistency
-    let fullPrompt = '';
-    if (characterDescription) {
-      fullPrompt = `Main character: ${characterDescription}\n\nScene: ${imagePrompt}`;
-    } else {
-      fullPrompt = imagePrompt;
-    }
+    // Build prompt with character description FIRST, then scene
+    // PhotoMaker uses both the "img" face embedding AND text description.
+    // If text says "light skin" but photo has "dark skin", text wins.
+    // So we MUST explicitly describe the child's actual features.
 
-    // Append style suffix if not already included
-    if (!fullPrompt.includes(STYLE_SUFFIX)) {
-      fullPrompt = `${fullPrompt}, ${STYLE_SUFFIX}`;
+    // Remove all references to people from scene prompt to prevent PhotoMaker
+    // from generating extra/different characters. Only ONE person: the img child.
+    let scenePrompt = imagePrompt;
+    scenePrompt = scenePrompt
+      .replace(/\b(the child|the kid|the boy|the girl|a child|a kid|a boy|a girl)\b/gi, '')
+      .replace(/\b(his|her|their|he|she|they|him|them)\s+(mother|father|mom|dad|parent|parents|family|friend|friends|sister|brother|grandma|grandpa)\b/gi, '')
+      .replace(/\b(a |the )?(woman|man|lady|guy|person|people|adult|adults|mother|father|mom|dad|parent|parents|family members|crowd|group of people)\b/gi, '')
+      .replace(/\b(waving goodbye|hugging|holding hands with|standing with|walking with)\s+(a |the )?(woman|man|adult|parent|mother|father|person)\b/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    // Build prompt: "A img child, [physical features], in a scene: [scene without child references]"
+    let fullPrompt: string;
+    if (characterDescription) {
+      fullPrompt = `A img child, ${characterDescription}, in a scene: ${scenePrompt}`;
+    } else {
+      fullPrompt = `A img child in a scene: ${scenePrompt}`;
     }
 
     // Add composition guidance
@@ -114,12 +130,13 @@ Keep it under 80 words. Be specific with colors. This description will be prepen
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
 
-    // Add anatomical safety instructions
-    fullPrompt = `${fullPrompt}. The child character must have a normal human body with exactly two arms, two legs, and five fingers on each hand. The child must NOT be merged with or transformed into any animal or creature.`;
+    // Add 3D Pixar/Disney scene quality keywords
+    fullPrompt = `${fullPrompt}, 3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
     this.logger.log(`Generating image for order ${orderId}, page ${pageNumber}`);
-    const imageUrl = await this.runFluxPulid(publicPhotoUrl, fullPrompt);
+    this.logger.log(`Prompt: ${fullPrompt.substring(0, 200)}...`);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt);
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/uploads/${filename}`;
@@ -175,18 +192,19 @@ Keep it under 80 words. Be specific with colors. This description will be prepen
     return fileUrl;
   }
 
-  private async runFluxPulid(faceImageUrl: string, prompt: string): Promise<string> {
+  private async runPhotoMaker(faceImageUrl: string, prompt: string): Promise<string> {
+    this.logger.log(`Running PhotoMaker with prompt: ${prompt.substring(0, 100)}...`);
     const output = await this.replicate.run(IMAGE_GEN_CONFIG.model as `${string}/${string}:${string}`, {
       input: {
         prompt,
-        main_face_image: faceImageUrl,
-        id_weight: IMAGE_GEN_CONFIG.idWeight,
-        start_step: IMAGE_GEN_CONFIG.startStep,
+        input_image: faceImageUrl,
+        style_name: IMAGE_GEN_CONFIG.styleName,
+        style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
         num_steps: IMAGE_GEN_CONFIG.numSteps,
-        width: IMAGE_GEN_CONFIG.width,
-        height: IMAGE_GEN_CONFIG.height,
         guidance_scale: IMAGE_GEN_CONFIG.guidanceScale,
+        num_outputs: IMAGE_GEN_CONFIG.numOutputs,
         negative_prompt: NEGATIVE_PROMPT,
+        disable_safety_checker: true,
       },
     });
 

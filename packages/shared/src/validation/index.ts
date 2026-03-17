@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TOTAL_PAGES } from '../constants';
 
 export const createOrderSchema = z.object({
   childName: z
@@ -33,7 +34,7 @@ export const pageLayoutEnum = z.enum([
 export type PageLayout = z.infer<typeof pageLayoutEnum>;
 
 export const storyPageSchema = z.object({
-  pageNumber: z.number().int().min(1).max(16),
+  pageNumber: z.number().int().min(1).max(TOTAL_PAGES),
   text: z.string().min(1, 'Page text is required'),
   imagePrompt: z.string().min(1, 'Image prompt is required'),
   sceneDescription: z.string().min(1, 'Scene description is required'),
@@ -45,7 +46,7 @@ export const storyOutputSchema = z.object({
   title: z.string().min(1, 'Story title is required'),
   pages: z
     .array(storyPageSchema)
-    .length(16, 'Story must have exactly 16 pages'),
+    .length(TOTAL_PAGES, `Story must have exactly ${TOTAL_PAGES} pages`),
 });
 
 export const shippingAddressSchema = z.object({

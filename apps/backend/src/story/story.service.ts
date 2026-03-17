@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
-import { storyOutputSchema, StoryOutputInput } from '@bookmagic/shared';
+import { storyOutputSchema, StoryOutputInput, TOTAL_PAGES } from '@bookmagic/shared';
 import { getPromptBuilder } from './prompts';
 
 @Injectable()
@@ -44,18 +44,24 @@ export class StoryService {
 
         const parsed = JSON.parse(text);
 
-        // Pad to 16 pages if Gemini returns fewer
-        if (parsed.pages && parsed.pages.length > 0 && parsed.pages.length < 16) {
-          this.logger.warn(`Gemini returned ${parsed.pages.length} pages, padding to 16`);
-          while (parsed.pages.length < 16) {
+        // Pad or trim to TOTAL_PAGES if Gemini returns wrong count
+        if (parsed.pages && parsed.pages.length > 0 && parsed.pages.length < TOTAL_PAGES) {
+          this.logger.warn(`Gemini returned ${parsed.pages.length} pages, padding to ${TOTAL_PAGES}`);
+          while (parsed.pages.length < TOTAL_PAGES) {
             const lastPage = parsed.pages[parsed.pages.length - 1];
             parsed.pages.push({
               pageNumber: parsed.pages.length + 1,
               text: lastPage.text,
               imagePrompt: lastPage.imagePrompt,
               sceneDescription: lastPage.sceneDescription,
+              layout: lastPage.layout || 'full-bleed-text-bottom',
             });
           }
+        } else if (parsed.pages && parsed.pages.length > TOTAL_PAGES) {
+          this.logger.warn(`Gemini returned ${parsed.pages.length} pages, trimming to ${TOTAL_PAGES}`);
+          parsed.pages = parsed.pages.slice(0, TOTAL_PAGES);
+          // Re-number pages
+          parsed.pages.forEach((p: any, i: number) => { p.pageNumber = i + 1; });
         }
 
         const validated = storyOutputSchema.parse(parsed);

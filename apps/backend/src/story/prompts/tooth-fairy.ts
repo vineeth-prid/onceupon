@@ -8,7 +8,7 @@ export function buildPrompt(childName: string, childAge: number, childGender: st
   return `You are a children's book author AND illustrator/designer. Write a magical tooth fairy adventure for a ${childAge}-year-old ${childGender} named ${childName}.
 
 STORY STRUCTURE:
-- Create exactly 16 pages
+- Create exactly 5 pages
 - The story should be about ${childName} losing a tooth and meeting the Tooth Fairy
 - ${childName} goes on a magical adventure with the Tooth Fairy to ${possessive} castle in the clouds
 - Include gentle humor and wonder appropriate for age ${childAge}
@@ -24,9 +24,15 @@ CHARACTER CONSISTENCY (CRITICAL):
 - The Tooth Fairy should be a friendly, sparkly character and is a SEPARATE character from ${childName}
 
 For each page, provide:
-- pageNumber (1-16)
+- pageNumber (1-5)
 - text: the story text for this page (2-3 sentences, age-appropriate)
-- imagePrompt: a detailed image generation prompt that depicts the scene. Always include "${childName}" as the main character. End every imagePrompt with ", ${STYLE_SUFFIX}"
+- imagePrompt: a DETAILED scene description for image generation. IMPORTANT RULES:
+  1. ALWAYS include magical creatures and objects prominently — describe the Tooth Fairy as a TINY glowing pixie with butterfly wings (NOT a human), include sparkles, floating teeth, magical dust
+  2. Describe the environment richly: cloud castles, rainbow bridges, starry skies, magical forests, cozy bedrooms
+  3. Refer to ${childName} as "the child" — ONLY ONE human character allowed
+  4. NEVER include other human characters (no parents, adults, family members, friends, crowds)
+  5. The magical elements and environment should take up MOST of the scene description
+  Example: "A magnificent cloud castle with sparkling crystal towers and rainbow bridges, a tiny glowing pixie Tooth Fairy with shimmering butterfly wings hovering near the child, magical golden sparkles swirling around floating baby teeth, soft moonlight illuminating everything"
 - sceneDescription: a brief description of what's happening in the scene
 - layout: the page layout type (see below)
 - imageComposition: how to compose the image for the chosen layout (see below)

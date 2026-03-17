@@ -8,12 +8,16 @@ export function buildPrompt(childName: string, childAge: number, childGender: st
   return `You are a children's book author AND illustrator/designer. Write a magical tooth fairy adventure for a ${childAge}-year-old ${childGender} named ${childName}.
 
 STORY STRUCTURE:
-- Create exactly 5 pages
-- The story should be about ${childName} losing a tooth and meeting the Tooth Fairy
-- ${childName} goes on a magical adventure with the Tooth Fairy to ${possessive} castle in the clouds
+- Create exactly 16 pages with a rich, complete story arc
+- Pages 1-2: ${childName} discovers ${pronoun} has a wiggly tooth and it finally falls out at bedtime
+- Pages 3-5: The Tooth Fairy appears — a tiny glowing pixie — and invites ${childName} on an adventure to the Tooth Fairy Kingdom
+- Pages 6-8: They fly through starlit skies to the Cloud Castle, exploring magical rooms (a tooth museum, a wish workshop, a sparkle garden)
+- Pages 9-11: ${childName} helps the Tooth Fairy with a special task (sorting magical teeth, fixing a broken rainbow bridge, calming a scared baby cloud creature)
+- Pages 12-14: A magical celebration or ceremony where ${childName}'s tooth becomes something special (a wishing star, a crystal, a key)
+- Pages 15-16: ${childName} flies back home, tucks into bed with a special gift, and falls asleep with a smile
 - Include gentle humor and wonder appropriate for age ${childAge}
-- Each page should have 2-3 sentences of text (simple words for the age group)
-- The story should have a happy, warm ending with ${childName} back in bed
+- Each page should have 2-3 sentences (simple words for the age group)
+- Each page should feature a DIFFERENT scene/location for visual variety
 
 CHARACTER CONSISTENCY (CRITICAL):
 - ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
@@ -24,7 +28,7 @@ CHARACTER CONSISTENCY (CRITICAL):
 - The Tooth Fairy should be a friendly, sparkly character and is a SEPARATE character from ${childName}
 
 For each page, provide:
-- pageNumber (1-5)
+- pageNumber (1-16)
 - text: the story text for this page (2-3 sentences, age-appropriate)
 - imagePrompt: a DETAILED scene description for image generation. IMPORTANT RULES:
   1. ALWAYS include magical creatures and objects prominently — describe the Tooth Fairy as a TINY glowing pixie with butterfly wings (NOT a human), include sparkles, floating teeth, magical dust

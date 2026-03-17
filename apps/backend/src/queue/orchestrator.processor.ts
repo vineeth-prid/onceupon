@@ -7,6 +7,7 @@ import { StoryService } from '../story/story.service';
 import { ImageService } from '../image/image.service';
 import { OrderStatus, StoryOutputInput } from '@bookmagic/shared';
 import { ORCHESTRATOR_QUEUE } from './queue.constants';
+import { getStaticStory } from '../story/static-stories';
 
 @Processor(ORCHESTRATOR_QUEUE)
 export class OrchestratorProcessor extends WorkerHost {
@@ -30,13 +31,18 @@ export class OrchestratorProcessor extends WorkerHost {
       await this.ordersService.updateStatus(orderId, OrderStatus.STORY_GENERATING);
       const order = await this.ordersService.findById(orderId);
 
-      const story = await this.storyService.generateStory(
-        order.childName,
-        order.childAge,
-        order.childGender,
-        order.theme,
-        order.customStoryPrompt || undefined,
-      );
+      // Use static story for premade themes, only call Gemini for custom
+      const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
+      const story = staticStory
+        ? staticStory
+        : await this.storyService.generateStory(
+            order.childName,
+            order.childAge,
+            order.childGender,
+            order.theme,
+            order.customStoryPrompt || undefined,
+          );
+      this.logger.log(`Story source: ${staticStory ? 'static template' : 'Gemini AI generated'}`);
 
       // Save story JSON and create page records with layout
       await this.prisma.order.update({
@@ -120,9 +126,33 @@ export class OrchestratorProcessor extends WorkerHost {
           page,
           storyPage?.imageComposition,
           characterDescription,
+          order.childGender,
+          page.layout,
         );
         // 12s delay between requests to stay within rate limit
         await new Promise((resolve) => setTimeout(resolve, 12000));
+      }
+
+      // Retry failed pages once before giving up
+      const firstPassPages = await this.prisma.page.findMany({
+        where: { orderId, status: 'FAILED' },
+        orderBy: { pageNumber: 'asc' },
+      });
+      if (firstPassPages.length > 0) {
+        this.logger.log(`Retrying ${firstPassPages.length} failed pages...`);
+        for (const page of firstPassPages) {
+          const storyPage = storyData.pages.find((p: any) => p.pageNumber === page.pageNumber);
+          await this.processPageImage(
+            orderId,
+            order.photoUrl,
+            page,
+            storyPage?.imageComposition,
+            characterDescription,
+            order.childGender,
+            page.layout,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 12000));
+        }
       }
 
       // Check results
@@ -163,9 +193,11 @@ export class OrchestratorProcessor extends WorkerHost {
   private async processPageImage(
     orderId: string,
     photoUrl: string,
-    page: { id: string; pageNumber: number; imagePrompt: string },
+    page: { id: string; pageNumber: number; imagePrompt: string; layout?: string },
     imageComposition?: string,
     characterDescription?: string,
+    childGender?: string,
+    layout?: string,
   ): Promise<void> {
     try {
       await this.prisma.page.update({
@@ -180,6 +212,8 @@ export class OrchestratorProcessor extends WorkerHost {
         page.pageNumber,
         imageComposition,
         characterDescription,
+        childGender,
+        layout || page.layout,
       );
 
       await this.prisma.page.update({

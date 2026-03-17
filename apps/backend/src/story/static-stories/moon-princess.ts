@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getMoonPrincessStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Moon Kingdom`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Moon Kingdom`,
+        imagePrompt: 'A decorative storybook title page with a large glowing full moon in the center, silver crescent moons and tiny golden stars as border decorations, wispy luminous clouds framing the edges, a silhouette of a magical moon castle on the moon surface, soft purple and silver color scheme, ethereal moonbeam rays',
+        sceneDescription: 'Title page with moon-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with moon and star elements',
+      },
+      {
+        pageNumber: 2,
+        text: `One quiet night, ${childName} couldn't sleep. ${Pronoun} looked out the window and saw a moonbeam brighter than any ${pronoun} had ever seen, shining straight into ${possessive} room like a silver pathway.`,
+        imagePrompt: 'A cozy children bedroom at night with a window showing a spectacular full moon, an incredibly bright silver moonbeam streaming through the window creating a glowing path of light on the bedroom floor, the moonbeam filled with tiny sparkling stars, soft blue and silver lighting, curtains gently blowing in a magical breeze, peaceful nighttime atmosphere',
+        sceneDescription: `${childName} sees a magical moonbeam through the window`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 3,
+        text: `${childName} reached out and touched the moonbeam. It felt warm and tingly! Slowly, ${possessive} feet lifted off the ground, and ${pronoun} began to float upward, following the silver light into the sky!`,
+        imagePrompt: 'A child floating upward on a stream of silver moonlight from a house rooftop into the night sky, feet lifting off, surrounded by tiny twinkling stars and silver sparkles, the full moon glowing brilliantly above as a destination, the town below getting smaller with tiny warm house lights, wispy clouds at mid-level, magical levitation scene with silver and blue tones',
+        sceneDescription: `${childName} floats up on the moonbeam`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 4,
+        text: `${Pronoun} floated higher and higher, past fluffy sleeping clouds and winking stars. A friendly shooting star zoomed by and did a loop, as if saying hello!`,
+        imagePrompt: 'A vast beautiful night sky scene with fluffy silver-white clouds, a bright shooting star with a long golden trail doing a playful loop in the sky, dozens of twinkling stars of various sizes and colors, the moon getting closer and larger in the background, silver moonbeam path stretching upward, cosmic dust in purple and blue swirls, magical journey through space',
+        sceneDescription: `${childName} travels through the night sky`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top',
+      },
+      {
+        pageNumber: 5,
+        text: `${childName} landed softly on the moon's surface. It was beautiful! Silver sand sparkled underfoot, and everything glowed with a soft, magical light. Ahead stood a magnificent crystal palace.`,
+        imagePrompt: 'A stunning moonscape with sparkling silver sand ground, the surface gently glowing with soft magical light, a magnificent crystal palace in the distance with tall glowing spires and arched doorways, the Earth visible as a beautiful blue marble in the starry black sky, small glowing moon flowers dotting the landscape, silver dust particles floating in the air, ethereal and otherworldly atmosphere',
+        sceneDescription: `${childName} lands on the moon and sees the crystal palace`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 6,
+        text: `A luminous, gentle spirit floated out of the palace. She glowed with soft silver light and had a crown of tiny stars. "Welcome! I am Luna, the Moon Spirit. I've been waiting for you!"`,
+        imagePrompt: 'An ethereal glowing Moon Spirit floating gracefully in front of a crystal palace doorway, the spirit made of soft translucent silver-white light with a crown of tiny sparkling stars, flowing robes of moonlight, gentle kind expression, surrounded by an aura of silver sparkles, the crystal palace entrance glowing behind her, moon flowers blooming at the entrance, mystical and welcoming atmosphere',
+        sceneDescription: 'Luna the Moon Spirit welcomes the child',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 7,
+        text: `Luna showed ${childName} the Star Nursery, where baby stars were born! Tiny round stars with sleepy faces blinked and yawned in their crystal cradles. ${childName} gently rocked one, and it giggled.`,
+        imagePrompt: 'An enchanting nursery room inside the moon palace with rows of small crystal cradles, each holding a tiny cute round glowing baby star with a sleepy face and closed eyes, some yawning, some blinking with tiny smiles, soft warm golden glow from each baby star, crystal mobiles hanging above the cradles spinning gently, pastel colored nebula clouds visible through crystal windows, adorable and heartwarming scene',
+        sceneDescription: `${childName} visits the Star Nursery`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 8,
+        text: `Next, they explored the Crystal Caves beneath the moon's surface. The walls were covered in glowing crystals that played soft music when touched. ${childName} tapped a few and made a beautiful melody!`,
+        imagePrompt: 'A spectacular underground crystal cave beneath the moon surface, massive glowing crystals in soft blue, purple, and pink embedded in the cave walls and ceiling, musical note symbols floating from crystals being touched, the crystals emitting different colored light creating rainbow reflections on the cave floor, an underground silver lake reflecting all the crystal lights, magical musical cave atmosphere',
+        sceneDescription: `${childName} explores the musical Crystal Caves`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, maximum visual impact',
+      },
+      {
+        pageNumber: 9,
+        text: `By the underground lake, ${childName} met the Moon Rabbits — adorable round creatures that glowed white and hopped on the silver sand. They had long floppy ears and tiny sparkling noses!`,
+        imagePrompt: 'An underground silver lake shore with four adorable round glowing white Moon Rabbits sitting on silver sand, each rabbit with long floppy luminous ears and tiny sparkling pink noses, big cute round eyes, their soft glow reflecting in the lake water, small glowing moon flowers around them, gentle cave lighting from crystal formations, cute and charming scene',
+        sceneDescription: `${childName} meets the Moon Rabbits`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background',
+      },
+      {
+        pageNumber: 10,
+        text: `Luna looked worried. "One of our Star Children has wandered too far and gotten lost in the Dark Side of the Moon," she said softly. "The darkness scares them. Will you help me find her?"`,
+        imagePrompt: 'The Moon Spirit Luna hovering with a worried expression, pointing toward a distant dark shadowy region of the moon landscape, a stark contrast between the bright glowing silver side and the dark ominous shadow side, a tiny distant flickering light (the lost star) barely visible in the darkness, concerned Moon Rabbits huddled together watching, dramatic lighting contrast, tense atmosphere',
+        sceneDescription: 'Luna asks for help finding a lost Star Child',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 11,
+        text: `${childName} was brave! Luna gave ${possessive} a Moon Lantern that glowed like a tiny sun. Together with two Moon Rabbits as guides, they set off across the silver plains toward the dark side.`,
+        imagePrompt: 'A silver moonscape plain stretching toward a dark horizon, a bright glowing Moon Lantern shaped like a crescent moon emitting warm golden light, two glowing white Moon Rabbits hopping ahead as guides, the luminous Moon Spirit floating alongside, silver sand sparkling in the lantern light, the dark side of the moon looming ahead as a wall of shadow, brave adventure beginning atmosphere',
+        sceneDescription: `${childName} heads to the dark side with a Moon Lantern`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 12,
+        text: `The Dark Side was cold and quiet. Strange shadow shapes swirled around them. But ${childName} held the lantern high, and its warm light pushed the shadows back. Then ${pronoun} heard a tiny whimper — the lost Star Child!`,
+        imagePrompt: 'The dark side of the moon with swirling dark shadow shapes being pushed back by warm golden lantern light, a tiny frightened baby star with a sad face and dim flickering glow huddled behind a dark moon rock, the lantern light creating a safe warm circle in the darkness, dramatic contrast between golden light and dark shadows, rescue scene with hope breaking through darkness',
+        sceneDescription: `${childName} finds the lost Star Child in the darkness`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top',
+      },
+      {
+        pageNumber: 13,
+        text: `${childName} knelt down and gently picked up the tiny Star Child. "Don't be scared," ${pronoun} whispered. "I'll take you home." The little star snuggled close and began to glow brighter and brighter!`,
+        imagePrompt: 'A heartwarming close-up scene of a small cute round baby star being cradled gently, the star glowing increasingly bright with warm golden light, its little face showing relief and happiness, tears of light on its cheeks turning to sparkles, the warm glow pushing away all surrounding darkness, Moon Rabbits watching happily nearby, emotional and tender rescue moment',
+        sceneDescription: `${childName} comforts and picks up the lost Star Child`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'tight portrait or close-up, circular-friendly framing',
+      },
+      {
+        pageNumber: 14,
+        text: `They brought the Star Child back safely! Luna was overjoyed. All the baby stars in the nursery glowed brighter to welcome their friend home. The Moon Rabbits did happy hops around ${childName}'s feet!`,
+        imagePrompt: 'A joyful celebration scene in the Star Nursery, all baby stars in their crystal cradles glowing extra bright with happy faces, the rescued baby star placed in a cradle at the center glowing brilliantly, Moon Rabbits doing playful hops on the crystal floor, the Moon Spirit Luna radiating joy with extra silver sparkles, confetti-like star sparkles raining down, warm golden and silver lighting, celebration atmosphere',
+        sceneDescription: 'The Star Child is brought home safely to celebration',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 15,
+        text: `As a gift, Luna placed a tiny Moon Charm around ${childName}'s neck — a silver crescent that glowed softly. "Whenever you look at the moon, remember you have friends here," she said warmly.`,
+        imagePrompt: 'A close-up of a beautiful small silver crescent moon charm on a delicate silver chain, the charm glowing with soft warm moonlight, tiny stars etched into the metal, the Moon Spirit Luna gently presenting it with both ethereal hands, soft bokeh background of the glowing moon palace, intimate and magical gift-giving moment, warm silver and gold lighting',
+        sceneDescription: `Luna gives ${childName} a Moon Charm`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 16,
+        text: `${childName} floated gently back to bed on a stream of moonlight. The Moon Charm glowed softly on ${possessive} chest. ${Pronoun} looked out the window at the bright moon, smiled, and whispered, "Goodnight, Luna." And somewhere up there, the Moon Spirit smiled back.`,
+        imagePrompt: 'A cozy bedroom with a child sleeping peacefully in bed with a gentle smile, a small silver crescent moon charm glowing softly on the chest, moonlight streaming through the window from a bright full moon, the moonbeam creating a gentle silver glow in the room, a faint magical sparkle trail from the window to the bed, the moon outside appearing to have a gentle smiling glow, peaceful and magical ending atmosphere, no other people',
+        sceneDescription: `${childName} sleeps peacefully with the Moon Charm, connected to the moon`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

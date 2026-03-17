@@ -8,13 +8,16 @@ export function buildPrompt(childName: string, childAge: number, childGender: st
   return `You are a children's book author AND illustrator/designer. Write a dreamy moon adventure for a ${childAge}-year-old ${childGender} named ${childName}.
 
 STORY STRUCTURE:
-- Create exactly 5 pages
-- One night, ${childName} sees a moonbeam shining through ${possessive} window and follows it
-- ${pronoun} floats up to the moon where ${pronoun} meets the Moon Princess/Prince
-- Together they explore the moon kingdom, meet star creatures, and dance among the stars
+- Create exactly 16 pages with a rich, complete story arc
+- Pages 1-2: One night, ${childName} sees a moonbeam shining through ${possessive} window and follows it outside
+- Pages 3-5: ${pronoun} floats up through the starry sky to the moon, landing in a silver landscape, and meets the Moon Princess/Prince (a luminous spirit)
+- Pages 6-8: Together they explore the Moon Kingdom — crystal caves, silver gardens, a glowing lake, a star nursery where baby stars are born
+- Pages 9-11: They meet magical moon creatures (glowing moon rabbits, gentle star jellyfish, singing crystal birds) and help with a task (a lost star, a fading moonflower, a broken constellation)
+- Pages 12-14: A magical climax — they dance among the stars, or restore light to a dark part of the moon, or help launch new stars into the sky
+- Pages 15-16: ${childName} gently floats back to bed, with a special moon charm that glows softly, and falls asleep dreaming of the stars
 - Include magical, dreamy imagery appropriate for age ${childAge}
 - Each page should have 2-3 sentences (simple words for the age group)
-- The story ends with ${childName} gently floating back to bed, with a special moon charm
+- Each page should feature a DIFFERENT scene/location for visual variety
 
 CHARACTER CONSISTENCY (CRITICAL):
 - ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
@@ -25,7 +28,7 @@ CHARACTER CONSISTENCY (CRITICAL):
 - The Moon Princess/Prince should be gentle and luminous and is a SEPARATE character from ${childName}
 
 For each page, provide:
-- pageNumber (1-5)
+- pageNumber (1-16)
 - text: the story text for this page (2-3 sentences, age-appropriate)
 - imagePrompt: a DETAILED scene description for image generation. IMPORTANT RULES:
   1. ALWAYS include magical creatures and celestial objects prominently — cute star creatures, glowing moon rabbits, floating crystals, shooting stars, nebula clouds

@@ -8,13 +8,16 @@ export function buildPrompt(childName: string, childAge: number, childGender: st
   return `You are a children's book author AND illustrator/designer. Write an exciting dinosaur adventure for a ${childAge}-year-old ${childGender} named ${childName}.
 
 STORY STRUCTURE:
-- Create exactly 5 pages
-- ${childName} discovers a magical portal in ${possessive} backyard that leads to the land of dinosaurs
-- ${pronoun} befriends a baby dinosaur and together they explore the prehistoric world
-- They face a small challenge together (like helping the baby dino find its family)
-- Include fun dinosaur facts appropriate for age ${childAge}
+- Create exactly 16 pages with a rich, complete story arc
+- Pages 1-2: ${childName} discovers a magical portal in ${possessive} backyard that leads to the land of dinosaurs
+- Pages 3-5: ${pronoun} befriends a baby dinosaur and they begin exploring the prehistoric world together
+- Pages 6-8: They discover different dinosaur habitats — a lush jungle, a volcanic valley, a crystal cave, a river delta
+- Pages 9-11: They face a challenge together (like helping the baby dino find its family, or protecting eggs from a storm)
+- Pages 12-14: The climax — a big exciting moment (a volcanic eruption, a T-Rex encounter, or a dinosaur stampede) that they overcome together
+- Pages 15-16: The resolution — ${childName} says goodbye to ${possessive} dinosaur friend and returns home with a special gift/memory
+- Include fun dinosaur facts appropriate for age ${childAge} throughout the story
 - Each page should have 2-3 sentences (simple words for the age group)
-- The story ends with ${childName} returning home with a special dinosaur gift/memory
+- Each page should feature a DIFFERENT scene/location for visual variety
 
 CHARACTER CONSISTENCY (CRITICAL):
 - ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
@@ -26,7 +29,7 @@ CHARACTER CONSISTENCY (CRITICAL):
 - In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child" to prevent character confusion
 
 For each page, provide:
-- pageNumber (1-5)
+- pageNumber (1-16)
 - text: the story text for this page (2-3 sentences, age-appropriate)
 - imagePrompt: a DETAILED scene description for image generation. IMPORTANT RULES:
   1. ALWAYS include SPECIFIC dinosaurs prominently in the scene — name the species and describe them visually (e.g. "a small cute green baby Brachiosaurus with big eyes", "a massive red T-Rex roaring in the background")

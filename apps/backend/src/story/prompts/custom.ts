@@ -9,12 +9,14 @@ USER'S STORY IDEA:
 "${customStoryPrompt}"
 
 YOUR TASK:
-- Transform this story idea into exactly 5 beautifully written storybook pages
+- Transform this story idea into exactly 16 beautifully written storybook pages
 - Adapt the language and complexity for a ${childAge}-year-old
 - Keep the core events and spirit of the user's story but make it magical, fun, and child-friendly
+- Expand the story with a proper arc: introduction (pages 1-3), rising action (pages 4-7), adventure/exploration (pages 8-11), climax (pages 12-14), resolution (pages 15-16)
 - Add vivid, imaginative details that would make great illustrations
 - ${childName} should be the main character using "${pronoun}" pronouns
 - Each page should have 2-3 sentences (simple words for the age group)
+- Each page should feature a DIFFERENT scene/location for visual variety
 - Give the book a creative, catchy title
 
 CHARACTER CONSISTENCY (CRITICAL):
@@ -25,7 +27,7 @@ CHARACTER CONSISTENCY (CRITICAL):
 - In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child"
 
 For each page, provide:
-- pageNumber (1-5)
+- pageNumber (1-16)
 - text: the story text for this page (2-3 sentences, age-appropriate)
 - imagePrompt: a VERY DETAILED scene description for image generation. CRITICAL RULES:
   1. START with the LOCATION/SETTING — describe the specific place with vivid visual details (architecture, vegetation, colors, lighting)

@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getToothFairyStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Tooth Fairy's Secret`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Tooth Fairy's Secret`,
+        imagePrompt: 'A decorative storybook title page with a magical night sky border, sparkling stars and crescent moon, tiny golden sparkles and floating baby teeth with wings scattered around the edges, a small glowing pixie silhouette with butterfly wings in the corner, soft purple and gold color scheme',
+        sceneDescription: 'Title page with tooth fairy themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with magical sparkle elements',
+      },
+      {
+        pageNumber: 2,
+        text: `${childName} wiggled ${possessive} loose tooth all day long. At bedtime, POP! Out it came! ${Pronoun} placed the tiny tooth under ${possessive} pillow and snuggled in, wondering what the Tooth Fairy would bring.`,
+        imagePrompt: 'A cozy children bedroom at night with soft warm lamplight, a fluffy bed with a star-patterned blanket, a small white tooth sitting on a soft pillow, a bedside table with a glass of water and a storybook, stars visible through the window, warm and peaceful bedtime atmosphere, golden fairy dust particles floating in the air',
+        sceneDescription: `${childName} puts the lost tooth under the pillow`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 3,
+        text: `A bright sparkle woke ${childName} up! A tiny glowing pixie with shimmering butterfly wings hovered above the pillow. "Hello! I'm Twinkle, the Tooth Fairy!" she said in a voice like tinkling bells.`,
+        imagePrompt: 'A dark cozy bedroom lit up by a tiny glowing pixie fairy with iridescent butterfly wings hovering above a pillow, the pixie emitting golden sparkles and warm light, tiny stars and magical dust swirling around her, the room bathed in soft magical golden glow, sparkles reflecting off the window glass, enchanting magical atmosphere',
+        sceneDescription: 'The Tooth Fairy appears in the bedroom',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 4,
+        text: `"Would you like to see where all the teeth go?" Twinkle asked with a wink. Before ${childName} could answer, golden sparkles swirled around them both, and they floated right out the window into the starry night sky!`,
+        imagePrompt: 'A child floating upward through a bedroom window into a vast starry night sky, surrounded by swirling golden magical sparkles and fairy dust, a tiny glowing pixie fairy with butterfly wings leading the way upward, the house rooftop visible below, a crescent moon glowing brightly, stars twinkling all around, magical flying scene',
+        sceneDescription: `${childName} flies out the window with the Tooth Fairy`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top',
+      },
+      {
+        pageNumber: 5,
+        text: `They soared past fluffy clouds and twinkling stars. ${childName} laughed with delight as moonbeams tickled ${possessive} toes. The whole world looked like a glittering snow globe far below!`,
+        imagePrompt: 'A breathtaking night sky scene with fluffy silver-white clouds, brilliant twinkling stars everywhere, moonbeams streaming from a large bright crescent moon, the Earth far below glittering with tiny city lights like a snow globe, trails of golden fairy dust creating swirling patterns in the sky, magical and dreamy atmosphere',
+        sceneDescription: `${childName} flies through the starry sky`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, maximum visual impact',
+      },
+      {
+        pageNumber: 6,
+        text: `At last, they arrived at the Tooth Fairy's castle — a magnificent palace made entirely of sparkling crystals, sitting on top of the fluffiest cloud ${childName} had ever seen!`,
+        imagePrompt: 'A magnificent magical crystal castle sitting atop a giant fluffy white cloud, the castle made of sparkling transparent crystals in pink, blue, and purple, tall crystal towers with glowing tips, a golden drawbridge, tiny glowing pixie fairies flying around the towers, stars twinkling in the deep blue night sky behind, magical sparkles everywhere',
+        sceneDescription: `${childName} arrives at the crystal castle`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 7,
+        text: `Inside, they visited the Tooth Museum! Rows and rows of tiny teeth sat in crystal cases, each one glowing a different color. "Every tooth tells a story," Twinkle explained proudly.`,
+        imagePrompt: 'An enchanting museum hall inside a crystal castle, long rows of sparkling crystal display cases containing tiny glowing teeth in various colors — blue, green, pink, gold, purple, each tooth emitting a soft glow, crystal chandeliers hanging from the ceiling casting rainbow light, marble floors reflecting the colorful glow, a tiny pixie fairy hovering near one of the display cases, magical museum atmosphere',
+        sceneDescription: `${childName} explores the Tooth Museum`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 8,
+        text: `Next was the Wish Workshop! Tiny fairy workers turned teeth into beautiful wishing coins. Each coin could grant one small wish to a child who believed in magic.`,
+        imagePrompt: 'A magical workshop room with tiny pixie fairy workers at crystal workbenches, teeth being transformed into shiny golden wishing coins with sparkles, tiny hammers and magical tools glowing with light, conveyor belts carrying teeth and coins, piles of glowing golden coins, magical sparks flying from the workbenches, warm amber lighting, busy but cheerful workshop atmosphere',
+        sceneDescription: 'The Wish Workshop where teeth become wishing coins',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background',
+      },
+      {
+        pageNumber: 9,
+        text: `Then Twinkle led ${childName} to the Sparkle Garden — the most beautiful garden ${pronoun} had ever seen! Flowers made of crystals grew everywhere, and tiny fairy butterflies danced in the moonlight.`,
+        imagePrompt: 'A stunning magical garden with crystal flowers in every color — ruby red roses, sapphire blue tulips, emerald green leaves, diamond daisies — all glowing softly, tiny fairy butterflies with glowing wings fluttering among the crystal flowers, a winding silver path through the garden, a crystal fountain in the center spraying liquid moonlight, bioluminescent moss on the ground, ethereal and dreamy moonlit atmosphere',
+        sceneDescription: `${childName} visits the Sparkle Garden`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 10,
+        text: `"Oh no!" cried Twinkle suddenly. The Rainbow Bridge that connected the castle towers was flickering and losing its colors! "Without it, we can't deliver wishes to the children!"`,
+        imagePrompt: 'A long arching rainbow bridge connecting two crystal castle towers, the bridge flickering and losing its colors — patches turning grey and transparent, sparks of fading color dropping off the bridge, a tiny worried pixie fairy hovering near the broken section, dramatic contrast between the still-colorful sections and the fading grey parts, night sky with worried-looking clouds, tense atmosphere',
+        sceneDescription: 'The Rainbow Bridge is breaking and losing its magic',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 11,
+        text: `${childName} had an idea! "What if we use my tooth? You said every tooth tells a story!" Twinkle's eyes lit up. "That's brilliant! A brave tooth from a brave child might be just what we need!"`,
+        imagePrompt: 'A close-up scene of a small white glowing tooth held up in the air, emitting bright magical white and gold light, a tiny pixie fairy with butterfly wings hovering excitedly nearby with sparkling eyes, magical sparkles and light rays emanating from the tooth, the flickering Rainbow Bridge visible in the background, hopeful and inspiring atmosphere',
+        sceneDescription: `${childName} suggests using the lost tooth to fix the bridge`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'tight portrait or close-up, circular-friendly framing',
+      },
+      {
+        pageNumber: 12,
+        text: `${childName} placed ${possessive} tooth right in the center of the Rainbow Bridge. WHOOOOSH! A burst of brilliant colors exploded outward! Red, orange, yellow, green, blue, and purple light filled the sky!`,
+        imagePrompt: 'A dramatic explosion of brilliant rainbow colors erupting from the center of a crystal bridge, red orange yellow green blue and purple light beams shooting outward in all directions, a small white tooth glowing intensely at the center of the explosion, crystal castle towers lit up by the rainbow light, magical sparkles and stars scattered everywhere, the night sky turned into a spectacular light show, epic magical moment',
+        sceneDescription: 'The tooth restores the Rainbow Bridge with a burst of color',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, maximum visual impact',
+      },
+      {
+        pageNumber: 13,
+        text: `The Rainbow Bridge glowed brighter than ever! All the fairy workers cheered and did loop-de-loops in the air. Twinkle hugged ${childName} tightly. "You saved the Tooth Fairy Kingdom!"`,
+        imagePrompt: 'A fully restored brilliant glowing Rainbow Bridge arching between crystal castle towers, dozens of tiny happy pixie fairies doing loops and spirals in the air celebrating, trails of golden sparkles behind each fairy, the bridge pulsing with vibrant rainbow colors, confetti-like sparkles raining down, the crystal castle glowing warmly, joyful celebration atmosphere, night sky filled with stars',
+        sceneDescription: 'The fairies celebrate the bridge being fixed',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 14,
+        text: `As a thank-you, Twinkle gave ${childName} a very special wishing coin — one that would never run out of wishes, as long as ${pronoun} always believed in magic and was kind to others.`,
+        imagePrompt: 'A close-up of a beautiful special golden wishing coin with intricate fairy wing patterns engraved on it, the coin glowing with warm magical golden light, tiny sparkles and fairy dust floating around it, a small pixie fairy presenting the coin with both hands, soft bokeh background of the crystal castle, warm intimate lighting, precious and special moment',
+        sceneDescription: `Twinkle gives ${childName} a special wishing coin`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 15,
+        text: `It was time to go home. ${childName} and Twinkle flew back through the starry sky, past the clouds, and through the bedroom window. "Thank you for the best adventure ever!" ${childName} whispered.`,
+        imagePrompt: 'A child floating gently downward through a bedroom window from the starry night sky, a tiny glowing pixie fairy waving goodbye with golden sparkle trails, the crescent moon and stars visible outside, soft moonlight streaming into the cozy bedroom, golden fairy dust settling around the room, warm and peaceful returning-home atmosphere',
+        sceneDescription: `${childName} flies back home`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top',
+      },
+      {
+        pageNumber: 16,
+        text: `${childName} snuggled back into bed, the golden wishing coin warm in ${possessive} hand. Under the pillow, a trail of fairy sparkles glowed softly. ${Pronoun} smiled and whispered, "Goodnight, Twinkle," as ${pronoun} drifted off to the sweetest dreams.`,
+        imagePrompt: 'A cozy bedroom at night with a child sleeping peacefully in bed with a gentle smile, a small golden coin glowing warmly in a hand resting on the pillow, a trail of tiny golden fairy sparkles under the pillow glowing softly, moonlight streaming through the window, the room bathed in warm soft golden light, a tiny pixie fairy silhouette visible through the window flying away into the starry sky, peaceful and magical ending',
+        sceneDescription: `${childName} falls asleep with the wishing coin, dreaming of the adventure`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

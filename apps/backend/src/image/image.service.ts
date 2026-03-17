@@ -36,35 +36,36 @@ export class ImageService {
     const imageBytes = await readFile(filePath);
     const base64Image = imageBytes.toString('base64');
 
-    const prompt = `You are analyzing a photo of a child for a children's storybook illustration project.
-Describe this child's visual appearance in precise detail for an illustrator.
+    const genderWord = childGender === 'boy' ? 'boy' : childGender === 'girl' ? 'girl' : 'child';
+    const prompt = `You are analyzing a photo of a ${genderWord} child for a children's storybook illustration project.
+Describe this ${genderWord}'s visual appearance in precise detail for an illustrator.
 The child's name is ${childName}, age ${childAge}, ${childGender}.
 
 Provide a CONCISE but DETAILED visual description covering:
-1. Hair: color, style, length, texture (e.g. "short spiky dark brown hair")
-2. Skin tone (e.g. "warm brown skin", "light peach skin")
-3. Face shape and features (e.g. "round face, big brown eyes, small nose, rosy cheeks")
-4. Build (e.g. "small and slim for a 5-year-old")
+1. Hair: EXACT color, style, length, texture (e.g. "short straight dark brown hair" or "short cropped black hair"). Be VERY specific about length — "short" vs "medium" vs "long" matters a lot for consistency across pages.
+2. Skin tone: Use EXACT descriptions like "medium brown skin", "dark brown skin", "tan olive skin", "warm caramel skin", "deep brown skin". NEVER use vague terms.
+3. Face shape and features (e.g. "round face, big brown eyes, thick eyebrows, small nose")
+4. Gender: This is a ${genderWord}. Make sure the description clearly matches a ${genderWord}.
 
-Then suggest a simple, memorable outfit that fits the character for a storybook:
+Then suggest a simple, memorable outfit:
 - A specific colored t-shirt/top
 - Specific pants/shorts/skirt
-- Shoes
-
-CRITICAL: Be extremely specific about SKIN TONE — this is the most important detail.
-Use exact descriptions like "medium brown skin", "dark brown skin", "tan olive skin", "warm caramel skin", "deep brown skin" etc.
-Do NOT use vague terms like "warm skin" — always include the actual color.
+- The outfit should be gender-appropriate for a ${genderWord}
 
 Format your response as TWO lines separated by "---":
 
-LINE 1 (IDENTITY TAG): A SHORT 10-15 word phrase with ONLY the most critical identity features: hair + skin + eyes.
-Example: "curly dark brown hair, medium brown skin, large dark brown eyes"
+LINE 1 (IDENTITY TAG): A SHORT 10-15 word phrase with the most critical identity features: hair + skin + eyes + gender.
+Example for a boy: "short dark brown hair, medium brown skin, big brown eyes, ${genderWord}"
+Example for a girl: "long black hair in pigtails, light brown skin, large dark eyes, ${genderWord}"
 
-LINE 2 (FULL DESCRIPTION): The complete description including outfit, up to 50 words.
-Example: "Long curly dark brown hair, medium brown skin, round face with large dark brown eyes, small nose, rosy cheeks, wearing a bright yellow t-shirt, denim shorts, and red canvas sneakers."
+LINE 2 (FULL DESCRIPTION): The complete description including outfit, up to 50 words. MUST mention the gender.
+Example: "A ${genderWord} with short straight dark brown hair, medium brown skin, round face with large dark brown eyes, thick eyebrows, small nose, wearing a bright orange t-shirt, khaki shorts, and white sneakers."
 
-CRITICAL: Be extremely specific about SKIN TONE and HAIR — these define the character's identity.
-The identity tag will be repeated multiple times in every image prompt to ensure consistency.`;
+CRITICAL RULES:
+- SKIN TONE and HAIR are the most important — be extremely specific
+- Always mention the EXACT hair length (short/medium/long) — this prevents hair changing between pages
+- Always include the gender word "${genderWord}" in both lines
+- The identity tag will be repeated in EVERY image prompt to ensure the character looks the same across all 16 pages`;
 
     const response = await this.genai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -105,25 +106,40 @@ The identity tag will be repeated multiple times in every image prompt to ensure
     pageNumber: number,
     imageComposition?: string,
     characterDescription?: string,
+    childGender?: string,
+    layout?: string,
   ): Promise<string> {
-    // Build prompt with character description FIRST, then scene
-    // PhotoMaker uses both the "img" face embedding AND text description.
-    // If text says "light skin" but photo has "dark skin", text wins.
-    // So we MUST explicitly describe the child's actual features.
+    const genderTag = childGender === 'boy' ? 'boy' : childGender === 'girl' ? 'girl' : 'child';
 
-    // Remove all references to people from scene prompt to prevent PhotoMaker
-    // from generating extra/different characters. Only ONE person: the img child.
+    // DRAMATIC-IMAGE-ONLY pages: Generate scene WITHOUT face embedding.
+    // These are cinematic landscape/action shots (dinosaur scenes, epic moments).
+    // Using the "img" trigger here causes the child's face to appear on animals.
+    // We still pass input_image (PhotoMaker requires it) but omit "img" from prompt
+    // so the face is NOT embedded into any subject.
+    if (layout === 'dramatic-image-only') {
+      const sceneOnlyPrompt = `${imagePrompt}, 3d CGI, Pixar style, cinematic wide shot, detailed background, vibrant colors, epic scene`;
+      this.logger.log(`Generating scene-only image (no face embed) for order ${orderId}, page ${pageNumber}`);
+      this.logger.log(`Prompt: ${sceneOnlyPrompt.substring(0, 200)}...`);
+      const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
+      const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt);
+      const filename = `${orderId}-page-${pageNumber}.png`;
+      await this.downloadAndSave(imageUrl, filename);
+      return `/uploads/${filename}`;
+    }
+
+    // For pages WITH the child: use PhotoMaker with face embedding
+    // Remove all references to people from scene prompt
     let scenePrompt = imagePrompt;
     scenePrompt = scenePrompt
       .replace(/\b(the child|the kid|the boy|the girl|a child|a kid|a boy|a girl)\b/gi, '')
       .replace(/\b(his|her|their|he|she|they|him|them)\s+(mother|father|mom|dad|parent|parents|family|friend|friends|sister|brother|grandma|grandpa)\b/gi, '')
       .replace(/\b(a |the )?(woman|man|lady|guy|person|people|adult|adults|mother|father|mom|dad|parent|parents|family members|crowd|group of people)\b/gi, '')
-      .replace(/\b(waving goodbye|hugging|holding hands with|standing with|walking with)\s+(a |the )?(woman|man|adult|parent|mother|father|person)\b/gi, '')
+      .replace(/\b(waving goodbye|hugging|holding hands with|standing with|walking with)\s+(a |the )?(woman|man|adult|parent|mother|father|person|child|kid|boy|girl)\b/gi, '')
+      .replace(/\b(another child|second child|other child|two children|two kids|his friend|her friend|their friend)\b/gi, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
 
     // Parse character description into identity tag + full description
-    // Format: "identity tag --- full description"
     let identityTag = '';
     let fullDescription = '';
     if (characterDescription) {
@@ -132,28 +148,25 @@ The identity tag will be repeated multiple times in every image prompt to ensure
         identityTag = parts[0];
         fullDescription = parts[1];
       } else {
-        // Fallback: use whole description as both
         identityTag = characterDescription.substring(0, 80);
         fullDescription = characterDescription;
       }
     }
 
-    // PROMPT STRUCTURE: "A img child [identity], [scene], [identity reinforcement], style keywords"
-    // The identity tag appears TWICE — once right after "img" (where PhotoMaker anchors face)
-    // and once after the scene (reinforcement so model doesn't drift).
+    // PROMPT STRUCTURE: Child identity FIRST via "img", then scene description integrated naturally.
+    // The scene MUST be described richly to get detailed backgrounds (not just portrait).
+    // Anti-chimera protection is handled by the negative prompt, not by separating child from scene.
     let fullPrompt: string;
     if (identityTag) {
-      fullPrompt = `A img child with ${identityTag}, ${scenePrompt}, the child has ${fullDescription}`;
+      fullPrompt = `A img ${genderTag} child with ${identityTag}, in a scene: ${scenePrompt}, the child has ${fullDescription}`;
     } else {
-      fullPrompt = `A img child, ${scenePrompt}`;
+      fullPrompt = `A img ${genderTag} child, in a scene: ${scenePrompt}`;
     }
 
-    // Add composition guidance
     if (imageComposition) {
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
 
-    // Add 3D Pixar/Disney scene quality keywords
     fullPrompt = `${fullPrompt}, 3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
@@ -213,6 +226,33 @@ The identity tag will be repeated multiple times in every image prompt to ensure
     this.cachedFileUrl = fileUrl;
     this.logger.log(`File uploaded to Replicate: ${fileUrl}`);
     return fileUrl;
+  }
+
+  /**
+   * Generate a scene image WITHOUT face embedding.
+   * Used for dramatic-image-only pages (dinosaur action, landscapes).
+   * Still passes input_image (PhotoMaker requires it) but the prompt
+   * does NOT contain the "img" trigger word, so the face is NOT applied.
+   */
+  private async runSceneOnly(faceImageUrl: string, prompt: string): Promise<string> {
+    this.logger.log(`Running scene-only generation (no face embed): ${prompt.substring(0, 100)}...`);
+    const output = await this.replicate.run(IMAGE_GEN_CONFIG.model as `${string}/${string}:${string}`, {
+      input: {
+        prompt,
+        input_image: faceImageUrl,
+        style_name: IMAGE_GEN_CONFIG.styleName,
+        style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
+        num_steps: IMAGE_GEN_CONFIG.numSteps,
+        guidance_scale: IMAGE_GEN_CONFIG.guidanceScale,
+        num_outputs: IMAGE_GEN_CONFIG.numOutputs,
+        negative_prompt: NEGATIVE_PROMPT + ', human face on animal, child face on dinosaur, human features on creature',
+        disable_safety_checker: true,
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    throw new Error('Unexpected output format from Replicate');
   }
 
   private async runPhotoMaker(faceImageUrl: string, prompt: string): Promise<string> {

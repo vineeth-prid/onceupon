@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getDinosaurStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Roaring Adventure!`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Roaring Adventure!`,
+        imagePrompt: 'A decorative storybook title page with lush green jungle vines framing the edges, a cute baby Parasaurolophus peeking from the bottom corner, prehistoric ferns and colorful flowers as border decorations, a glowing magical portal in the center background, warm golden light',
+        sceneDescription: 'Title page with dinosaur-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with jungle vines and dinosaur elements',
+      },
+      {
+        pageNumber: 2,
+        text: `One sunny afternoon, ${childName} was playing in the backyard when ${pronoun} noticed something strange behind the old oak tree. A shimmering, glowing portal swirled with green and gold light!`,
+        imagePrompt: 'A sunny backyard garden with a large old oak tree, a swirling magical portal glowing with emerald green and golden light behind the tree trunk, butterflies and fireflies dancing around the portal edges, lush green grass, a wooden fence in the background, warm afternoon sunlight casting long shadows, colorful flowers blooming in the garden beds',
+        sceneDescription: `${childName} discovers a magical portal in the backyard`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `${Pronoun} took a deep breath and stepped through the portal. Whoooosh! ${childName} tumbled onto soft, mossy ground in a world of towering ferns and giant trees bigger than any ${pronoun} had ever seen!`,
+        imagePrompt: 'A breathtaking prehistoric jungle landscape with massive towering ferns and enormous ancient trees with thick trunks, soft green moss covering the ground, colorful exotic flowers blooming between fern fronds, golden sunbeams breaking through the canopy, mist rising from the jungle floor, bright blue butterflies fluttering around, a small stream with crystal clear water running through the scene',
+        sceneDescription: `${childName} arrives in the prehistoric world`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 4,
+        text: `A soft chirping sound came from behind a giant fern. ${childName} peeked around and found a tiny baby Parasaurolophus with big, round eyes and a little crest on its head. It nuzzled ${possessive} hand gently.`,
+        imagePrompt: 'A prehistoric jungle clearing with giant fern fronds, warm dappled sunlight filtering through the canopy above, colorful prehistoric flowers on the mossy ground, a cute tiny baby Parasaurolophus dinosaur with big round amber eyes and a small curved crest on its head sitting nearby on the ground, soft green scales with yellow belly markings',
+        sceneDescription: `${childName} discovers a baby Parasaurolophus`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 5,
+        text: `"I'll call you Cresty!" ${childName} said with a big smile. Cresty wagged ${possessive === 'his' ? 'his' : 'its'} little tail happily and followed ${childName} as they began to explore this incredible world together.`,
+        imagePrompt: 'A lush prehistoric clearing with towering ancient trees and hanging green vines, warm golden sunlight streaming through the tree canopy creating beautiful light rays, vibrant green vegetation everywhere, colorful prehistoric butterflies floating around, a winding mossy path leading deeper into the jungle, a cute small green baby Parasaurolophus with big amber eyes visible in the background wagging its tail',
+        sceneDescription: `${childName} names the baby dinosaur Cresty and they become friends`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 6,
+        text: `Their journey led them into a lush, vibrant jungle where colossal ferns created a shadowy canopy. They spotted a Stegosaurus munching on low-lying plants. Did you know a Stegosaurus's brain was only about the size of a walnut?`,
+        imagePrompt: 'A dense prehistoric jungle with colossal ferns creating a green canopy, shafts of golden sunlight breaking through the fern canopy creating dramatic light beams, lush vegetation everywhere, small colorful lizards on tree trunks, a large friendly Stegosaurus with orange and brown plates along its back visible in the background munching on leafy plants',
+        sceneDescription: `${childName} and Cresty encounter a Stegosaurus in the jungle`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top',
+      },
+      {
+        pageNumber: 7,
+        text: `Next, they reached a sparkling river where a family of Brachiosaurus were drinking water. Their long necks stretched high above the trees! ${childName} had never seen anything so tall.`,
+        imagePrompt: 'A wide sparkling blue river winding through a prehistoric valley, three majestic Brachiosaurus dinosaurs with extremely long necks stretching above the treeline, drinking from the crystal clear water, lush green riverbanks with ferns and prehistoric plants, a waterfall in the background cascading down mossy rocks, rainbow mist from the waterfall, bright blue sky with fluffy white clouds, no humans, pure dinosaur landscape',
+        sceneDescription: `${childName} sees Brachiosaurus at a river`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, dinosaurs as the main subjects, no humans',
+      },
+      {
+        pageNumber: 8,
+        text: `They climbed a rocky hill and found a valley filled with colorful crystals that sparkled in the sun. Cresty chirped excitedly and bounced around the glowing rocks. It was like a dinosaur playground!`,
+        imagePrompt: 'A stunning crystal valley with large colorful glowing crystals in purple blue pink and green jutting out from rocky ground, sparkling in bright sunlight, geodes cracked open revealing amethyst interiors, warm orange sunset light reflecting off crystal surfaces, rocky cliff walls on either side, a small cute baby Parasaurolophus bouncing excitedly among the crystals in the background, magical sparkling atmosphere',
+        sceneDescription: `${childName} and Cresty discover a crystal valley`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 9,
+        text: `As evening approached, Cresty started making soft, sad whimpers. ${childName} realized the little Parasaurolophus was lost and missed its family herd. ${Pronoun} knew ${pronoun} had to help ${possessive} new friend find its way home.`,
+        imagePrompt: 'A prehistoric landscape at golden hour with warm orange and pink sky, ancient ferns and prehistoric flowers silhouetted against the beautiful sunset, fireflies beginning to glow in the dimming light, a winding path leading into the distance toward purple mountains, emotional and tender atmosphere, a small sad baby Parasaurolophus with drooping crest sitting nearby',
+        sceneDescription: `${childName} realizes Cresty is lost and needs to find its family`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background',
+      },
+      {
+        pageNumber: 10,
+        text: `${childName} spotted giant footprints in the soft mud leading toward the mountains. "Look, Cresty! These might be from your family!" Cresty sniffed the tracks and chirped with excitement.`,
+        imagePrompt: 'A muddy prehistoric trail with large clear dinosaur footprints pressed deep into soft brown mud, leading toward distant purple mountains, prehistoric ferns and palm trees lining the path, warm late afternoon light, dramatic mountain silhouettes in the background, a small excited baby Parasaurolophus sniffing the footprints with its crest raised in the background',
+        sceneDescription: `${childName} finds dinosaur footprints leading to the mountains`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom',
+      },
+      {
+        pageNumber: 11,
+        text: `They followed the tracks through a dark cave filled with glowing mushrooms and dripping stalactites. ${childName} held Cresty close. "Don't worry, we'll find them together," ${pronoun} whispered bravely.`,
+        imagePrompt: 'A mysterious prehistoric cave interior with bioluminescent glowing mushrooms in blue green and purple lighting up the walls, dramatic stalactites dripping water, crystal formations reflecting the mushroom glow, a distant light at the cave exit, magical ethereal atmosphere, a small baby Parasaurolophus walking nearby',
+        sceneDescription: `${childName} and Cresty travel through a glowing cave`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 12,
+        text: `Suddenly, the ground rumbled! A huge T-Rex appeared at the cave entrance, blocking their path with a thunderous ROAR! ${childName}'s heart pounded, but ${pronoun} stood brave, shielding little Cresty.`,
+        imagePrompt: 'A dramatic cave exit with a massive fierce Tyrannosaurus Rex silhouetted against bright orange sky roaring with open jaws showing sharp teeth, the cave walls shaking with small rocks falling, dust and debris in the air, dramatic lighting with the T-Rex backlit by sunset, intense and thrilling atmosphere, the T-Rex is the only subject, no humans, pure dinosaur scene',
+        sceneDescription: 'A T-Rex blocks their path at the cave exit',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, T-Rex dominating the frame, no humans',
+      },
+      {
+        pageNumber: 13,
+        text: `Then Cresty did something amazing! The little dinosaur stood tall, puffed up ${possessive === 'his' ? 'his' : 'its'} crest, and let out a loud, echoing HOOOONK! The sound bounced off the cave walls and startled the T-Rex, who turned and stomped away!`,
+        imagePrompt: 'A brave small baby Parasaurolophus dinosaur standing tall with its crest glowing and vibrating, releasing visible sound waves from its crest rippling through the air in blue-white rings, a massive T-Rex stumbling backward in surprise, cave walls with sound waves bouncing off them, dramatic blue and orange lighting, heroic dinosaur moment, no humans, pure dinosaur action',
+        sceneDescription: 'Cresty scares away the T-Rex with its powerful call',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic composition, baby dinosaur as the hero, T-Rex retreating, no humans',
+      },
+      {
+        pageNumber: 14,
+        text: `Beyond the cave, they found a beautiful green valley — and there, a whole herd of Parasaurolophus! Cresty ran to them, calling out with joy. The biggest one, Cresty's mama, nuzzled her baby happily.`,
+        imagePrompt: 'A vast beautiful green valley with a herd of six adult Parasaurolophus dinosaurs in various green and brown colors, the largest one nuzzling a happy baby Parasaurolophus lovingly, rolling green hills with prehistoric flowers, a peaceful river winding through the valley, majestic mountains in the background, warm golden sunlight, joyful dinosaur reuniting scene, no humans, pure dinosaur family',
+        sceneDescription: 'Cresty is reunited with its family herd',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, dinosaur family reunion, no humans',
+      },
+      {
+        pageNumber: 15,
+        text: `${childName} felt so happy for Cresty but also a little sad. It was time to go home. Cresty trotted over and gently dropped a small, glowing crystal at ${possessive} feet — a gift to remember their adventure forever.`,
+        imagePrompt: 'A tender emotional scene in a prehistoric meadow at sunset, a small glowing blue-green crystal sitting on the mossy ground emitting a soft magical glow, golden sunset light painting everything warm orange and pink, prehistoric flowers swaying in a gentle breeze, the Parasaurolophus herd peacefully grazing as tiny silhouettes in the far background, beautiful sunset sky',
+        sceneDescription: `Cresty gives ${childName} a crystal as a farewell gift`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 16,
+        text: `${childName} waved goodbye to Cresty and stepped back through the shimmering portal. Safe in ${possessive} backyard again, ${pronoun} looked down at the glowing crystal in ${possessive} hand and smiled. ${Pronoun} would never forget ${possessive} roaring adventure!`,
+        imagePrompt: 'A cozy backyard at twilight with the magical portal slowly fading with green and gold sparkles, a small glowing blue-green crystal emitting soft magical light, fireflies dancing in the warm evening air, the old oak tree silhouetted against a beautiful purple and orange sunset sky, a peaceful and magical ending atmosphere, warm cozy feeling',
+        sceneDescription: `${childName} returns home with the crystal, remembering the adventure`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

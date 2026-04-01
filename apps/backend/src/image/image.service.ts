@@ -4,9 +4,14 @@ import Replicate from 'replicate';
 import { GoogleGenAI } from '@google/genai';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
-import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG } from '@bookmagic/shared';
+import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, ILLUSTRATION_STYLES } from '@bookmagic/shared';
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
+
+function getStyleConfig(styleId?: string) {
+  const style = ILLUSTRATION_STYLES.find((s) => s.id === styleId);
+  return style || ILLUSTRATION_STYLES[0]; // fallback to disney
+}
 
 @Injectable()
 export class ImageService {
@@ -88,12 +93,13 @@ CRITICAL RULES:
     return description;
   }
 
-  async generateReferenceSheet(photoUrl: string, orderId: string): Promise<string> {
-    const prompt = `A full body character reference sheet of a img child, multiple angles, front view and side view, neutral pose, 3d CGI, Pixar style, children's book character`;
+  async generateReferenceSheet(photoUrl: string, orderId: string, illustrationStyle?: string): Promise<string> {
+    const style = getStyleConfig(illustrationStyle);
+    const prompt = `A full body character reference sheet of a img child, multiple angles, front view and side view, neutral pose, ${style.promptSuffix}, children's book character`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
-    this.logger.log(`Generating reference sheet for order ${orderId}`);
-    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt);
+    this.logger.log(`Generating reference sheet for order ${orderId} (style: ${style.id})`);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt, style.photoMakerStyleName);
     const filename = `ref-${orderId}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/uploads/${filename}`;
@@ -108,27 +114,24 @@ CRITICAL RULES:
     characterDescription?: string,
     childGender?: string,
     layout?: string,
+    illustrationStyle?: string,
   ): Promise<string> {
     const genderTag = childGender === 'boy' ? 'boy' : childGender === 'girl' ? 'girl' : 'child';
+    const style = getStyleConfig(illustrationStyle);
 
     // DRAMATIC-IMAGE-ONLY pages: Generate scene WITHOUT face embedding.
-    // These are cinematic landscape/action shots (dinosaur scenes, epic moments).
-    // Using the "img" trigger here causes the child's face to appear on animals.
-    // We still pass input_image (PhotoMaker requires it) but omit "img" from prompt
-    // so the face is NOT embedded into any subject.
     if (layout === 'dramatic-image-only') {
-      const sceneOnlyPrompt = `${imagePrompt}, 3d CGI, Pixar style, cinematic wide shot, detailed background, vibrant colors, epic scene`;
+      const sceneOnlyPrompt = `${imagePrompt}, ${style.promptSuffix}, cinematic wide shot, detailed background, epic scene`;
       this.logger.log(`Generating scene-only image (no face embed) for order ${orderId}, page ${pageNumber}`);
       this.logger.log(`Prompt: ${sceneOnlyPrompt.substring(0, 200)}...`);
       const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
-      const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt);
+      const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt, style.photoMakerStyleName);
       const filename = `${orderId}-page-${pageNumber}.png`;
       await this.downloadAndSave(imageUrl, filename);
       return `/uploads/${filename}`;
     }
 
     // For pages WITH the child: use PhotoMaker with face embedding
-    // Remove all references to people from scene prompt
     let scenePrompt = imagePrompt;
     scenePrompt = scenePrompt
       .replace(/\b(the child|the kid|the boy|the girl|a child|a kid|a boy|a girl)\b/gi, '')
@@ -153,9 +156,6 @@ CRITICAL RULES:
       }
     }
 
-    // PROMPT STRUCTURE: Child identity FIRST via "img", then scene description integrated naturally.
-    // The scene MUST be described richly to get detailed backgrounds (not just portrait).
-    // Anti-chimera protection is handled by the negative prompt, not by separating child from scene.
     let fullPrompt: string;
     if (identityTag) {
       fullPrompt = `A img ${genderTag} child with ${identityTag}, in a scene: ${scenePrompt}, the child has ${fullDescription}`;
@@ -167,33 +167,26 @@ CRITICAL RULES:
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
 
-    fullPrompt = `${fullPrompt}, 3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors`;
+    fullPrompt = `${fullPrompt}, ${style.promptSuffix}`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
-    this.logger.log(`Generating image for order ${orderId}, page ${pageNumber}`);
+    this.logger.log(`Generating image for order ${orderId}, page ${pageNumber} (style: ${style.id})`);
     this.logger.log(`Prompt: ${fullPrompt.substring(0, 200)}...`);
-    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, style.photoMakerStyleName);
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/uploads/${filename}`;
   }
 
-  /**
-   * Resolves local paths to publicly accessible URLs.
-   * Uploads local files to Replicate's file hosting API so they can be
-   * accessed by the model without needing ngrok or a public server.
-   */
   private async resolvePublicUrl(url: string): Promise<string> {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
 
-    // Return cached URL if same file
     if (this.cachedFilePath === url && this.cachedFileUrl) {
       return this.cachedFileUrl;
     }
 
-    // Upload local file to Replicate's file hosting
     const filePath = join(process.cwd(), url);
     this.logger.log(`Uploading local file to Replicate: ${url}`);
 
@@ -228,19 +221,13 @@ CRITICAL RULES:
     return fileUrl;
   }
 
-  /**
-   * Generate a scene image WITHOUT face embedding.
-   * Used for dramatic-image-only pages (dinosaur action, landscapes).
-   * Still passes input_image (PhotoMaker requires it) but the prompt
-   * does NOT contain the "img" trigger word, so the face is NOT applied.
-   */
-  private async runSceneOnly(faceImageUrl: string, prompt: string): Promise<string> {
+  private async runSceneOnly(faceImageUrl: string, prompt: string, styleName: string): Promise<string> {
     this.logger.log(`Running scene-only generation (no face embed): ${prompt.substring(0, 100)}...`);
     const output = await this.replicate.run(IMAGE_GEN_CONFIG.model as `${string}/${string}:${string}`, {
       input: {
         prompt,
         input_image: faceImageUrl,
-        style_name: IMAGE_GEN_CONFIG.styleName,
+        style_name: styleName,
         style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
         num_steps: IMAGE_GEN_CONFIG.numSteps,
         guidance_scale: IMAGE_GEN_CONFIG.guidanceScale,
@@ -255,13 +242,13 @@ CRITICAL RULES:
     throw new Error('Unexpected output format from Replicate');
   }
 
-  private async runPhotoMaker(faceImageUrl: string, prompt: string): Promise<string> {
-    this.logger.log(`Running PhotoMaker with prompt: ${prompt.substring(0, 100)}...`);
+  private async runPhotoMaker(faceImageUrl: string, prompt: string, styleName: string): Promise<string> {
+    this.logger.log(`Running PhotoMaker with style "${styleName}": ${prompt.substring(0, 100)}...`);
     const output = await this.replicate.run(IMAGE_GEN_CONFIG.model as `${string}/${string}:${string}`, {
       input: {
         prompt,
         input_image: faceImageUrl,
-        style_name: IMAGE_GEN_CONFIG.styleName,
+        style_name: styleName,
         style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
         num_steps: IMAGE_GEN_CONFIG.numSteps,
         guidance_scale: IMAGE_GEN_CONFIG.guidanceScale,

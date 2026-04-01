@@ -71,7 +71,7 @@ describe('ImageService', () => {
         expect.objectContaining({
           input: expect.objectContaining({
             input_image: 'https://example.com/photo.jpg',
-            style_name: IMAGE_GEN_CONFIG.styleName,
+            style_name: 'Disney Charactor',
             style_strength_ratio: IMAGE_GEN_CONFIG.styleStrengthRatio,
             num_steps: IMAGE_GEN_CONFIG.numSteps,
             negative_prompt: NEGATIVE_PROMPT,

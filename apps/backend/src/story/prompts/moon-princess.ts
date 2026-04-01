@@ -1,4 +1,4 @@
-import { STYLE_SUFFIX } from '@bookmagic/shared';
+
 import { LAYOUT_INSTRUCTIONS, LAYOUT_JSON_STRUCTURE } from './layout-instructions';
 
 export function buildPrompt(childName: string, childAge: number, childGender: string): string {

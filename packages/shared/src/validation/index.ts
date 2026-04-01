@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { TOTAL_PAGES } from '../constants';
+import { TOTAL_PAGES, BOOK_TEMPLATES, ILLUSTRATION_STYLES } from '../constants';
+
+const bookTemplateIds = BOOK_TEMPLATES.map((t) => t.id) as [string, ...string[]];
+const illustrationStyleIds = ILLUSTRATION_STYLES.map((s) => s.id) as [string, ...string[]];
 
 export const createOrderSchema = z.object({
   childName: z
@@ -14,15 +17,15 @@ export const createOrderSchema = z.object({
   childGender: z.enum(['boy', 'girl', 'other'], {
     errorMap: () => ({ message: 'Gender must be boy, girl, or other' }),
   }),
-  theme: z.enum(['tooth-fairy', 'dinosaur', 'moon-princess', 'custom'], {
-    errorMap: () => ({ message: 'Theme must be one of: tooth-fairy, dinosaur, moon-princess, custom' }),
+  theme: z.enum(bookTemplateIds, {
+    errorMap: () => ({ message: 'Please select a valid book template' }),
   }),
+  illustrationStyle: z.enum(illustrationStyleIds, {
+    errorMap: () => ({ message: 'Please select a valid illustration style' }),
+  }).default('disney-character'),
   photoUrl: z.string().min(1, 'Photo URL is required'),
   customStoryPrompt: z.string().max(2000, 'Story prompt must be under 2000 characters').optional(),
-}).refine(
-  (data) => data.theme !== 'custom' || (data.customStoryPrompt && data.customStoryPrompt.trim().length >= 20),
-  { message: 'Custom story prompt must be at least 20 characters', path: ['customStoryPrompt'] },
-);
+});
 
 export const pageLayoutEnum = z.enum([
   'full-bleed-text-bottom',

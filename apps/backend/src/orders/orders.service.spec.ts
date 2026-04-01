@@ -32,7 +32,8 @@ describe('OrdersService', () => {
         childName: 'Aarav',
         childAge: 5,
         childGender: 'boy' as const,
-        theme: 'tooth-fairy' as const,
+        theme: 'pirate-quest',
+        illustrationStyle: 'disney-character',
         photoUrl: 'https://example.com/photo.jpg',
       };
       const expected = { id: 'uuid-1', ...dto, status: 'CREATED' };

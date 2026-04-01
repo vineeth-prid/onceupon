@@ -1,31 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { THEMES } from '@bookmagic/shared';
+import { CATEGORIES, BOOK_TEMPLATES } from '@bookmagic/shared';
 import { getAllOrders } from '../api/orders';
-
-const THEME_ICONS: Record<string, string> = {
-  'tooth-fairy': '\uD83E\uDDF7',
-  'dinosaur': '\uD83E\uDD95',
-  'moon-princess': '\uD83C\uDF19',
-};
-
-const THEME_GRADIENTS: Record<string, string> = {
-  'tooth-fairy': 'linear-gradient(135deg, #E8D5F5 0%, #F5E6FF 50%, #DEC4F0 100%)',
-  'dinosaur': 'linear-gradient(135deg, #C8F5D5 0%, #E6FFEC 50%, #B5E8C3 100%)',
-  'moon-princess': 'linear-gradient(135deg, #C4D9F5 0%, #E0EEFF 50%, #B5CCE8 100%)',
-};
-
-const THEME_ACCENTS: Record<string, string> = {
-  'tooth-fairy': '#9B59B6',
-  'dinosaur': '#27AE60',
-  'moon-princess': '#3498DB',
-};
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
-  const [hoveredTheme, setHoveredTheme] = useState<string | null>(null);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   useEffect(() => {
     getAllOrders().then((data) => {
@@ -37,6 +20,10 @@ export function LandingPage() {
     o.pages && o.pages.length > 0 && o.pages.some((p: any) => p.imageUrl)
   );
 
+  const handleCategoryClick = (categoryId: string) => {
+    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
+  };
+
   return (
     <div style={{ minHeight: '100vh' }}>
       {/* Hero Section */}
@@ -47,7 +34,6 @@ export function LandingPage() {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Floating stars background */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
           {[...Array(20)].map((_, i) => (
             <div key={i} style={{
@@ -124,7 +110,7 @@ export function LandingPage() {
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={() => {
-                const el = document.getElementById('themes');
+                const el = document.getElementById('categories');
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
               style={{
@@ -184,7 +170,6 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave bottom */}
         <svg viewBox="0 0 1440 120" style={{ position: 'absolute', bottom: -1, left: 0, width: '100%' }}>
           <path
             d="M0,60 C360,120 720,0 1080,60 C1260,90 1380,60 1440,60 L1440,120 L0,120 Z"
@@ -207,7 +192,7 @@ export function LandingPage() {
         </h2>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
           {[
-            { step: '1', icon: '\uD83D\uDCDA', title: 'Pick a Theme', desc: 'Choose from magical adventures' },
+            { step: '1', icon: '\uD83D\uDCDA', title: 'Pick a Story', desc: 'Choose a category & book' },
             { step: '2', icon: '\uD83D\uDCF7', title: 'Upload a Photo', desc: 'Add your child\'s photo' },
             { step: '3', icon: '\u2728', title: 'AI Creates Magic', desc: 'Story & illustrations generated' },
             { step: '4', icon: '\uD83D\uDCD6', title: 'Read & Enjoy', desc: 'Flip through your book' },
@@ -249,8 +234,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Theme Selection */}
-      <section id="themes" style={{
+      {/* Category Selection */}
+      <section id="categories" style={{
         padding: '2rem 2rem 3rem',
         maxWidth: 1000,
         margin: '0 auto',
@@ -263,7 +248,7 @@ export function LandingPage() {
           color: '#2d1b69',
           marginBottom: '0.5rem',
         }}>
-          Choose Your Adventure
+          Choose a Category
         </h2>
         <p style={{
           textAlign: 'center',
@@ -272,76 +257,161 @@ export function LandingPage() {
           marginBottom: '2rem',
           fontSize: '1rem',
         }}>
-          Each theme creates a unique personalized storybook
+          Pick a genre, then choose your story
         </p>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
-        }}>
-          {THEMES.map((theme) => {
-            const isHovered = hoveredTheme === theme.id;
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {CATEGORIES.map((cat) => {
+            const isExpanded = expandedCategory === cat.id;
+            const isHovered = hoveredCategory === cat.id;
+            const books = BOOK_TEMPLATES.filter((t) => t.categoryId === cat.id);
+
             return (
-              <div
-                key={theme.id}
-                onClick={() => navigate(`/personalize/${theme.id}`)}
-                onMouseEnter={() => setHoveredTheme(theme.id)}
-                onMouseLeave={() => setHoveredTheme(null)}
-                style={{
-                  background: THEME_GRADIENTS[theme.id] || theme.coverColor,
-                  borderRadius: 20,
-                  padding: '2rem 1.5rem',
-                  cursor: 'pointer',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  border: `2px solid ${isHovered ? THEME_ACCENTS[theme.id] : 'transparent'}`,
-                  transform: isHovered ? 'translateY(-8px) scale(1.02)' : 'translateY(0) scale(1)',
-                  boxShadow: isHovered
-                    ? `0 20px 40px rgba(0,0,0,0.15), 0 0 0 2px ${THEME_ACCENTS[theme.id]}20`
-                    : '0 4px 15px rgba(0,0,0,0.06)',
-                  textAlign: 'center',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <div style={{
-                  fontSize: '3rem',
-                  marginBottom: '1rem',
-                  animation: isHovered ? 'floatUp 2s ease-in-out infinite' : 'none',
-                }}>
-                  {THEME_ICONS[theme.id] || '\uD83D\uDCD6'}
+              <div key={cat.id}>
+                {/* Category Card */}
+                <div
+                  onClick={() => handleCategoryClick(cat.id)}
+                  onMouseEnter={() => setHoveredCategory(cat.id)}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                  style={{
+                    background: isExpanded
+                      ? `linear-gradient(135deg, ${cat.color}20 0%, ${cat.color}10 100%)`
+                      : '#fff',
+                    borderRadius: isExpanded ? '20px 20px 0 0' : 20,
+                    padding: '1.2rem 1.5rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    border: `2px solid ${isExpanded || isHovered ? cat.color : '#eee'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    boxShadow: isHovered ? `0 4px 15px ${cat.color}20` : '0 2px 8px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <div style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 14,
+                    background: `${cat.color}18`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.6rem',
+                    flexShrink: 0,
+                  }}>
+                    {cat.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      fontFamily: "'Baloo 2', cursive",
+                      fontSize: '1.15rem',
+                      fontWeight: 700,
+                      color: '#2d1b69',
+                      margin: 0,
+                    }}>
+                      {cat.name}
+                    </h3>
+                    <p style={{
+                      fontFamily: "'Nunito', sans-serif",
+                      fontSize: '0.85rem',
+                      color: '#888',
+                      margin: '0.15rem 0 0',
+                    }}>
+                      {cat.description}
+                    </p>
+                  </div>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: '#aaa',
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}>
+                    {books.length} books
+                    <span style={{
+                      display: 'inline-block',
+                      transition: 'transform 0.3s',
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}>
+                      &#9660;
+                    </span>
+                  </div>
                 </div>
-                <h2 style={{
-                  margin: '0 0 0.5rem',
-                  fontSize: '1.3rem',
-                  fontFamily: "'Baloo 2', cursive",
-                  fontWeight: 700,
-                  color: '#2d1b69',
-                }}>
-                  {theme.name}
-                </h2>
-                <p style={{
-                  margin: '0 0 1.2rem',
-                  color: '#666',
-                  fontFamily: "'Nunito', sans-serif",
-                  fontSize: '0.9rem',
-                  lineHeight: 1.5,
-                }}>
-                  {theme.description}
-                </p>
-                <div style={{
-                  display: 'inline-block',
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: 50,
-                  background: isHovered ? THEME_ACCENTS[theme.id] : 'rgba(255,255,255,0.7)',
-                  color: isHovered ? '#fff' : THEME_ACCENTS[theme.id],
-                  fontFamily: "'Nunito', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  transition: 'all 0.3s ease',
-                }}>
-                  Personalise Now
-                </div>
+
+                {/* Expanded Book Templates */}
+                {isExpanded && (
+                  <div style={{
+                    border: `2px solid ${cat.color}`,
+                    borderTop: 'none',
+                    borderRadius: '0 0 20px 20px',
+                    padding: '1.2rem',
+                    background: `linear-gradient(180deg, ${cat.color}08 0%, #fff 100%)`,
+                  }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                      gap: '1rem',
+                    }}>
+                      {books.map((book) => {
+                        const isBookHovered = hoveredBook === book.id;
+                        return (
+                          <div
+                            key={book.id}
+                            onClick={() => navigate(`/personalize/${book.id}`)}
+                            onMouseEnter={() => setHoveredBook(book.id)}
+                            onMouseLeave={() => setHoveredBook(null)}
+                            style={{
+                              background: '#fff',
+                              borderRadius: 16,
+                              padding: '1.2rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.25s ease',
+                              border: `2px solid ${isBookHovered ? cat.color : '#f0f0f0'}`,
+                              transform: isBookHovered ? 'translateY(-4px)' : 'translateY(0)',
+                              boxShadow: isBookHovered
+                                ? `0 8px 25px ${cat.color}25`
+                                : '0 2px 8px rgba(0,0,0,0.04)',
+                            }}
+                          >
+                            <h4 style={{
+                              fontFamily: "'Baloo 2', cursive",
+                              fontSize: '1.05rem',
+                              fontWeight: 700,
+                              color: '#2d1b69',
+                              margin: '0 0 0.3rem',
+                            }}>
+                              {book.name}
+                            </h4>
+                            <p style={{
+                              fontFamily: "'Nunito', sans-serif",
+                              fontSize: '0.82rem',
+                              color: '#888',
+                              margin: '0 0 0.8rem',
+                              lineHeight: 1.4,
+                            }}>
+                              {book.description}
+                            </p>
+                            <div style={{
+                              display: 'inline-block',
+                              padding: '0.35rem 1rem',
+                              borderRadius: 50,
+                              background: isBookHovered ? cat.color : `${cat.color}15`,
+                              color: isBookHovered ? '#fff' : cat.color,
+                              fontFamily: "'Nunito', sans-serif",
+                              fontWeight: 700,
+                              fontSize: '0.78rem',
+                              transition: 'all 0.25s ease',
+                            }}>
+                              Create Book
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -383,7 +453,11 @@ export function LandingPage() {
               {completedOrders.map((order: any) => {
                 const coverImage = order.pages?.find((p: any) => p.imageUrl)?.imageUrl;
                 const isHovered = hoveredBook === order.id;
-                const themeAccent = THEME_ACCENTS[order.theme] || '#9B59B6';
+                const bookTemplate = BOOK_TEMPLATES.find((t) => t.id === order.theme);
+                const category = bookTemplate
+                  ? CATEGORIES.find((c) => c.id === bookTemplate.categoryId)
+                  : null;
+                const accentColor = category?.color || '#9B59B6';
                 return (
                   <div
                     key={order.id}
@@ -402,7 +476,6 @@ export function LandingPage() {
                       background: '#fff',
                     }}
                   >
-                    {/* Book cover image */}
                     <div style={{
                       width: '100%',
                       height: 200,
@@ -425,21 +498,20 @@ export function LandingPage() {
                         <div style={{
                           width: '100%',
                           height: '100%',
-                          background: THEME_GRADIENTS[order.theme] || '#E8D5F5',
+                          background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: '3rem',
                         }}>
-                          {THEME_ICONS[order.theme] || '\uD83D\uDCD6'}
+                          {category?.icon || '\uD83D\uDCD6'}
                         </div>
                       )}
-                      {/* Theme badge */}
                       <div style={{
                         position: 'absolute',
                         top: 10,
                         right: 10,
-                        background: themeAccent,
+                        background: accentColor,
                         color: '#fff',
                         padding: '0.2rem 0.6rem',
                         borderRadius: 20,
@@ -448,10 +520,9 @@ export function LandingPage() {
                         fontFamily: "'Nunito', sans-serif",
                         boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                       }}>
-                        {THEMES.find(t => t.id === order.theme)?.name?.split(' ').slice(0, 2).join(' ') || order.theme}
+                        {bookTemplate?.name || order.theme}
                       </div>
                     </div>
-                    {/* Book info */}
                     <div style={{ padding: '1rem 1.2rem' }}>
                       <h3 style={{
                         fontFamily: "'Baloo 2', cursive",
@@ -474,8 +545,8 @@ export function LandingPage() {
                         display: 'inline-block',
                         padding: '0.3rem 1rem',
                         borderRadius: 50,
-                        background: isHovered ? themeAccent : '#f0e6ff',
-                        color: isHovered ? '#fff' : themeAccent,
+                        background: isHovered ? accentColor : '#f0e6ff',
+                        color: isHovered ? '#fff' : accentColor,
                         fontFamily: "'Nunito', sans-serif",
                         fontWeight: 600,
                         fontSize: '0.75rem',

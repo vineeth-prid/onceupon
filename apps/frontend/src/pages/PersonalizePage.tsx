@@ -1,45 +1,30 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { THEMES } from '@bookmagic/shared';
+import { BOOK_TEMPLATES, CATEGORIES, ILLUSTRATION_STYLES } from '@bookmagic/shared';
 import { uploadPhoto, createOrder } from '../api/orders';
 
-const THEME_GRADIENTS: Record<string, string> = {
-  'tooth-fairy': 'linear-gradient(135deg, #E8D5F5 0%, #F5E6FF 100%)',
-  'dinosaur': 'linear-gradient(135deg, #C8F5D5 0%, #E6FFEC 100%)',
-  'moon-princess': 'linear-gradient(135deg, #C4D9F5 0%, #E0EEFF 100%)',
-  'custom': 'linear-gradient(135deg, #FFE0B2 0%, #FFF3E0 100%)',
-};
-
-const THEME_ACCENTS: Record<string, string> = {
-  'tooth-fairy': '#9B59B6',
-  'dinosaur': '#27AE60',
-  'moon-princess': '#3498DB',
-  'custom': '#E67E22',
-};
-
 export function PersonalizePage() {
-  const { themeId } = useParams<{ themeId: string }>();
+  const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const theme = THEMES.find((t) => t.id === themeId);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const book = BOOK_TEMPLATES.find((t) => t.id === bookId);
+  const category = book ? CATEGORIES.find((c) => c.id === book.categoryId) : null;
+  const accent = category?.color || '#9B59B6';
 
   const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState(5);
   const [childGender, setChildGender] = useState<'boy' | 'girl' | 'other'>('boy');
+  const [illustrationStyle, setIllustrationStyle] = useState('disney-character');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>('');
-  const [customStoryPrompt, setCustomStoryPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
 
-  const isCustom = themeId === 'custom';
-
-  if (!theme) {
-    return <div style={{ padding: '4rem', textAlign: 'center', fontFamily: "'Nunito', sans-serif" }}>Theme not found</div>;
+  if (!book || !category) {
+    return <div style={{ padding: '4rem', textAlign: 'center', fontFamily: "'Nunito', sans-serif" }}>Book not found</div>;
   }
-
-  const accent = THEME_ACCENTS[theme.id] || '#9B59B6';
 
   const handleFile = (file: File) => {
     setPhoto(file);
@@ -62,10 +47,6 @@ export function PersonalizePage() {
     e.preventDefault();
     if (!photo) { setError('Please upload a photo'); return; }
     if (!childName.trim()) { setError("Please enter your child's name"); return; }
-    if (isCustom && customStoryPrompt.trim().length < 20) {
-      setError('Please describe your story idea (at least 20 characters)');
-      return;
-    }
 
     setLoading(true);
     setError('');
@@ -76,9 +57,9 @@ export function PersonalizePage() {
         childName: childName.trim(),
         childAge,
         childGender,
-        theme: themeId as any,
+        theme: bookId as any,
+        illustrationStyle: illustrationStyle as any,
         photoUrl,
-        ...(isCustom && { customStoryPrompt: customStoryPrompt.trim() }),
       });
       navigate(`/progress/${order.id}`);
     } catch (err: any) {
@@ -112,17 +93,30 @@ export function PersonalizePage() {
             gap: '0.4rem',
           }}
         >
-          &#8592; Back to themes
+          &#8592; Back to categories
         </button>
 
-        {/* Theme header card */}
+        {/* Book header card */}
         <div style={{
-          background: THEME_GRADIENTS[theme.id],
+          background: `linear-gradient(135deg, ${accent}25 0%, ${accent}10 100%)`,
           borderRadius: 20,
           padding: '1.8rem',
           marginBottom: '1.5rem',
           textAlign: 'center',
+          border: `2px solid ${accent}30`,
         }}>
+          <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>{category.icon}</div>
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            color: accent,
+            margin: '0 0 0.2rem',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+          }}>
+            {category.name}
+          </p>
           <h1 style={{
             fontFamily: "'Baloo 2', cursive",
             fontSize: '1.6rem',
@@ -130,7 +124,7 @@ export function PersonalizePage() {
             color: '#2d1b69',
             margin: '0 0 0.3rem',
           }}>
-            {theme.name}
+            {book.name}
           </h1>
           <p style={{
             fontFamily: "'Nunito', sans-serif",
@@ -138,7 +132,7 @@ export function PersonalizePage() {
             margin: 0,
             fontSize: '0.95rem',
           }}>
-            {theme.description}
+            {book.description}
           </p>
         </div>
 
@@ -150,63 +144,6 @@ export function PersonalizePage() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
         }}>
           <form onSubmit={handleSubmit}>
-            {/* Custom story prompt */}
-            {isCustom && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '0.6rem',
-                  fontWeight: 700,
-                  fontFamily: "'Nunito', sans-serif",
-                  color: '#2d1b69',
-                  fontSize: '0.95rem',
-                }}>
-                  Tell Us Your Story
-                </label>
-                <p style={{
-                  margin: '0 0 0.6rem',
-                  fontFamily: "'Nunito', sans-serif",
-                  color: '#999',
-                  fontSize: '0.8rem',
-                  lineHeight: 1.4,
-                }}>
-                  Describe your story idea in your own words — we'll turn it into a beautifully illustrated storybook!
-                </p>
-                <textarea
-                  value={customStoryPrompt}
-                  onChange={(e) => setCustomStoryPrompt(e.target.value)}
-                  placeholder="e.g. My child goes on an adventure to find a lost puppy in a magical forest. They meet friendly animals along the way who help them search..."
-                  maxLength={2000}
-                  rows={5}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    borderRadius: 12,
-                    border: '2px solid #eee',
-                    fontSize: '0.95rem',
-                    fontFamily: "'Nunito', sans-serif",
-                    outline: 'none',
-                    transition: 'border-color 0.2s',
-                    boxSizing: 'border-box',
-                    resize: 'vertical',
-                    minHeight: 100,
-                    lineHeight: 1.5,
-                  }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = accent}
-                  onBlur={(e) => e.currentTarget.style.borderColor = '#eee'}
-                />
-                <div style={{
-                  textAlign: 'right',
-                  fontFamily: "'Nunito', sans-serif",
-                  fontSize: '0.75rem',
-                  color: customStoryPrompt.length > 1800 ? '#E67E22' : '#ccc',
-                  marginTop: '0.3rem',
-                }}>
-                  {customStoryPrompt.length}/2000
-                </div>
-              </div>
-            )}
-
             {/* Photo upload */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
@@ -368,7 +305,7 @@ export function PersonalizePage() {
             </div>
 
             {/* Gender */}
-            <div style={{ marginBottom: '2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
@@ -410,6 +347,68 @@ export function PersonalizePage() {
                     <span>{g.icon}</span> {g.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Illustration Style */}
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: 700,
+                fontFamily: "'Nunito', sans-serif",
+                color: '#2d1b69',
+                fontSize: '0.95rem',
+              }}>
+                Illustration Style
+              </label>
+              <p style={{
+                margin: '0 0 0.6rem',
+                fontFamily: "'Nunito', sans-serif",
+                color: '#999',
+                fontSize: '0.8rem',
+              }}>
+                Choose the art style for your book's illustrations
+              </p>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                gap: '0.6rem',
+              }}>
+                {ILLUSTRATION_STYLES.map((style) => {
+                  const isSelected = illustrationStyle === style.id;
+                  return (
+                    <button
+                      key={style.id}
+                      type="button"
+                      onClick={() => setIllustrationStyle(style.id)}
+                      style={{
+                        padding: '0.7rem 0.5rem',
+                        borderRadius: 14,
+                        border: isSelected ? `2px solid ${accent}` : '2px solid #eee',
+                        background: isSelected ? `${accent}12` : '#fff',
+                        cursor: 'pointer',
+                        fontFamily: "'Nunito', sans-serif",
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.3rem' }}>{style.icon}</span>
+                      <span style={{
+                        fontWeight: isSelected ? 700 : 600,
+                        fontSize: '0.78rem',
+                        color: isSelected ? accent : '#555',
+                        textAlign: 'center',
+                        lineHeight: 1.2,
+                      }}>
+                        {style.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

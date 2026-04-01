@@ -71,7 +71,7 @@ export function App() {
         <main>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/personalize/:themeId" element={<PersonalizePage />} />
+            <Route path="/personalize/:bookId" element={<PersonalizePage />} />
             <Route path="/progress/:orderId" element={<ProgressPage />} />
             <Route path="/preview/:orderId" element={<PreviewPage />} />
           </Routes>

@@ -92,6 +92,7 @@ export class OrchestratorProcessor extends WorkerHost {
       const refUrl = await this.imageService.generateReferenceSheet(
         order.photoUrl,
         orderId,
+        order.illustrationStyle,
       );
       await this.prisma.order.update({
         where: { id: orderId },
@@ -128,6 +129,7 @@ export class OrchestratorProcessor extends WorkerHost {
           characterDescription,
           order.childGender,
           page.layout,
+          order.illustrationStyle,
         );
         // 12s delay between requests to stay within rate limit
         await new Promise((resolve) => setTimeout(resolve, 12000));
@@ -150,6 +152,7 @@ export class OrchestratorProcessor extends WorkerHost {
             characterDescription,
             order.childGender,
             page.layout,
+            order.illustrationStyle,
           );
           await new Promise((resolve) => setTimeout(resolve, 12000));
         }
@@ -198,6 +201,7 @@ export class OrchestratorProcessor extends WorkerHost {
     characterDescription?: string,
     childGender?: string,
     layout?: string,
+    illustrationStyle?: string,
   ): Promise<void> {
     try {
       await this.prisma.page.update({
@@ -214,6 +218,7 @@ export class OrchestratorProcessor extends WorkerHost {
         characterDescription,
         childGender,
         layout || page.layout,
+        illustrationStyle,
       );
 
       await this.prisma.page.update({

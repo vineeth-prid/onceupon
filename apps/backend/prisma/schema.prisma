@@ -42,6 +42,7 @@ model Order {
   childAge          Int
   childGender       ChildGender
   theme             String
+  illustrationStyle String      @default("disney-character")
   customStoryPrompt String?
   photoUrl          String
   email             String?

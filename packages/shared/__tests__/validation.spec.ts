@@ -10,7 +10,8 @@ describe('createOrderSchema', () => {
     childName: 'Aarav',
     childAge: 5,
     childGender: 'boy' as const,
-    theme: 'tooth-fairy',
+    theme: 'pirate-quest',
+    illustrationStyle: 'disney-character',
     photoUrl: 'https://example.com/photo.jpg',
   };
 
@@ -77,7 +78,7 @@ describe('createOrderSchema', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toBe(
-        'Theme must be one of: tooth-fairy, dinosaur, moon-princess',
+        'Please select a valid book template',
       );
     }
   });

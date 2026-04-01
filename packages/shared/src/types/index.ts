@@ -45,6 +45,7 @@ export interface OrderDto {
   childAge: number;
   childGender: 'boy' | 'girl' | 'other';
   theme: string;
+  illustrationStyle: string;
   photoUrl: string;
   status: OrderStatus;
   storyJson: StoryOutput | null;

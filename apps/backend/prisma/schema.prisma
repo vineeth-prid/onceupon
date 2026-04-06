@@ -36,8 +36,65 @@ enum ChildGender {
   other
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  APPLE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String       @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String       @unique
+  passwordHash  String?
+  authProvider  AuthProvider  @default(EMAIL)
+  googleId      String?      @unique
+  avatarUrl     String?
+  isVerified    Boolean      @default(false)
+  role          UserRole     @default(USER)
+
+  orders        Order[]
+  addresses     Address[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  userId        String
+  label         String   @default("Home")
+  firstName     String
+  lastName      String
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  state         String?
+  postalCode    String
+  country       String
+  phone         String?
+  isDefault     Boolean  @default(false)
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model Order {
   id                String      @id @default(uuid())
+  userId            String?
   childName         String
   childAge          Int
   childGender       ChildGender
@@ -73,11 +130,13 @@ model Order {
   luluJobId         String?     @unique
   trackingNumber    String?
 
+  user              User?       @relation(fields: [userId], references: [id])
   pages             Page[]
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
+  @@index([userId])
   @@index([status])
   @@index([createdAt])
 }

@@ -25,6 +25,10 @@ export function PersonalizePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [bookFormat, setBookFormat] = useState('classic');
+  const [dedication, setDedication] = useState('');
+  const [language, setLanguage] = useState('English');
+  const [occasion, setOccasion] = useState('Birthday');
 
   useEffect(() => {
     if (isCustom && !customStoryPrompt) {
@@ -427,6 +431,100 @@ export function PersonalizePage() {
                 })}
               </div>
             </div>
+
+            {/* Book Format */}
+            <section style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.3rem', fontWeight: 400, color: '#000', marginBottom: '0.5rem' }}>
+                Choose Book Format
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#6F6F6F', marginBottom: '1rem' }}>
+                Select the size and cover type for your book
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
+                {[
+                  { id: 'classic', name: 'Classic Square', desc: '21×21cm · 24 pages · Softcover', price: 'From ₹3,999' },
+                  { id: 'premium', name: 'Premium Square', desc: '25×25cm · 32 pages · Hardcover', price: 'From ₹5,749' },
+                  { id: 'grand', name: 'Grand Portrait', desc: '21×28cm · 40 pages · Hardcover', price: 'From ₹6,599' },
+                ].map((fmt) => (
+                  <div
+                    key={fmt.id}
+                    onClick={() => setBookFormat(fmt.id)}
+                    style={{
+                      padding: '1rem',
+                      borderRadius: 14,
+                      border: bookFormat === fmt.id ? '2px solid #000' : '2px solid #eee',
+                      background: bookFormat === fmt.id ? '#f8f8f8' : '#fff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
+                      {fmt.id === 'classic' ? '📗' : fmt.id === 'premium' ? '📘' : '📙'}
+                    </div>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#000', marginBottom: '0.2rem' }}>{fmt.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6F6F6F', marginBottom: '0.4rem' }}>{fmt.desc}</div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: accent }}>{fmt.price}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Story Details */}
+            <section style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.3rem', fontWeight: 400, color: '#000', marginBottom: '0.5rem' }}>
+                Story Details
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#6F6F6F', marginBottom: '1rem' }}>
+                Optional details to personalize your book further
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#333', marginBottom: '0.4rem' }}>
+                    Personal Dedication (optional)
+                  </label>
+                  <textarea
+                    value={dedication}
+                    onChange={(e) => setDedication(e.target.value)}
+                    placeholder="e.g. To Emma — may you always remember how loved you are."
+                    rows={2}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: 10, border: '1.5px solid #eee', fontSize: '0.9rem', fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                    onFocus={(e) => (e.target.style.borderColor = accent)}
+                    onBlur={(e) => (e.target.style.borderColor = '#eee')}
+                  />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#333', marginBottom: '0.4rem' }}>
+                      Language
+                    </label>
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: 10, border: '1.5px solid #eee', fontSize: '0.9rem', fontFamily: "'Inter', sans-serif", outline: 'none', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                    >
+                      {['English', 'Hindi', 'Arabic', 'French', 'Spanish', 'German', 'Tamil', 'Telugu', 'Bengali', 'Japanese', 'Chinese'].map(lang => (
+                        <option key={lang}>{lang}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#333', marginBottom: '0.4rem' }}>
+                      Occasion
+                    </label>
+                    <select
+                      value={occasion}
+                      onChange={(e) => setOccasion(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: 10, border: '1.5px solid #eee', fontSize: '0.9rem', fontFamily: "'Inter', sans-serif", outline: 'none', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                    >
+                      {['Birthday', "Baby's First Year", 'Graduation', 'Just Because', 'New Sibling', 'Other'].map(occ => (
+                        <option key={occ}>{occ}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {error && (
               <div style={{

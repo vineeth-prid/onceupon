@@ -44,7 +44,7 @@ export function Footer() {
             </p>
           </div>
 
-          {/* About column */}
+          {/* Product column */}
           <div>
             <h4
               className="font-body"
@@ -55,7 +55,7 @@ export function Footer() {
                 margin: "0 0 1rem",
               }}
             >
-              About
+              Product
             </h4>
             <nav
               style={{
@@ -65,7 +65,7 @@ export function Footer() {
               }}
             >
               <Link
-                to="/"
+                to="/templates"
                 className="font-body no-underline"
                 style={{
                   fontSize: "0.85rem",
@@ -73,7 +73,7 @@ export function Footer() {
                   transition: "color 0.2s",
                 }}
               >
-                Home
+                Templates
               </Link>
               <Link
                 to="/create"
@@ -86,8 +86,8 @@ export function Footer() {
               >
                 Create a Book
               </Link>
-              <a
-                href="#faq"
+              <Link
+                to="/about"
                 className="font-body no-underline"
                 style={{
                   fontSize: "0.85rem",
@@ -95,23 +95,12 @@ export function Footer() {
                   transition: "color 0.2s",
                 }}
               >
-                FAQs
-              </a>
-              <a
-                href="#"
-                className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
-              >
-                Support
-              </a>
+                How It Works
+              </Link>
             </nav>
           </div>
 
-          {/* Customer Area column */}
+          {/* Occasions column */}
           <div>
             <h4
               className="font-body"
@@ -122,7 +111,7 @@ export function Footer() {
                 margin: "0 0 1rem",
               }}
             >
-              Customer Area
+              Occasions
             </h4>
             <nav
               style={{
@@ -132,7 +121,7 @@ export function Footer() {
               }}
             >
               <Link
-                to="/create"
+                to="/templates"
                 className="font-body no-underline"
                 style={{
                   fontSize: "0.85rem",
@@ -140,7 +129,85 @@ export function Footer() {
                   transition: "color 0.2s",
                 }}
               >
-                My Books
+                Children's Books
+              </Link>
+              <Link
+                to="/templates"
+                className="font-body no-underline"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6F6F6F",
+                  transition: "color 0.2s",
+                }}
+              >
+                Wedding & Love
+              </Link>
+              <Link
+                to="/templates"
+                className="font-body no-underline"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6F6F6F",
+                  transition: "color 0.2s",
+                }}
+              >
+                Pregnancy
+              </Link>
+              <Link
+                to="/templates"
+                className="font-body no-underline"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6F6F6F",
+                  transition: "color 0.2s",
+                }}
+              >
+                Life Milestones
+              </Link>
+            </nav>
+          </div>
+
+          {/* Support column */}
+          <div>
+            <h4
+              className="font-body"
+              style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#000",
+                margin: "0 0 1rem",
+              }}
+            >
+              Support
+            </h4>
+            <nav
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+              }}
+            >
+              <Link
+                to="/faq"
+                className="font-body no-underline"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6F6F6F",
+                  transition: "color 0.2s",
+                }}
+              >
+                FAQ
+              </Link>
+              <Link
+                to="/contact"
+                className="font-body no-underline"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6F6F6F",
+                  transition: "color 0.2s",
+                }}
+              >
+                Contact Us
               </Link>
               <a
                 href="#"
@@ -151,7 +218,7 @@ export function Footer() {
                   transition: "color 0.2s",
                 }}
               >
-                Orders
+                Privacy Policy
               </a>
               <a
                 href="#"
@@ -163,17 +230,6 @@ export function Footer() {
                 }}
               >
                 Terms
-              </a>
-              <a
-                href="#"
-                className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
-              >
-                Privacy Policy
               </a>
             </nav>
           </div>
@@ -188,15 +244,21 @@ export function Footer() {
         }}
       >
         <div
-          className="max-w-6xl mx-auto flex justify-center  items-center"
+          className="max-w-6xl mx-auto flex justify-between items-center"
           style={{ flexWrap: "wrap", gap: "0.5rem" }}
         >
           <p
             className="font-body"
-            style={{ fontSize: "0.8rem", color: "#999", margin: 0 }}
+            style={{ fontSize: "0.78rem", color: "#999", margin: 0 }}
           >
             Once Upon a Time &copy; {new Date().getFullYear()} All rights
             reserved
+          </p>
+          <p
+            className="font-body"
+            style={{ fontSize: "0.78rem", color: "#999", margin: 0 }}
+          >
+            Made for every story worth telling
           </p>
         </div>
       </div>

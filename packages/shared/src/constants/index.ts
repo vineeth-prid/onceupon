@@ -47,6 +47,8 @@ export const BOOK_TEMPLATES = [
   { id: 'baking-day', categoryId: 'cook' as CategoryId, name: 'Baking Day', description: 'Bake a magical cake with enchanted ingredients' },
   { id: 'pizza-adventure', categoryId: 'cook' as CategoryId, name: 'Pizza Adventure', description: 'Create the world\'s most amazing pizza' },
   { id: 'fruit-forest', categoryId: 'cook' as CategoryId, name: 'Fruit Forest', description: 'Pick magical fruits to make a special recipe' },
+  // Custom story (user-provided prompt)
+  { id: 'custom', categoryId: 'adventure' as CategoryId, name: 'Custom Story', description: 'Your own story idea' },
 ] as const;
 
 export type BookTemplateId = (typeof BOOK_TEMPLATES)[number]['id'];

@@ -1,16 +1,20 @@
-import { useState, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { BOOK_TEMPLATES, CATEGORIES, ILLUSTRATION_STYLES } from '@bookmagic/shared';
 import { uploadPhoto, createOrder } from '../api/orders';
 
 export function PersonalizePage() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const isCustom = bookId === 'custom';
+  const customStoryPrompt = (location.state as any)?.customStoryPrompt || '';
 
   const book = BOOK_TEMPLATES.find((t) => t.id === bookId);
   const category = book ? CATEGORIES.find((c) => c.id === book.categoryId) : null;
-  const accent = category?.color || '#9B59B6';
+  const accent = isCustom ? '#43A047' : (category?.color || '#9B59B6');
 
   const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState(5);
@@ -22,7 +26,13 @@ export function PersonalizePage() {
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
 
-  if (!book || !category) {
+  useEffect(() => {
+    if (isCustom && !customStoryPrompt) {
+      navigate('/create');
+    }
+  }, [isCustom, customStoryPrompt, navigate]);
+
+  if (!isCustom && (!book || !category)) {
     return <div style={{ padding: '4rem', textAlign: 'center', fontFamily: "'Nunito', sans-serif" }}>Book not found</div>;
   }
 
@@ -53,14 +63,18 @@ export function PersonalizePage() {
 
     try {
       const { url: photoUrl } = await uploadPhoto(photo);
-      const order = await createOrder({
+      const orderData: any = {
         childName: childName.trim(),
         childAge,
         childGender,
         theme: bookId as any,
         illustrationStyle: illustrationStyle as any,
         photoUrl,
-      });
+      };
+      if (isCustom && customStoryPrompt) {
+        orderData.customStoryPrompt = customStoryPrompt;
+      }
+      const order = await createOrder(orderData);
       navigate(`/progress/${order.id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Something went wrong');
@@ -79,7 +93,7 @@ export function PersonalizePage() {
       <div style={{ width: '100%', maxWidth: 520 }}>
         {/* Back button */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/create')}
           style={{
             background: 'none',
             border: 'none',
@@ -105,7 +119,7 @@ export function PersonalizePage() {
           textAlign: 'center',
           border: `2px solid ${accent}30`,
         }}>
-          <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>{category.icon}</div>
+          <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>{isCustom ? '\u2728' : category!.icon}</div>
           <p style={{
             fontFamily: "'Nunito', sans-serif",
             color: accent,
@@ -115,7 +129,7 @@ export function PersonalizePage() {
             textTransform: 'uppercase',
             letterSpacing: '1px',
           }}>
-            {category.name}
+            {isCustom ? 'Custom Story' : category!.name}
           </p>
           <h1 style={{
             fontFamily: "'Baloo 2', cursive",
@@ -124,7 +138,7 @@ export function PersonalizePage() {
             color: '#2d1b69',
             margin: '0 0 0.3rem',
           }}>
-            {book.name}
+            {isCustom ? 'Your Custom Story' : book!.name}
           </h1>
           <p style={{
             fontFamily: "'Nunito', sans-serif",
@@ -132,7 +146,9 @@ export function PersonalizePage() {
             margin: 0,
             fontSize: '0.95rem',
           }}>
-            {book.description}
+            {isCustom
+              ? (customStoryPrompt.length > 100 ? customStoryPrompt.slice(0, 100) + '...' : customStoryPrompt)
+              : book!.description}
           </p>
         </div>
 

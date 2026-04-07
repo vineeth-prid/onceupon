@@ -5,6 +5,7 @@ import { OrchestratorProcessor } from './orchestrator.processor';
 import { OrdersModule } from '../orders/orders.module';
 import { StoryModule } from '../story/story.module';
 import { ImageModule } from '../image/image.module';
+import { EmailModule } from '../email/email.module';
 import { ORCHESTRATOR_QUEUE } from './queue.constants';
 
 @Module({
@@ -22,6 +23,7 @@ import { ORCHESTRATOR_QUEUE } from './queue.constants';
     OrdersModule,
     StoryModule,
     ImageModule,
+    EmailModule,
   ],
   providers: [OrchestratorProcessor],
 })

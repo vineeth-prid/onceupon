@@ -5,6 +5,7 @@ import { PrismaService } from '../database/prisma.service';
 import { OrdersService } from '../orders/orders.service';
 import { StoryService } from '../story/story.service';
 import { ImageService } from '../image/image.service';
+import { EmailService } from '../email/email.service';
 import { OrderStatus, StoryOutputInput } from '@bookmagic/shared';
 import { ORCHESTRATOR_QUEUE, JobName } from './queue.constants';
 import { getStaticStory } from '../story/static-stories';
@@ -18,6 +19,7 @@ export class OrchestratorProcessor extends WorkerHost {
     private readonly ordersService: OrdersService,
     private readonly storyService: StoryService,
     private readonly imageService: ImageService,
+    private readonly emailService: EmailService,
   ) {
     super();
   }
@@ -256,6 +258,7 @@ export class OrchestratorProcessor extends WorkerHost {
         await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
         await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
         this.logger.log(`Order ${orderId} complete — all images generated`);
+        await this.sendBookReadyNotification(orderId, order, story.title);
       } else {
         const failedCount = updatedPages.filter((p: any) => p.status === 'FAILED').length;
         this.logger.warn(`Order ${orderId}: ${failedCount} pages failed`);
@@ -263,6 +266,7 @@ export class OrchestratorProcessor extends WorkerHost {
           await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
           await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
           await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
+          await this.sendBookReadyNotification(orderId, order, story.title);
         } else {
           await this.ordersService.updateStatus(orderId, OrderStatus.FAILED);
         }
@@ -275,6 +279,44 @@ export class OrchestratorProcessor extends WorkerHost {
         // already failed
       }
       throw error;
+    }
+  }
+
+  private async sendBookReadyNotification(
+    orderId: string,
+    order: { userId?: string | null; email?: string | null; childName: string },
+    storyTitle: string,
+  ): Promise<void> {
+    try {
+      // Find recipient email: check order's user account, then order-level email
+      let recipientEmail: string | null = null;
+
+      if (order.userId) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: order.userId },
+          select: { email: true },
+        });
+        recipientEmail = user?.email || null;
+      }
+
+      if (!recipientEmail && order.email) {
+        recipientEmail = order.email;
+      }
+
+      if (!recipientEmail) {
+        this.logger.warn(`No email found for order ${orderId} — skipping notification`);
+        return;
+      }
+
+      await this.emailService.sendBookReadyEmail({
+        to: recipientEmail,
+        childName: order.childName,
+        storyTitle,
+        orderId,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send notification for order ${orderId}: ${(error as Error).message}`);
+      // Never throw — notification failure must not affect order status
     }
   }
 

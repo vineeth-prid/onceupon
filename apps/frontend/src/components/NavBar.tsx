@@ -114,7 +114,7 @@ export function NavBar() {
                       My Profile
                     </Link>
                     <Link
-                      to="/create"
+                      to="/profile?tab=books"
                       className="block no-underline font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50"
                       style={{ color: '#000' }}
                       onClick={() => setAvatarMenuOpen(false)}
@@ -140,19 +140,6 @@ export function NavBar() {
                 Sign In
               </Link>
             )}
-
-            <Link
-              to="/create"
-              className="rounded-full text-xs font-body no-underline uppercase tracking-wider transition-transform hover:scale-[1.03] inline-block"
-              style={{
-                backgroundColor: '#000',
-                color: '#fff',
-                padding: '0.6rem 1.4rem',
-                letterSpacing: '0.08em',
-              }}
-            >
-              Create Book
-            </Link>
           </nav>
 
           {/* Mobile hamburger */}
@@ -226,14 +213,7 @@ export function NavBar() {
                 Sign In
               </Link>
             )}
-            <Link
-              to="/create"
-              className="rounded-full font-body text-sm no-underline uppercase tracking-wider mt-4"
-              style={{ backgroundColor: '#000', color: '#fff', padding: '0.75rem 2rem' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              Create Book
-            </Link>
+           
           </nav>
         </div>
       )}

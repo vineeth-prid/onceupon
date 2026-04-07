@@ -33,13 +33,11 @@ STORY STRUCTURE:
 - Each page should feature a DIFFERENT scene/location for visual variety
 
 CHARACTER CONSISTENCY (CRITICAL):
-- ${childName} is a HUMAN child and must ALWAYS appear as a normal human child in every scene
-- ${childName} must NEVER be merged with, transformed into, or fused with any animal or creature
-- ${childName} must always have exactly two human arms, two human legs, and a normal human body
+- ${childName} is the main character and should always be depicted as a regular child, distinct from any animals or creatures
+- ${childName} should NOT be visually blended with or transformed into any non-human character
+- Any animal characters should be cute and friendly, and are SEPARATE characters from ${childName}
 - Describe ${childName}'s outfit consistently on EVERY page (e.g. "wearing a bright orange t-shirt and brown shorts")
-- ${childName}'s body must always be clearly separate from any animals or creatures in the scene
-- Any animal characters should be cute and friendly (not scary), and are SEPARATE characters from ${childName}
-- In the imagePrompt, always explicitly describe ${childName} as "a young human ${childGender} child" to prevent character confusion
+- In the imagePrompt, refer to ${childName} as "the child" to maintain consistency
 
 For each page, provide:
 - pageNumber (1-16)

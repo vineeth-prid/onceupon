@@ -1,27 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIES, BOOK_TEMPLATES } from '@bookmagic/shared';
-import { getAllOrders } from '../api/orders';
 
 export function CreatePage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<any[]>([]);
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [storyMode, setStoryMode] = useState<'select' | 'template' | 'custom'>('select');
   const [customPrompt, setCustomPrompt] = useState('');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
-  useEffect(() => {
-    getAllOrders().then((data) => {
-      setOrders(data.orders || []);
-    }).catch(() => {});
-  }, []);
-
-  const completedOrders = orders.filter((o: any) =>
-    o.pages && o.pages.length > 0 && o.pages.some((p: any) => p.imageUrl)
-  );
 
   const handleCategoryClick = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -638,150 +626,6 @@ export function CreatePage() {
         )}
       </section>
 
-      {/* My Books Section */}
-      {completedOrders.length > 0 && (
-        <section id="my-books" style={{
-          padding: '3rem 2rem 4rem',
-          background: '#fafafa',
-        }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{
-              textAlign: 'center',
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: '2rem',
-              fontWeight: 400,
-              color: '#000',
-              marginBottom: '0.5rem',
-            }}>
-              My Storybooks
-            </h2>
-            <p style={{
-              textAlign: 'center',
-              color: '#6F6F6F',
-              fontFamily: "'Inter', sans-serif",
-              marginBottom: '2rem',
-              fontSize: '1rem',
-            }}>
-              {completedOrders.length} book{completedOrders.length !== 1 ? 's' : ''} created
-            </p>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '1.5rem',
-            }}>
-              {completedOrders.map((order: any) => {
-                const coverImage = order.pages?.find((p: any) => p.imageUrl)?.imageUrl;
-                const isHovered = hoveredBook === order.id;
-                const bookTemplate = BOOK_TEMPLATES.find((t) => t.id === order.theme);
-                const category = bookTemplate
-                  ? CATEGORIES.find((c) => c.id === bookTemplate.categoryId)
-                  : null;
-                const accentColor = category?.color || '#000';
-                return (
-                  <div
-                    key={order.id}
-                    onClick={() => navigate(`/preview/${order.id}`)}
-                    onMouseEnter={() => setHoveredBook(order.id)}
-                    onMouseLeave={() => setHoveredBook(null)}
-                    style={{
-                      borderRadius: 16,
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                      transform: isHovered ? 'translateY(-6px) scale(1.03)' : 'translateY(0) scale(1)',
-                      boxShadow: isHovered
-                        ? '0 16px 40px rgba(0,0,0,0.18)'
-                        : '0 4px 16px rgba(0,0,0,0.08)',
-                      background: '#fff',
-                    }}
-                  >
-                    <div style={{
-                      width: '100%',
-                      height: 200,
-                      overflow: 'hidden',
-                      position: 'relative',
-                    }}>
-                      {coverImage ? (
-                        <img
-                          src={coverImage}
-                          alt={order.childName}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.3s ease',
-                            transform: isHovered ? 'scale(1.08)' : 'scale(1)',
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: '100%',
-                          height: '100%',
-                          background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '3rem',
-                        }}>
-                          {category?.icon || '\uD83D\uDCD6'}
-                        </div>
-                      )}
-                      <div style={{
-                        position: 'absolute',
-                        top: 10,
-                        right: 10,
-                        background: accentColor,
-                        color: '#fff',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: 20,
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        fontFamily: "'Inter', sans-serif",
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                      }}>
-                        {bookTemplate?.name || order.theme}
-                      </div>
-                    </div>
-                    <div style={{ padding: '1rem 1.2rem' }}>
-                      <h3 style={{
-                        fontFamily: "'Instrument Serif', serif",
-                        fontSize: '1.1rem',
-                        fontWeight: 400,
-                        color: '#000',
-                        margin: '0 0 0.3rem',
-                      }}>
-                        {order.storyJson?.title || `${order.childName}'s Adventure`}
-                      </h3>
-                      <p style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: '0.8rem',
-                        color: '#6F6F6F',
-                        margin: '0 0 0.6rem',
-                      }}>
-                        For {order.childName} &middot; {order.pages?.length || 0} pages
-                      </p>
-                      <div style={{
-                        display: 'inline-block',
-                        padding: '0.3rem 1rem',
-                        borderRadius: 50,
-                        background: isHovered ? '#000' : '#f0f0f0',
-                        color: isHovered ? '#fff' : '#000',
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        transition: 'all 0.3s ease',
-                      }}>
-                        Read Book
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

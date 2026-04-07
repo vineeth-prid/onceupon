@@ -250,12 +250,19 @@ export function PreviewPage() {
   const [pages, setPages] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [childName, setChildName] = useState('');
+  const [orderStatus, setOrderStatus] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [useSpread, setUseSpread] = useState(window.innerWidth >= 860);
+
+  // Determine if this is a preview-only order (1 image) vs full book
+  const pagesWithImages = pages.filter((p: any) => p.imageUrl);
+  const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
+  const isPreviewOnly = pagesWithImages.length <= 1 && totalStoryPages > 1
+    && !['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus);
 
   const totalBookPages = pages.length + 2;
 
@@ -298,6 +305,7 @@ export function PreviewPage() {
       setPages(orderPages);
       setTitle(data.order.storyJson?.title || 'Your Storybook');
       setChildName(data.order.childName || '');
+      setOrderStatus(data.order.status || '');
       const firstPageWithImage = orderPages.find((p: any) => p.imageUrl);
       setCoverImageUrl(firstPageWithImage?.imageUrl || null);
       setLoading(false);
@@ -604,17 +612,16 @@ export function PreviewPage() {
         }} />
       </div>
 
-      {/* Page counter + action buttons */}
+      {/* Bottom section — Preview paywall OR full book actions */}
       <div style={{
         position: 'relative',
         zIndex: 10,
-        padding: '0.6rem 1rem 1rem',
+        padding: '0.8rem 1rem 1.2rem',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1rem',
+        gap: '0.6rem',
         flexShrink: 0,
-        flexWrap: 'wrap',
       }}>
         <span style={{
           color: 'rgba(255,255,255,0.35)',
@@ -625,79 +632,197 @@ export function PreviewPage() {
           {currentPage + 1} / {totalBookPages}
         </span>
 
-        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+        {isPreviewOnly ? (
+          /* ── PREVIEW MODE: show unlock CTA ── */
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.6rem',
+          }}>
+            <p style={{
+              color: 'rgba(255,255,255,0.6)',
+              fontFamily: FONT_UI,
+              fontSize: '0.8rem',
+              margin: 0,
+              textAlign: 'center',
+            }}>
+              This is a preview. Unlock the full {totalStoryPages}-page storybook to download or order a print copy.
+            </p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.8rem',
+              flexWrap: 'wrap',
+            }}>
+              <button
+                onClick={() => navigate(`/checkout/${orderId}`)}
+                style={{
+                  padding: '0.7rem 2.2rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  fontFamily: FONT_UI,
+                  borderRadius: 50,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                  color: '#1a0533',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  boxShadow: '0 4px 20px rgba(255,215,0,0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  letterSpacing: '0.3px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(255,215,0,0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,215,0,0.35)';
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+                Unlock Full Book
+              </button>
+              <button
+                onClick={() => navigate('/create')}
+                style={{
+                  padding: '0.6rem 1.6rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  fontFamily: FONT_UI,
+                  borderRadius: 50,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'rgba(255,255,255,0.6)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                }}
+              >
+                Try Different Story
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── FULL BOOK MODE: download + order buttons ── */
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}>
+            <button
+              onClick={async () => {
+                if (!orderId) return;
+                setDownloading(true);
+                try {
+                  const blob = await downloadPdf(orderId);
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${childName || 'storybook'}_storybook.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch {
+                  alert('Failed to download PDF. Please try again.');
+                }
+                setDownloading(false);
+              }}
+              disabled={downloading}
+              style={{
+                padding: '0.65rem 2rem',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                fontFamily: FONT_UI,
+                borderRadius: 50,
+                border: 'none',
+                background: downloading
+                  ? 'rgba(255,215,0,0.3)'
+                  : 'linear-gradient(135deg, #FFD700, #FFA500)',
+                color: '#1a0533',
+                cursor: downloading ? 'wait' : 'pointer',
+                transition: 'all 0.25s ease',
+                boxShadow: downloading ? 'none' : '0 4px 20px rgba(255,215,0,0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              onMouseEnter={(e) => {
+                if (!downloading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(255,215,0,0.5)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                if (!downloading) e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,215,0,0.35)';
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              {downloading ? 'Generating...' : 'Download eBook'}
+            </button>
 
-        <button
-          onClick={async () => {
-            if (!orderId) return;
-            setDownloading(true);
-            try {
-              const blob = await downloadPdf(orderId);
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `${childName || 'storybook'}_storybook.pdf`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            } catch {
-              alert('Failed to download PDF. Please try again.');
-            }
-            setDownloading(false);
-          }}
-          disabled={downloading}
-          style={{
-            padding: '0.45rem 1.4rem',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            fontFamily: FONT_UI,
-            borderRadius: 50,
-            border: '1px solid #FFD700',
-            background: downloading
-              ? 'rgba(255,215,0,0.1)'
-              : 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1))',
-            color: '#FFD700',
-            cursor: downloading ? 'wait' : 'pointer',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            if (!downloading) e.currentTarget.style.background = 'rgba(255,215,0,0.3)';
-          }}
-          onMouseLeave={(e) => {
-            if (!downloading) e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.1))';
-          }}
-        >
-          {downloading ? 'Generating PDF...' : 'Download PDF'}
-        </button>
-
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            padding: '0.45rem 1.4rem',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            fontFamily: FONT_UI,
-            borderRadius: 50,
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'rgba(255,255,255,0.05)',
-            color: 'rgba(255,255,255,0.7)',
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#FFD700';
-            e.currentTarget.style.color = '#FFD700';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-          }}
-        >
-          Create Another Book
-        </button>
+            <button
+              onClick={() => navigate(`/checkout/${orderId}`)}
+              style={{
+                padding: '0.65rem 2rem',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                fontFamily: FONT_UI,
+                borderRadius: 50,
+                border: '2px solid rgba(255,255,255,0.5)',
+                background: 'rgba(255,255,255,0.08)',
+                color: '#fff',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.25s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.borderColor = '#FFD700';
+                e.currentTarget.style.color = '#FFD700';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+              Order Physical Book
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

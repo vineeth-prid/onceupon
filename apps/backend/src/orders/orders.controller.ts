@@ -6,9 +6,12 @@ import {
   Body,
   UsePipes,
   Res,
+  Req,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { Response, Request } from 'express';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { createOrderSchema, CreateOrderInput } from '@bookmagic/shared';
@@ -26,16 +29,20 @@ export class OrdersController {
   ) {}
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ZodValidationPipe(createOrderSchema))
-  async create(@Body() dto: CreateOrderInput) {
-    const order = await this.ordersService.create(dto);
+  async create(@Req() req: Request, @Body() dto: CreateOrderInput) {
+    const userId = (req.user as any)?.id;
+    const order = await this.ordersService.create(dto, userId);
     await this.queue.add(JobName.PROCESS_ORDER, { orderId: order.id });
     return order;
   }
 
   @Get()
-  async findAll() {
-    const orders = await this.ordersService.findAll();
+  @UseGuards(AuthGuard('jwt'))
+  async findAll(@Req() req: Request) {
+    const userId = (req.user as any)?.id;
+    const orders = await this.ordersService.findByUserId(userId);
     return { orders };
   }
 
@@ -44,6 +51,18 @@ export class OrdersController {
     const order = await this.ordersService.findById(id);
     const progress = this.ordersService.getProgress(order);
     return { order, progress };
+  }
+
+  @Post(':id/complete')
+  @UseGuards(AuthGuard('jwt'))
+  async completeOrder(@Param('id') id: string) {
+    const order = await this.ordersService.findById(id);
+
+    // Mark as paid and queue the full generation
+    await this.ordersService.updateStatus(id, 'PAID' as any);
+    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+
+    return { message: 'Full book generation started', orderId: id };
   }
 
   @Get(':id/pdf')

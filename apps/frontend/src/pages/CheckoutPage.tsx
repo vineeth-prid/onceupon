@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { completeOrder } from '../api/orders';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -74,8 +75,18 @@ export function CheckoutPage() {
     return { bookPrice, printPrice, deliveryPrice, addonTotal, discount, total };
   }, [format, delivery, addons, discountPct, isPrint]);
 
-  const handlePlaceOrder = () => {
-    navigate(`/confirmation/${orderId}`);
+  const [placing, setPlacing] = useState(false);
+
+  const handlePlaceOrder = async () => {
+    if (!orderId) return;
+    setPlacing(true);
+    try {
+      await completeOrder(orderId);
+      navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
+    } catch {
+      setPlacing(false);
+      alert('Failed to process order. Please try again.');
+    }
   };
 
   // --- styles ---
@@ -398,14 +409,16 @@ export function CheckoutPage() {
           {/* --- Place Order --- */}
           <button
             onClick={handlePlaceOrder}
+            disabled={placing}
             style={{
-              width: '100%', padding: '16px 0', background: '#000', color: '#FFF',
+              width: '100%', padding: '16px 0',
+              background: placing ? '#666' : '#000', color: '#FFF',
               border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600,
-              cursor: 'pointer', fontFamily: '"Inter", sans-serif',
+              cursor: placing ? 'wait' : 'pointer', fontFamily: '"Inter", sans-serif',
               letterSpacing: 0.3,
             }}
           >
-            Place Order — {formatPrice(breakdown.total)}
+            {placing ? 'Processing...' : `Place Order — ${formatPrice(breakdown.total)}`}
           </button>
         </div>
 

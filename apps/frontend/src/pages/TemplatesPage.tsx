@@ -1,50 +1,55 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { CATEGORIES, BOOK_TEMPLATES, type CategoryId } from '@bookmagic/shared';
 
-const templates = [
-  { id: 'babys-first-year', name: "Baby's First Year", emoji: '\u{1F476}', category: 'children', tag: 'Children \u00B7 Milestone', desc: 'Capture every precious first \u2014 first smile, first step, first word \u2014 in a beautifully illustrated storybook.', price: '\u20B93,999', gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)' },
-  { id: 'wedding-story', name: 'Wedding Story', emoji: '\u{1F48D}', category: 'love', tag: 'Love \u00B7 Wedding', desc: 'Relive your perfect day from proposal to first dance in a romantic, illustrated keepsake.', price: '$59', gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)' },
-  { id: 'pregnancy-journey', name: 'Pregnancy Journey', emoji: '\u{1F930}', category: 'love', tag: 'Love \u00B7 Pregnancy', desc: 'Document nine magical months \u2014 the anticipation, the milestones, and the wonder of welcoming new life.', price: '$54', gradient: 'linear-gradient(148deg, #a0c0a4, #437048, #1c3820)' },
-  { id: 'new-home', name: 'New Home Story', emoji: '\u{1F3E0}', category: 'life', tag: 'Life \u00B7 Milestone', desc: 'Celebrate the start of a new chapter with a beautifully crafted book about your new home.', price: '$44', gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)' },
-  { id: 'our-love-story', name: 'Our Love Story', emoji: '\u{1F491}', category: 'love', tag: 'Love \u00B7 Anniversary', desc: 'From your first hello to where you are now \u2014 a personalised story of your unique journey together.', price: '$54', gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)' },
-  { id: 'travel-memories', name: 'Travel Memories', emoji: '\u2708\uFE0F', category: 'life', tag: 'Life \u00B7 Adventure', desc: 'Turn your travel photos into a beautifully illustrated adventure book that brings your journeys to life.', price: '$49', gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)' },
-  { id: 'growing-up', name: 'Growing Up', emoji: '\u{1F9D2}', category: 'children', tag: 'Children \u00B7 Milestone', desc: 'A year-by-year celebration of your child growing \u2014 personality, memories, and milestones captured.', price: '$49', gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)' },
-  { id: 'graduation', name: 'Graduation Story', emoji: '\u{1F393}', category: 'life', tag: 'Life \u00B7 Achievement', desc: 'Celebrate the end of one chapter and the beginning of another with a personalised graduation book.', price: '$44', gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)' },
-  { id: 'family-bonds', name: 'Family Bonds', emoji: '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}', category: 'love', tag: 'Love \u00B7 Family', desc: 'Celebrate the unique story of your family \u2014 the moments, the laughs, and the love that holds you together.', price: '$54', gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)' },
-];
+// Book-level display data (emoji, gradient, price) keyed by book template id
+const bookDisplayData: Record<string, { emoji: string; gradient: string; price: string }> = {
+  // Adventure
+  'pirate-quest':    { emoji: '\u{1F3F4}\u200D\u2620\uFE0F', gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,499' },
+  'jungle-explorer': { emoji: '\u{1F334}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,499' },
+  'space-mission':   { emoji: '\u{1F680}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,499' },
+  // Animals
+  'puppy-rescue':    { emoji: '\u{1F436}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,299' },
+  'ocean-friends':   { emoji: '\u{1F42C}',   gradient: 'linear-gradient(148deg, #7ec8e3, #3a8bb0, #0a3d5c)', price: '\u20B91,299' },
+  'safari-adventure':{ emoji: '\u{1F981}',   gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,299' },
+  // Education
+  'learning-to-walk':{ emoji: '\u{1F6B6}',   gradient: 'linear-gradient(148deg, #a0c0a4, #437048, #1c3820)', price: '\u20B9999' },
+  'first-words':     { emoji: '\u{1F4AC}',   gradient: 'linear-gradient(148deg, #b8a9d4, #6b4f9e, #2e1a5e)', price: '\u20B9999' },
+  'alphabets':       { emoji: '\u{1F524}',   gradient: 'linear-gradient(148deg, #e8c170, #c08930, #5a3a10)', price: '\u20B9999' },
+  'counting-fun':    { emoji: '\u{1F522}',   gradient: 'linear-gradient(148deg, #7ec8e3, #3a8bb0, #0a3d5c)', price: '\u20B9999' },
+  // Fantasy
+  'dragon-friend':   { emoji: '\u{1F409}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,499' },
+  'fairy-kingdom':   { emoji: '\u{1F9DA}',   gradient: 'linear-gradient(148deg, #d4a8d4, #8a4f8a, #3a1e3a)', price: '\u20B91,499' },
+  'wizard-school':   { emoji: '\u{1F9D9}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,499' },
+  // Fiction
+  'time-traveler':   { emoji: '\u{231A}',    gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,299' },
+  'tiny-giant':      { emoji: '\u{1F9D2}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,299' },
+  'dream-world':     { emoji: '\u{1F30C}',   gradient: 'linear-gradient(148deg, #b8a9d4, #6b4f9e, #2e1a5e)', price: '\u20B91,299' },
+  // Nurture
+  'new-sibling':     { emoji: '\u{1F476}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,199' },
+  'first-day-school':{ emoji: '\u{1F392}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,199' },
+  'kindness-garden': { emoji: '\u{1F33B}',   gradient: 'linear-gradient(148deg, #a0c0a4, #437048, #1c3820)', price: '\u20B91,199' },
+  // Cook
+  'baking-day':      { emoji: '\u{1F382}',   gradient: 'linear-gradient(148deg, #e8c170, #c08930, #5a3a10)', price: '\u20B91,199' },
+  'pizza-adventure': { emoji: '\u{1F355}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,199' },
+  'fruit-forest':    { emoji: '\u{1F353}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,199' },
+};
 
-type Category = 'all' | 'children' | 'love' | 'life';
-type SortOption = 'popular' | 'newest' | 'price-low';
-
-const filterOptions: { label: string; value: Category }[] = [
-  { label: 'All Occasions', value: 'all' },
-  { label: 'Children', value: 'children' },
-  { label: 'Love & Family', value: 'love' },
-  { label: 'Life Milestones', value: 'life' },
-];
-
-const sortOptions: { label: string; value: SortOption }[] = [
-  { label: 'Most Popular', value: 'popular' },
-  { label: 'Newest', value: 'newest' },
-  { label: 'Price Low-High', value: 'price-low' },
-];
+type FilterValue = 'all' | CategoryId;
 
 export function TemplatesPage() {
-  const [activeFilter, setActiveFilter] = useState<Category>('all');
-  const [sort, setSort] = useState<SortOption>('popular');
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState<FilterValue>('all');
 
-  const filtered = templates.filter(
-    (t) => activeFilter === 'all' || t.category === activeFilter,
-  );
+  const allBooks = BOOK_TEMPLATES.filter((t) => t.id !== 'custom');
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sort === 'price-low') {
-      const priceA = parseFloat(a.price.replace(/[^0-9.]/g, ''));
-      const priceB = parseFloat(b.price.replace(/[^0-9.]/g, ''));
-      return priceA - priceB;
-    }
-    return 0;
-  });
+  const filtered =
+    activeFilter === 'all'
+      ? allBooks
+      : allBooks.filter((t) => t.categoryId === activeFilter);
+
+  const getCategoryForBook = (categoryId: string) =>
+    CATEGORIES.find((c) => c.id === categoryId);
 
   return (
     <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
@@ -58,17 +63,13 @@ export function TemplatesPage() {
       >
         <nav
           className="font-body"
-          style={{
-            fontSize: 14,
-            color: '#6F6F6F',
-            marginBottom: 32,
-          }}
+          style={{ fontSize: 14, color: '#6F6F6F', marginBottom: 32 }}
         >
           <Link to="/" style={{ color: '#6F6F6F', textDecoration: 'none' }}>
             Home
           </Link>
           <span style={{ margin: '0 8px' }}>/</span>
-          <span style={{ color: '#FFF' }}>Templates</span>
+          <span style={{ color: '#FFF' }}>Pre-made Books</span>
         </nav>
 
         <h1
@@ -93,8 +94,8 @@ export function TemplatesPage() {
             lineHeight: 1.6,
           }}
         >
-          Browse our collection of beautifully crafted templates and bring your
-          story to life.
+          Browse our collection of beautifully crafted stories and bring your
+          child's imagination to life.
         </p>
       </section>
 
@@ -118,54 +119,49 @@ export function TemplatesPage() {
           }}
         >
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {filterOptions.map((opt) => (
+            <button
+              onClick={() => setActiveFilter('all')}
+              className="font-body"
+              style={{
+                padding: '8px 20px',
+                borderRadius: 999,
+                border: activeFilter === 'all' ? '1.5px solid #000' : '1px solid #D0D0D0',
+                background: activeFilter === 'all' ? '#000' : '#FFF',
+                color: activeFilter === 'all' ? '#FFF' : '#000',
+                fontSize: 14,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              All Books
+            </button>
+            {CATEGORIES.map((cat) => (
               <button
-                key={opt.value}
-                onClick={() => setActiveFilter(opt.value)}
+                key={cat.id}
+                onClick={() => setActiveFilter(cat.id)}
                 className="font-body"
                 style={{
                   padding: '8px 20px',
                   borderRadius: 999,
                   border:
-                    activeFilter === opt.value
-                      ? '1.5px solid #000'
+                    activeFilter === cat.id
+                      ? `1.5px solid ${cat.color}`
                       : '1px solid #D0D0D0',
-                  background: activeFilter === opt.value ? '#000' : '#FFF',
-                  color: activeFilter === opt.value ? '#FFF' : '#000',
+                  background: activeFilter === cat.id ? cat.color : '#FFF',
+                  color: activeFilter === cat.id ? '#FFF' : '#000',
                   fontSize: 14,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
               >
-                {opt.label}
+                {cat.icon} {cat.name}
               </button>
             ))}
           </div>
-
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="font-body"
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid #D0D0D0',
-              background: '#FFF',
-              color: '#000',
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            {sortOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
         </div>
       </section>
 
-      {/* Template Grid */}
+      {/* Book Grid */}
       <section
         style={{
           maxWidth: 1120,
@@ -179,119 +175,123 @@ export function TemplatesPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 28,
           }}
-          className="templates-grid"
+          className="premade-grid"
         >
-          {sorted.map((t) => (
-            <div
-              key={t.id}
-              style={{
-                borderRadius: 16,
-                overflow: 'hidden',
-                border: '1px solid #E5E5E5',
-                background: '#FFF',
-                transition: 'box-shadow 0.2s, transform 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow =
-                  '0 8px 30px rgba(0,0,0,0.08)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              {/* Cover */}
+          {filtered.map((book) => {
+            const display = bookDisplayData[book.id] || {
+              emoji: '\u{1F4D6}',
+              gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)',
+              price: '\u20B91,299',
+            };
+            const cat = getCategoryForBook(book.categoryId);
+
+            return (
               <div
+                key={book.id}
                 style={{
-                  background: t.gradient,
-                  padding: '40px 24px',
-                  textAlign: 'center',
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  border: '1px solid #E5E5E5',
+                  background: '#FFF',
+                  transition: 'box-shadow 0.2s, transform 0.2s',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/personalize/${book.id}`)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <div style={{ fontSize: 56, marginBottom: 12 }}>{t.emoji}</div>
-                <h3
-                  className="font-display"
-                  style={{
-                    color: '#FFF',
-                    fontSize: 22,
-                    fontWeight: 400,
-                    margin: 0,
-                  }}
-                >
-                  {t.name}
-                </h3>
-              </div>
-
-              {/* Body */}
-              <div style={{ padding: '20px 24px 24px' }}>
-                <span
-                  className="font-body"
-                  style={{
-                    display: 'inline-block',
-                    fontSize: 12,
-                    color: '#6F6F6F',
-                    background: '#FAFAFA',
-                    border: '1px solid #E5E5E5',
-                    borderRadius: 999,
-                    padding: '4px 12px',
-                    marginBottom: 12,
-                  }}
-                >
-                  {t.tag}
-                </span>
-                <p
-                  className="font-body"
-                  style={{
-                    fontSize: 14,
-                    color: '#6F6F6F',
-                    lineHeight: 1.6,
-                    margin: '0 0 20px',
-                  }}
-                >
-                  {t.desc}
-                </p>
+                {/* Cover */}
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    background: display.gradient,
+                    padding: '40px 24px',
+                    textAlign: 'center',
                   }}
                 >
-                  <span
+                  <div style={{ fontSize: 56, marginBottom: 12 }}>{display.emoji}</div>
+                  <h3
                     className="font-display"
-                    style={{ fontSize: 20, color: '#000' }}
+                    style={{
+                      color: '#FFF',
+                      fontSize: 22,
+                      fontWeight: 400,
+                      margin: 0,
+                    }}
                   >
-                    {t.price}
-                  </span>
-                  <Link
-                    to="/create"
+                    {book.name}
+                  </h3>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '20px 24px 24px' }}>
+                  <span
                     className="font-body"
                     style={{
-                      padding: '10px 24px',
+                      display: 'inline-block',
+                      fontSize: 12,
+                      color: cat ? cat.color : '#6F6F6F',
+                      background: cat ? `${cat.color}12` : '#FAFAFA',
+                      border: `1px solid ${cat ? `${cat.color}30` : '#E5E5E5'}`,
                       borderRadius: 999,
-                      background: '#000',
-                      color: '#FFF',
-                      fontSize: 14,
-                      textDecoration: 'none',
-                      transition: 'opacity 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.opacity = '0.85';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.opacity = '1';
+                      padding: '4px 12px',
+                      marginBottom: 12,
+                      fontWeight: 600,
                     }}
                   >
-                    Use Template
-                  </Link>
+                    {cat?.icon} {cat?.name}
+                  </span>
+                  <p
+                    className="font-body"
+                    style={{
+                      fontSize: 14,
+                      color: '#6F6F6F',
+                      lineHeight: 1.6,
+                      margin: '0 0 20px',
+                    }}
+                  >
+                    {book.description}
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <span
+                      className="font-display"
+                      style={{ fontSize: 20, color: '#000' }}
+                    >
+                      {display.price}
+                    </span>
+                    <span
+                      className="font-body"
+                      style={{
+                        padding: '10px 24px',
+                        borderRadius: 999,
+                        background: '#000',
+                        color: '#FFF',
+                        fontSize: 14,
+                        textDecoration: 'none',
+                        transition: 'opacity 0.2s',
+                      }}
+                    >
+                      Create Book
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {sorted.length === 0 && (
+        {filtered.length === 0 && (
           <p
             className="font-body"
             style={{
@@ -301,20 +301,61 @@ export function TemplatesPage() {
               marginTop: 60,
             }}
           >
-            No templates found for this category.
+            No books found for this category.
           </p>
         )}
+
+        {/* CTA to custom story */}
+        <div
+          style={{
+            marginTop: 60,
+            textAlign: 'center',
+            padding: '2.5rem 2rem',
+            background: 'linear-gradient(135deg, #E8F8EE 0%, #EAF1FA 100%)',
+            borderRadius: 20,
+          }}
+        >
+          <p
+            className="font-body"
+            style={{ fontSize: 16, color: '#6F6F6F', margin: '0 0 1rem' }}
+          >
+            Can't find what you're looking for?
+          </p>
+          <Link
+            to="/create"
+            className="font-body"
+            style={{
+              display: 'inline-block',
+              padding: '12px 32px',
+              borderRadius: 999,
+              background: '#000',
+              color: '#fff',
+              fontSize: 15,
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '0.85';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '1';
+            }}
+          >
+            Create a Custom Story
+          </Link>
+        </div>
       </section>
 
       {/* Responsive grid styles */}
       <style>{`
         @media (max-width: 900px) {
-          .templates-grid {
+          .premade-grid {
             grid-template-columns: repeat(2, 1fr) !important;
           }
         }
         @media (max-width: 580px) {
-          .templates-grid {
+          .premade-grid {
             grid-template-columns: 1fr !important;
           }
         }

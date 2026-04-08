@@ -17,7 +17,6 @@ import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 
 function ConditionalNavBar() {
@@ -31,14 +30,12 @@ function GlobalSections() {
   const isHome = location.pathname === '/';
   const isPreview = location.pathname.startsWith('/preview');
   const isLogin = location.pathname === '/login';
-  const isFaq = location.pathname === '/faq';
   const isAdmin = location.pathname.startsWith('/admin');
 
   if (isHome || isPreview || isLogin || isAdmin) return null;
 
   return (
     <>
-      {!isFaq && <FAQ />}
       <Footer />
     </>
   );

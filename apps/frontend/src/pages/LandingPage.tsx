@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { VideoBackground } from '../components/VideoBackground';
+import BookShowcase from '../components/BookShowcase';
+import OccasionGallery from '../components/OccasionGallery';
+import VideoTestimonials from '../components/VideoTestimonials';
+import { Footer } from '../components/Footer';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -39,6 +43,23 @@ export function LandingPage() {
           Create a Book
         </button>
       </section>
+
+      {/* Everything below the hero needs to sit ABOVE the fixed video */}
+      <div className="relative" style={{ zIndex: 2 }}>
+
+      {/* Book Flip Animation Showcase */}
+      <BookShowcase />
+
+      {/* Occasion Gallery */}
+      <OccasionGallery />
+
+      {/* Video Testimonials */}
+      <VideoTestimonials />
+
+      {/* Footer */}
+      <Footer />
+
+      </div>{/* end z-index wrapper */}
     </div>
   );
 }

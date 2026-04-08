@@ -47,6 +47,8 @@ export const BOOK_TEMPLATES = [
   { id: 'baking-day', categoryId: 'cook' as CategoryId, name: 'Baking Day', description: 'Bake a magical cake with enchanted ingredients' },
   { id: 'pizza-adventure', categoryId: 'cook' as CategoryId, name: 'Pizza Adventure', description: 'Create the world\'s most amazing pizza' },
   { id: 'fruit-forest', categoryId: 'cook' as CategoryId, name: 'Fruit Forest', description: 'Pick magical fruits to make a special recipe' },
+  // Custom story (user-provided prompt)
+  { id: 'custom', categoryId: 'adventure' as CategoryId, name: 'Custom Story', description: 'Your own story idea' },
 ] as const;
 
 export type BookTemplateId = (typeof BOOK_TEMPLATES)[number]['id'];
@@ -154,12 +156,12 @@ export const STATUS_TRANSITIONS: Record<string, readonly string[]> = {
   CREATED: ['STORY_GENERATING', 'FAILED'],
   STORY_GENERATING: ['STORY_COMPLETE', 'FAILED'],
   STORY_COMPLETE: ['IMAGES_GENERATING', 'FAILED'],
-  IMAGES_GENERATING: ['IMAGES_COMPLETE', 'FAILED'],
+  IMAGES_GENERATING: ['IMAGES_COMPLETE', 'PREVIEW_READY', 'FAILED'],
   IMAGES_COMPLETE: ['PDF_GENERATING', 'FAILED'],
   PDF_GENERATING: ['PREVIEW_READY', 'FAILED'],
-  PREVIEW_READY: ['PAYMENT_PENDING'],
+  PREVIEW_READY: ['PAYMENT_PENDING', 'PAID'],
   PAYMENT_PENDING: ['PAID', 'FAILED'],
-  PAID: ['PRINTING', 'FAILED'],
+  PAID: ['IMAGES_GENERATING', 'PRINTING', 'FAILED'],
   PRINTING: ['SHIPPED', 'FAILED'],
   SHIPPED: ['DELIVERED'],
   DELIVERED: [],

@@ -6,7 +6,7 @@ import { CreateOrderInput, OrderStatus, STATUS_TRANSITIONS } from '@bookmagic/sh
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateOrderInput) {
+  async create(dto: CreateOrderInput, userId?: string) {
     return this.prisma.order.create({
       data: {
         childName: dto.childName,
@@ -17,12 +17,23 @@ export class OrdersService {
         customStoryPrompt: dto.customStoryPrompt,
         photoUrl: dto.photoUrl,
         status: 'CREATED',
+        ...(userId ? { userId } : {}),
       },
     });
   }
 
   async findAll() {
     return this.prisma.order.findMany({
+      include: {
+        pages: { orderBy: { pageNumber: 'asc' } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findByUserId(userId: string) {
+    return this.prisma.order.findMany({
+      where: { userId },
       include: {
         pages: { orderBy: { pageNumber: 'asc' } },
       },

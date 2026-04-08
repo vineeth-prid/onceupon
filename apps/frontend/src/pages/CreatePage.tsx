@@ -1,28 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIES, BOOK_TEMPLATES } from '@bookmagic/shared';
-import { getAllOrders } from '../api/orders';
 
 export function CreatePage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [hoveredBook, setHoveredBook] = useState<string | null>(null);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    getAllOrders().then((data) => {
-      setOrders(data.orders || []);
-    }).catch(() => {});
-  }, []);
-
-  const completedOrders = orders.filter((o: any) =>
-    o.pages && o.pages.length > 0 && o.pages.some((p: any) => p.imageUrl)
-  );
-
-  const handleCategoryClick = (categoryId: string) => {
-    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
-  };
+  const [customPrompt, setCustomPrompt] = useState('');
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff' }}>
@@ -40,7 +21,7 @@ export function CreatePage() {
         </h2>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
           {[
-            { step: '1', icon: '\uD83D\uDCDA', title: 'Pick a Story', desc: 'Choose a category & book' },
+            { step: '1', icon: '\u270F\uFE0F', title: 'Describe Your Story', desc: 'Tell us your story idea' },
             { step: '2', icon: '\uD83D\uDCF7', title: 'Upload a Photo', desc: 'Add your child\'s photo' },
             { step: '3', icon: '\u2728', title: 'AI Creates Magic', desc: 'Story & illustrations generated' },
             { step: '4', icon: '\uD83D\uDCD6', title: 'Read & Enjoy', desc: 'Flip through your book' },
@@ -54,7 +35,7 @@ export function CreatePage() {
                 width: 70,
                 height: 70,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #E8D5F5, #D5E8F5)',
+                background: 'linear-gradient(135deg, #D5F5E3, #D5E8F5)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -82,10 +63,10 @@ export function CreatePage() {
         </div>
       </section>
 
-      {/* Category Selection */}
-      <section id="categories" style={{
+      {/* Custom Story Section */}
+      <section style={{
         padding: '2rem 2rem 3rem',
-        maxWidth: 1000,
+        maxWidth: 640,
         margin: '0 auto',
       }}>
         <h2 style={{
@@ -96,7 +77,7 @@ export function CreatePage() {
           color: '#000',
           marginBottom: '0.5rem',
         }}>
-          Choose a Category
+          Create Your Own Story
         </h2>
         <p style={{
           textAlign: 'center',
@@ -105,309 +86,158 @@ export function CreatePage() {
           marginBottom: '2rem',
           fontSize: '1rem',
         }}>
-          Pick a genre, then choose your story
+          Describe the story you'd like us to create for your child
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {CATEGORIES.map((cat) => {
-            const isExpanded = expandedCategory === cat.id;
-            const isHovered = hoveredCategory === cat.id;
-            const books = BOOK_TEMPLATES.filter((t) => t.categoryId === cat.id);
+        <div style={{
+          background: '#fff',
+          borderRadius: 20,
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+        }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.6rem',
+            fontWeight: 600,
+            fontFamily: "'Inter', sans-serif",
+            color: '#000',
+            fontSize: '0.95rem',
+          }}>
+            Your Story Idea
+          </label>
+          <textarea
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            maxLength={2000}
+            placeholder="e.g., A story about my child visiting their grandmother in Kerala, where they discover a magical garden with talking animals and learn about kindness..."
+            style={{
+              width: '100%',
+              minHeight: 160,
+              padding: '1rem',
+              borderRadius: 16,
+              border: '2px solid #eee',
+              fontSize: '0.95rem',
+              fontFamily: "'Inter', sans-serif",
+              outline: 'none',
+              transition: 'border-color 0.2s',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+              lineHeight: 1.6,
+              color: '#333',
+            }}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#43A047'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#eee'}
+          />
+          <div style={{
+            textAlign: 'right',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.78rem',
+            color: customPrompt.length > 1800 ? '#D32F2F' : '#aaa',
+            marginTop: '0.4rem',
+            marginBottom: '1.2rem',
+          }}>
+            {customPrompt.length} / 2000
+          </div>
 
-            return (
-              <div key={cat.id}>
-                <div
-                  onClick={() => handleCategoryClick(cat.id)}
-                  onMouseEnter={() => setHoveredCategory(cat.id)}
-                  onMouseLeave={() => setHoveredCategory(null)}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <p style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.82rem',
+              color: '#999',
+              margin: '0 0 0.6rem',
+            }}>
+              Need inspiration? Try one of these:
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {[
+                'A bedtime adventure on the moon',
+                'Learning to ride a bicycle',
+                'A magical trip to the ocean',
+                'Making friends at a new school',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => setCustomPrompt(suggestion)}
                   style={{
-                    background: isExpanded
-                      ? `linear-gradient(135deg, ${cat.color}20 0%, ${cat.color}10 100%)`
-                      : '#fff',
-                    borderRadius: isExpanded ? '20px 20px 0 0' : 20,
-                    padding: '1.2rem 1.5rem',
+                    background: '#f5f5f5',
+                    border: '1px solid #e8e8e8',
+                    borderRadius: 50,
+                    padding: '0.4rem 0.9rem',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    border: `2px solid ${isExpanded || isHovered ? cat.color : '#eee'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    boxShadow: isHovered ? `0 4px 15px ${cat.color}20` : '0 2px 8px rgba(0,0,0,0.04)',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.78rem',
+                    color: '#666',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#43A04715';
+                    e.currentTarget.style.borderColor = '#43A047';
+                    e.currentTarget.style.color = '#43A047';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#f5f5f5';
+                    e.currentTarget.style.borderColor = '#e8e8e8';
+                    e.currentTarget.style.color = '#666';
                   }}
                 >
-                  <div style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 14,
-                    background: `${cat.color}18`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.6rem',
-                    flexShrink: 0,
-                  }}>
-                    {cat.icon}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '1.05rem',
-                      fontWeight: 600,
-                      color: '#000',
-                      margin: 0,
-                    }}>
-                      {cat.name}
-                    </h3>
-                    <p style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '0.85rem',
-                      color: '#6F6F6F',
-                      margin: '0.15rem 0 0',
-                    }}>
-                      {cat.description}
-                    </p>
-                  </div>
-                  <div style={{
-                    fontSize: '0.85rem',
-                    color: '#aaa',
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                  }}>
-                    {books.length} books
-                    <span style={{
-                      display: 'inline-block',
-                      transition: 'transform 0.3s',
-                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}>
-                      &#9660;
-                    </span>
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div style={{
-                    border: `2px solid ${cat.color}`,
-                    borderTop: 'none',
-                    borderRadius: '0 0 20px 20px',
-                    padding: '1.2rem',
-                    background: `linear-gradient(180deg, ${cat.color}08 0%, #fff 100%)`,
-                  }}>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                      gap: '1rem',
-                    }}>
-                      {books.map((book) => {
-                        const isBookHovered = hoveredBook === book.id;
-                        return (
-                          <div
-                            key={book.id}
-                            onClick={() => navigate(`/personalize/${book.id}`)}
-                            onMouseEnter={() => setHoveredBook(book.id)}
-                            onMouseLeave={() => setHoveredBook(null)}
-                            style={{
-                              background: '#fff',
-                              borderRadius: 16,
-                              padding: '1.2rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.25s ease',
-                              border: `2px solid ${isBookHovered ? cat.color : '#f0f0f0'}`,
-                              transform: isBookHovered ? 'translateY(-4px)' : 'translateY(0)',
-                              boxShadow: isBookHovered
-                                ? `0 8px 25px ${cat.color}25`
-                                : '0 2px 8px rgba(0,0,0,0.04)',
-                            }}
-                          >
-                            <h4 style={{
-                              fontFamily: "'Inter', sans-serif",
-                              fontSize: '1.05rem',
-                              fontWeight: 600,
-                              color: '#000',
-                              margin: '0 0 0.3rem',
-                            }}>
-                              {book.name}
-                            </h4>
-                            <p style={{
-                              fontFamily: "'Inter', sans-serif",
-                              fontSize: '0.82rem',
-                              color: '#6F6F6F',
-                              margin: '0 0 0.8rem',
-                              lineHeight: 1.4,
-                            }}>
-                              {book.description}
-                            </p>
-                            <div style={{
-                              display: 'inline-block',
-                              padding: '0.35rem 1rem',
-                              borderRadius: 50,
-                              background: isBookHovered ? cat.color : `${cat.color}15`,
-                              color: isBookHovered ? '#fff' : cat.color,
-                              fontFamily: "'Inter', sans-serif",
-                              fontWeight: 600,
-                              fontSize: '0.78rem',
-                              transition: 'all 0.25s ease',
-                            }}>
-                              Create Book
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* My Books Section */}
-      {completedOrders.length > 0 && (
-        <section id="my-books" style={{
-          padding: '3rem 2rem 4rem',
-          background: '#fafafa',
-        }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{
-              textAlign: 'center',
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: '2rem',
-              fontWeight: 400,
-              color: '#000',
-              marginBottom: '0.5rem',
-            }}>
-              My Storybooks
-            </h2>
-            <p style={{
-              textAlign: 'center',
-              color: '#6F6F6F',
-              fontFamily: "'Inter', sans-serif",
-              marginBottom: '2rem',
-              fontSize: '1rem',
-            }}>
-              {completedOrders.length} book{completedOrders.length !== 1 ? 's' : ''} created
-            </p>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '1.5rem',
-            }}>
-              {completedOrders.map((order: any) => {
-                const coverImage = order.pages?.find((p: any) => p.imageUrl)?.imageUrl;
-                const isHovered = hoveredBook === order.id;
-                const bookTemplate = BOOK_TEMPLATES.find((t) => t.id === order.theme);
-                const category = bookTemplate
-                  ? CATEGORIES.find((c) => c.id === bookTemplate.categoryId)
-                  : null;
-                const accentColor = category?.color || '#000';
-                return (
-                  <div
-                    key={order.id}
-                    onClick={() => navigate(`/preview/${order.id}`)}
-                    onMouseEnter={() => setHoveredBook(order.id)}
-                    onMouseLeave={() => setHoveredBook(null)}
-                    style={{
-                      borderRadius: 16,
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                      transform: isHovered ? 'translateY(-6px) scale(1.03)' : 'translateY(0) scale(1)',
-                      boxShadow: isHovered
-                        ? '0 16px 40px rgba(0,0,0,0.18)'
-                        : '0 4px 16px rgba(0,0,0,0.08)',
-                      background: '#fff',
-                    }}
-                  >
-                    <div style={{
-                      width: '100%',
-                      height: 200,
-                      overflow: 'hidden',
-                      position: 'relative',
-                    }}>
-                      {coverImage ? (
-                        <img
-                          src={coverImage}
-                          alt={order.childName}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.3s ease',
-                            transform: isHovered ? 'scale(1.08)' : 'scale(1)',
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: '100%',
-                          height: '100%',
-                          background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '3rem',
-                        }}>
-                          {category?.icon || '\uD83D\uDCD6'}
-                        </div>
-                      )}
-                      <div style={{
-                        position: 'absolute',
-                        top: 10,
-                        right: 10,
-                        background: accentColor,
-                        color: '#fff',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: 20,
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        fontFamily: "'Inter', sans-serif",
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                      }}>
-                        {bookTemplate?.name || order.theme}
-                      </div>
-                    </div>
-                    <div style={{ padding: '1rem 1.2rem' }}>
-                      <h3 style={{
-                        fontFamily: "'Instrument Serif', serif",
-                        fontSize: '1.1rem',
-                        fontWeight: 400,
-                        color: '#000',
-                        margin: '0 0 0.3rem',
-                      }}>
-                        {order.storyJson?.title || `${order.childName}'s Adventure`}
-                      </h3>
-                      <p style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: '0.8rem',
-                        color: '#6F6F6F',
-                        margin: '0 0 0.6rem',
-                      }}>
-                        For {order.childName} &middot; {order.pages?.length || 0} pages
-                      </p>
-                      <div style={{
-                        display: 'inline-block',
-                        padding: '0.3rem 1rem',
-                        borderRadius: 50,
-                        background: isHovered ? '#000' : '#f0f0f0',
-                        color: isHovered ? '#fff' : '#000',
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        transition: 'all 0.3s ease',
-                      }}>
-                        Read Book
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  {suggestion}
+                </button>
+              ))}
             </div>
           </div>
-        </section>
-      )}
+
+          <button
+            onClick={() => navigate('/personalize/custom', { state: { customStoryPrompt: customPrompt } })}
+            disabled={customPrompt.trim().length < 10}
+            style={{
+              width: '100%',
+              padding: '0.9rem',
+              fontSize: '1.05rem',
+              fontWeight: 600,
+              fontFamily: "'Inter', sans-serif",
+              background: customPrompt.trim().length < 10
+                ? '#ccc'
+                : 'linear-gradient(135deg, #43A047, #66BB6A)',
+              border: 'none',
+              borderRadius: 14,
+              cursor: customPrompt.trim().length < 10 ? 'not-allowed' : 'pointer',
+              color: '#fff',
+              boxShadow: customPrompt.trim().length < 10 ? 'none' : '0 4px 15px rgba(67, 160, 71, 0.3)',
+              transition: 'all 0.2s',
+              letterSpacing: '0.3px',
+            }}
+          >
+            Continue to Personalize &#8594;
+          </button>
+        </div>
+
+        {/* Link to pre-made books */}
+        <div style={{
+          marginTop: '2rem',
+          textAlign: 'center',
+        }}>
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.9rem',
+            color: '#999',
+            margin: '0 0 0.5rem',
+          }}>
+            Or browse our ready-made stories
+          </p>
+          <a
+            href="/templates"
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: '#AB47BC',
+              textDecoration: 'none',
+            }}
+          >
+            View Pre-made Books &#8594;
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

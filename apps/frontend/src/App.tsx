@@ -1,73 +1,41 @@
-import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { LandingPage } from './pages/LandingPage';
 import { PersonalizePage } from './pages/PersonalizePage';
 import { ProgressPage } from './pages/ProgressPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { CreatePage } from './pages/CreatePage';
-import { FAQ } from './components/FAQ';
+import { LoginPage } from './pages/LoginPage';
+import { TemplatesPage } from './pages/TemplatesPage';
+import { AboutPage } from './pages/AboutPage';
+import { FAQPage } from './pages/FAQPage';
+import { ContactPage } from './pages/ContactPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { ConfirmationPage } from './pages/ConfirmationPage';
+import { TrackingPage } from './pages/TrackingPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { AdminPage } from './pages/AdminPage';
+import { NavBar } from './components/NavBar';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Footer } from './components/Footer';
 
-function Header() {
+function ConditionalNavBar() {
   const location = useLocation();
-  const isPreview = location.pathname.startsWith('/preview');
-  if (isPreview) return null;
-
-  return (
-    <header className="w-full bg-white relative z-20">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-6">
-        {/* Logo */}
-        <Link to="/" className="no-underline">
-          <span
-            className="font-display text-3xl tracking-tight"
-            style={{ color: '#000000' }}
-          >
-            Once Upon a Time
-          </span>
-        </Link>
-
-        {/* Navigation */}
-        <nav className="flex items-center gap-6">
-          <Link
-            to="/"
-            className="no-underline text-sm font-body transition-colors"
-            style={{ color: location.pathname === '/' ? '#000000' : '#6F6F6F' }}
-          >
-            Home
-          </Link>
-          <Link
-            to="/create"
-            className="no-underline text-sm font-body transition-colors"
-            style={{ color: location.pathname === '/create' ? '#000000' : '#6F6F6F' }}
-          >
-            Books
-          </Link>
-          <Link
-            to="/create"
-            className="rounded-full text-sm font-body no-underline transition-transform hover:scale-[1.03] inline-block"
-            style={{
-              backgroundColor: '#000000',
-              color: '#FFFFFF',
-              padding: '0.625rem 1.5rem',
-            }}
-          >
-            Create a Book
-          </Link>
-        </nav>
-      </div>
-    </header>
-  );
+  if (location.pathname.startsWith('/admin')) return null;
+  return <NavBar />;
 }
 
 function GlobalSections() {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isPreview = location.pathname.startsWith('/preview');
+  const isLogin = location.pathname === '/login';
+  const isAdmin = location.pathname.startsWith('/admin');
 
-  if (isHome || isPreview) return null;
+  if (isHome || isPreview || isLogin || isAdmin) return null;
 
   return (
     <>
-      <FAQ />
       <Footer />
     </>
   );
@@ -76,19 +44,45 @@ function GlobalSections() {
 export function App() {
   return (
     <BrowserRouter>
-      <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/create" element={<CreatePage />} />
-            <Route path="/personalize/:bookId" element={<PersonalizePage />} />
-            <Route path="/progress/:orderId" element={<ProgressPage />} />
-            <Route path="/preview/:orderId" element={<PreviewPage />} />
-          </Routes>
-        </main>
-        <GlobalSections />
-      </div>
+      <AuthProvider>
+        <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+          <ConditionalNavBar />
+          <main>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/profile" element={
+                <ProtectedRoute><ProfilePage /></ProtectedRoute>
+              } />
+              <Route path="/create" element={
+                <ProtectedRoute><CreatePage /></ProtectedRoute>
+              } />
+              <Route path="/personalize/:bookId" element={
+                <ProtectedRoute><PersonalizePage /></ProtectedRoute>
+              } />
+              <Route path="/progress/:orderId" element={
+                <ProtectedRoute><ProgressPage /></ProtectedRoute>
+              } />
+              <Route path="/preview/:orderId" element={<PreviewPage />} />
+              <Route path="/checkout/:orderId" element={
+                <ProtectedRoute><CheckoutPage /></ProtectedRoute>
+              } />
+              <Route path="/confirmation/:orderId" element={
+                <ProtectedRoute><ConfirmationPage /></ProtectedRoute>
+              } />
+              <Route path="/tracking/:orderId" element={
+                <ProtectedRoute><TrackingPage /></ProtectedRoute>
+              } />
+              <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+          </main>
+          <GlobalSections />
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { UploadModule } from './upload/upload.module';
 import { OrdersModule } from './orders/orders.module';
 import { QueueModule } from './queue/queue.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { QueueModule } from './queue/queue.module';
       envFilePath: '.env',
     }),
     DatabaseModule,
+    AuthModule,
     UploadModule,
     OrdersModule,
     QueueModule,

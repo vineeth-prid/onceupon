@@ -4,10 +4,11 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { RazorpayService } from './razorpay.service';
 import { PdfModule } from '../pdf/pdf.module';
+import { AuthModule } from '../auth/auth.module';
 import { ORCHESTRATOR_QUEUE } from '../queue/queue.constants';
 
 @Module({
-  imports: [BullModule.registerQueue({ name: ORCHESTRATOR_QUEUE }), PdfModule],
+  imports: [BullModule.registerQueue({ name: ORCHESTRATOR_QUEUE }), PdfModule, AuthModule],
   controllers: [OrdersController],
   providers: [OrdersService, RazorpayService],
   exports: [OrdersService],

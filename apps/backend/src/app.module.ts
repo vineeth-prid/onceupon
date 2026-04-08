@@ -10,6 +10,7 @@ import { QueueModule } from './queue/queue.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
     }),
     DatabaseModule,
     UploadModule,

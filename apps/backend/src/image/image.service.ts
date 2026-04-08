@@ -9,7 +9,7 @@ import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, ILLUSTRATION_STYLES } from '@bookmag
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 function getStyleConfig(styleId?: string) {
-  const style = ILLUSTRATION_STYLES.find((s) => s.id === styleId);
+  const style = ILLUSTRATION_STYLES.find((s: any) => s.id === styleId);
   return style || ILLUSTRATION_STYLES[0]; // fallback to disney
 }
 

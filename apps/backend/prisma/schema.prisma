@@ -55,6 +55,7 @@ model Order {
 
   // Payment
   paymentId         String?     @unique
+  razorpayOrderId   String?     @unique
   paymentProvider   String?
   amountPaid        Int?        // in smallest currency unit (paise/cents)
   currency          String?

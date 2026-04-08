@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, forwardRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
-import { getOrder, downloadPdf } from '../api/orders';
+import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment } from '../api/orders';
+
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8zpjzk5bLxS6K7';
 
 const FONT_BODY = "'Crimson Text', 'Georgia', serif";
 const FONT_TITLE = "'Playfair Display', 'Georgia', serif";
@@ -230,24 +232,76 @@ export function PreviewPage() {
   const [pages, setPages] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [childName, setChildName] = useState('');
+  const [status, setStatus] = useState<string>('');
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(false);
+  const [paying, setPaying] = useState(false);
 
-  useEffect(() => {
+  const fetchOrder = () => {
     if (!orderId) return;
     getOrder(orderId).then((data) => {
       const orderPages = data.order.pages || [];
       setPages(orderPages);
       setTitle(data.order.storyJson?.title || 'Your Storybook');
       setChildName(data.order.childName || '');
+      setStatus(data.order.status || '');
       // Use first story page image for cover (not the reference sheet)
       const firstPageWithImage = orderPages.find((p: any) => p.imageUrl);
       setCoverImageUrl(firstPageWithImage?.imageUrl || null);
       setLoading(false);
     }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchOrder();
   }, [orderId]);
+
+  const handlePayment = async () => {
+    if (!orderId) return;
+    setPaying(true);
+    try {
+      const rzpOrder = await createRazorpayOrder(orderId);
+      
+      const options = {
+        key: RZP_KEY_ID,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        name: 'Once Upon a Time',
+        description: `Personalized storybook for ${childName}`,
+        order_id: rzpOrder.id,
+        handler: async (response: any) => {
+          try {
+            await verifyRazorpayPayment({
+              orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            alert('Payment Successful!');
+            fetchOrder();
+          } catch (err) {
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#2d1b69'
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert('Failed to initiate payment. Please try again.');
+    }
+    setPaying(false);
+  };
 
   if (loading) {
     return (
@@ -486,9 +540,49 @@ export function PreviewPage() {
         flexWrap: 'wrap',
         justifyContent: 'center',
       }}>
+        {status === 'PREVIEW_READY' && status !== 'PAID' && (
+          <button
+            onClick={handlePayment}
+            disabled={paying}
+            style={{
+              padding: '0.6rem 1.8rem',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              fontFamily: FONT_UI,
+              borderRadius: 50,
+              border: 'none',
+              background: paying
+                ? 'rgba(255,215,0,0.5)'
+                : 'linear-gradient(135deg, #FFD700, #FFA500)',
+              color: '#1a0533',
+              cursor: paying ? 'wait' : 'pointer',
+              boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (!paying) {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(255,215,0,0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!paying) {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255,215,0,0.3)';
+              }
+            }}
+          >
+            {paying ? 'Initiating...' : 'Get Your Book for ₹499'}
+          </button>
+        )}
+
         <button
           onClick={async () => {
             if (!orderId) return;
+            if (status !== 'PAID' && status !== 'DELIVERED') {
+              alert('Please purchase your book first to download the PDF.');
+              return;
+            }
             setDownloading(true);
             try {
               const blob = await downloadPdf(orderId);
@@ -520,6 +614,7 @@ export function PreviewPage() {
             cursor: downloading ? 'wait' : 'pointer',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.2s',
+            opacity: (status === 'PAID' || status === 'DELIVERED') ? 1 : 0.6,
           }}
           onMouseEnter={(e) => {
             if (!downloading) {
@@ -532,7 +627,7 @@ export function PreviewPage() {
             }
           }}
         >
-          {downloading ? 'Generating PDF...' : 'Download PDF'}
+          {downloading ? 'Downloading...' : (status === 'PAID' || status === 'DELIVERED' ? 'Download PDF' : 'Pay to Download')}
         </button>
 
         <button

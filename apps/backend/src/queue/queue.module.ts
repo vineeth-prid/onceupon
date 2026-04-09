@@ -16,6 +16,7 @@ import { ORCHESTRATOR_QUEUE } from './queue.constants';
         connection: {
           host: config.get('REDIS_HOST', 'localhost'),
           port: config.get('REDIS_PORT', 6379),
+          skipVersionCheck: true,
         },
       }),
     }),

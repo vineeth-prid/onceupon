@@ -41,35 +41,50 @@ export class AuthService {
     return { token, user: this.sanitizeUser(user) };
   }
 
-  async googleLogin(dto: { googleId: string; email: string; firstName: string; lastName: string; avatarUrl?: string }) {
-    let user = await this.prisma.user.findUnique({ where: { googleId: dto.googleId } });
-
-    if (!user) {
-      // Check if email exists with different provider
-      const emailUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
-      if (emailUser) {
-        // Link Google to existing account
-        user = await this.prisma.user.update({
-          where: { id: emailUser.id },
-          data: { googleId: dto.googleId, avatarUrl: dto.avatarUrl || emailUser.avatarUrl, isVerified: true },
-        });
-      } else {
-        user = await this.prisma.user.create({
-          data: {
-            firstName: dto.firstName,
-            lastName: dto.lastName,
-            email: dto.email,
-            googleId: dto.googleId,
-            avatarUrl: dto.avatarUrl,
-            authProvider: 'GOOGLE',
-            isVerified: true,
-          },
-        });
+  async googleLogin(dto: { credential: string }) {
+    try {
+      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${dto.credential}`);
+      if (!res.ok) {
+        throw new UnauthorizedException('Invalid Google token');
       }
-    }
+      const data = await res.json();
+      
+      const email = data.email;
+      const googleId = data.sub;
+      const firstName = data.given_name || 'User';
+      const lastName = data.family_name || '';
+      const avatarUrl = data.picture;
 
-    const token = this.signToken(user.id, user.email, user.role);
-    return { token, user: this.sanitizeUser(user) };
+      let user = await this.prisma.user.findUnique({ where: { googleId } });
+
+      if (!user) {
+        // Check if email exists with different provider
+        const emailUser = await this.prisma.user.findUnique({ where: { email } });
+        if (emailUser) {
+          user = await this.prisma.user.update({
+            where: { id: emailUser.id },
+            data: { googleId, avatarUrl: avatarUrl || emailUser.avatarUrl, isVerified: true },
+          });
+        } else {
+          user = await this.prisma.user.create({
+            data: {
+              firstName,
+              lastName,
+              email,
+              googleId,
+              avatarUrl,
+              authProvider: 'GOOGLE',
+              isVerified: true,
+            },
+          });
+        }
+      }
+
+      const token = this.signToken(user.id, user.email, user.role);
+      return { token, user: this.sanitizeUser(user) };
+    } catch (error) {
+      throw new UnauthorizedException('Failed to authenticate with Google');
+    }
   }
 
   async getMe(userId: string) {

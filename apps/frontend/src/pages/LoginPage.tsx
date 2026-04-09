@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,7 +49,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
 
-  const { login, register } = useAuth();
+  const { login, register, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from || '/create';
@@ -90,6 +90,42 @@ export function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    let initialized = false;
+    const renderGoogle = () => {
+      if (!initialized && (window as any).google?.accounts?.id && document.getElementById('google-btn')) {
+        (window as any).google.accounts.id.initialize({
+          client_id: '131535683460-jji94fgcvgoiip28ntpaj6f7o9pnp6ei.apps.googleusercontent.com',
+          callback: async (response: any) => {
+            setLoading(true);
+            try {
+              await googleLogin(response.credential);
+              navigate(from, { replace: true });
+            } catch (err: any) {
+               setError(err.response?.data?.message || 'Google authentication failed');
+            } finally {
+               setLoading(false);
+            }
+          }
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById('google-btn'),
+          { theme: 'outline', size: 'large', width: '100%', text: tab === 'login' ? 'signin_with' : 'signup_with' }
+        );
+        initialized = true;
+      }
+    };
+    renderGoogle();
+    const interval = Object.keys((window as any).google || {}).length ? 0 : setInterval(() => {
+      if ((window as any).google) {
+        clearInterval(interval);
+        renderGoogle();
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [tab, googleLogin, navigate, from]);
+  
   const strength = getPasswordStrength(password);
 
   return (
@@ -160,6 +196,14 @@ export function LoginPage() {
             {error}
           </div>
         )}
+
+        <div id="google-btn" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}></div>
+
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ flex: 1, height: 1, backgroundColor: '#e5e5e5' }}></div>
+          <span className="font-body" style={{ padding: '0 0.8rem', color: '#6F6F6F', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR</span>
+          <div style={{ flex: 1, height: 1, backgroundColor: '#e5e5e5' }}></div>
+        </div>
 
         {tab === 'login' ? (
           <>

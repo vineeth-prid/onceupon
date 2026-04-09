@@ -9,7 +9,8 @@
     "experimentalDecorators": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@bookmagic/shared": ["src/shared/index.ts"]
     }
   },
   "include": ["src/**/*"],

@@ -10,3 +10,4 @@ uploads/
 *.config.js
 *.config.d.ts
 tsconfig.tsbuildinfo
+.env

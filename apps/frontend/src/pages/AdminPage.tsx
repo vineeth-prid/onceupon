@@ -400,12 +400,89 @@ function PricingTab() {
 }
 
 function CouponsTab() {
-  const coupons = [
-    { code: 'WELCOME20', type: 'Percentage', value: '20%', used: 342, max: 1000, expiry: '2026-06-30', status: 'Active' },
-    { code: 'FLAT500', type: 'Fixed', value: '₹500', used: 89, max: 200, expiry: '2026-05-15', status: 'Active' },
-    { code: 'DIWALI50', type: 'Percentage', value: '50%', used: 500, max: 500, expiry: '2025-11-15', status: 'Expired' },
-    { code: 'FREESHIP', type: 'Free Shipping', value: '100%', used: 1204, max: 5000, expiry: '2026-12-31', status: 'Active' },
-  ];
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [newCoupon, setNewCoupon] = useState({
+    code: '',
+    type: 'percentage',
+    value: '',
+    maxUses: '',
+    expiryDate: '',
+    minOrder: '',
+    syncWithRazorpay: true,
+  });
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await fetch('/api/coupons');
+      if (res.ok) {
+        const data = await res.json();
+        setCoupons(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch coupons:', e);
+    }
+  };
+
+  useState(() => {
+    fetchCoupons();
+  });
+
+  const handleCreate = async () => {
+    if (!newCoupon.code || !newCoupon.value) {
+      alert('Please provide at least a code and a value');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: newCoupon.code,
+          name: newCoupon.code,
+          type: newCoupon.type === 'Fixed Amount' ? 'flat' : 'percentage',
+          value: parseInt(newCoupon.value),
+          usageLimit: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : undefined,
+          validTill: newCoupon.expiryDate ? new Date(newCoupon.expiryDate).toISOString() : undefined,
+          minAmount: newCoupon.minOrder ? parseInt(newCoupon.minOrder) * 100 : undefined,
+          syncWithRazorpay: newCoupon.syncWithRazorpay,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Coupon created successfully!');
+        setNewCoupon({
+          code: '',
+          type: 'percentage',
+          value: '',
+          maxUses: '',
+          expiryDate: '',
+          minOrder: '',
+          syncWithRazorpay: true,
+        });
+        fetchCoupons();
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.message || 'Failed to create coupon'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to connect to backend');
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    try {
+      await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+      fetchCoupons();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -414,41 +491,91 @@ function CouponsTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Code</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. SUMMER25" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. SUMMER25" 
+              value={newCoupon.code}
+              onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Discount Type</label>
-            <select style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}>
-              <option>Percentage</option>
-              <option>Fixed Amount</option>
-              <option>Free Shipping</option>
+            <select 
+              style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}
+              value={newCoupon.type}
+              onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value })}
+            >
+              <option value="percentage">Percentage (%)</option>
+              <option value="flat">Fixed Amount (Paise)</option>
             </select>
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Value</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 25" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 20" 
+              value={newCoupon.value}
+              onChange={(e) => setNewCoupon({ ...newCoupon, value: e.target.value })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Max Uses</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 500" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 500" 
+              value={newCoupon.maxUses}
+              onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: e.target.value })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Expiry Date</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} type="date" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              type="date" 
+              value={newCoupon.expiryDate}
+              onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
+            />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Min Order</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 999" />
+            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Min Order (INR)</label>
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 999" 
+              value={newCoupon.minOrder}
+              onChange={(e) => setNewCoupon({ ...newCoupon, minOrder: e.target.value })}
+            />
           </div>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18 }}>
+          <input 
+            type="checkbox" 
+            checked={newCoupon.syncWithRazorpay} 
+            onChange={(e) => setNewCoupon({ ...newCoupon, syncWithRazorpay: e.target.checked })}
+          />
+          <label style={{ fontSize: 13, color: '#1a1814' }}>Sync with Razorpay API</label>
+        </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          <button style={btnPrimary}>Create Coupon</button>
-          <button style={btnOutline}>Auto-Generate Code</button>
+          <button 
+            style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }} 
+            onClick={handleCreate}
+            disabled={loading}
+          >
+            {loading ? 'Creating...' : 'Create Coupon'}
+          </button>
+          <button 
+            style={btnOutline}
+            onClick={() => setNewCoupon({ ...newCoupon, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}
+          >
+            Auto-Generate Code
+          </button>
         </div>
       </div>
 
       <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
+          <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={fetchCoupons}>Refresh</button>
+        </div>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -463,23 +590,35 @@ function CouponsTab() {
             </tr>
           </thead>
           <tbody>
-            {coupons.map((c) => (
-              <tr key={c.code}>
-                <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
-                <td style={tdStyle}>{c.type}</td>
-                <td style={tdStyle}>{c.value}</td>
-                <td style={tdStyle}>{c.used}</td>
-                <td style={tdStyle}>{c.max}</td>
-                <td style={tdStyle}>{c.expiry}</td>
-                <td style={tdStyle}><span style={badge(c.status)}>{c.status}</span></td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>Edit</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Delete</button>
-                  </div>
+            {coupons.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                  No coupons found. Create your first discount code above.
                 </td>
               </tr>
-            ))}
+            ) : (
+              coupons.map((c) => (
+                <tr key={c.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
+                  <td style={tdStyle}>{c.type}</td>
+                  <td style={tdStyle}>{c.type === 'percentage' ? `${c.value}%` : `₹${c.value/100}`}</td>
+                  <td style={tdStyle}>{c.usageCount}</td>
+                  <td style={tdStyle}>{c.usageLimit || '∞'}</td>
+                  <td style={tdStyle}>{c.validTill ? new Date(c.validTill).toLocaleDateString() : 'Never'}</td>
+                  <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button 
+                        style={{ ...btnOutline, color: '#c47560' }}
+                        onClick={() => handleDelete(c.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

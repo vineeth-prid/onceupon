@@ -21,12 +21,14 @@ import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { OrdersService } from './orders.service';
 import { RazorpayService } from './razorpay.service';
 import { PdfService } from '../pdf/pdf.service';
+import { CouponsService } from './coupons.service';
 import { ORCHESTRATOR_QUEUE, JobName } from '../queue/queue.constants';
 
 @Controller('orders')
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
+    private readonly couponsService: CouponsService,
     private readonly pdfService: PdfService,
     private readonly razorpayService: RazorpayService,
     @InjectQueue(ORCHESTRATOR_QUEUE) private readonly queue: Queue,
@@ -36,31 +38,55 @@ export class OrdersController {
   async createRazorpayOrder(
     @Param('id') id: string,
     @Body('amount') amountFromClient?: number,
-    @Body('shipping') shipping?: any
+    @Body('shipping') shipping?: any,
+    @Body('couponCode') couponCode?: string,
   ) {
     const order = await this.ordersService.findById(id);
     // Use amount from client (converted to INR) or fallback to 499
-    const amount = amountFromClient || 499; 
+    let amount = amountFromClient || 499; 
+    let discountAmount = 0;
+    let couponId: string | null = null;
+
+    if (couponCode) {
+      try {
+        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100);
+        discountAmount = validation.discountAmount; // in paise
+        amount = Math.max(0, amount - (discountAmount / 100)); // amount is in INR
+        couponId = validation.coupon.id;
+      } catch (error) {
+        // If coupon is invalid, we can either throw error or just log it
+        // Depending on UX requirements. Let's throw for now so user knows.
+        throw error;
+      }
+    }
     
-    // Update shipping details if provided
+    // Update shipping and coupon details if provided
+    const updateData: any = {};
     if (shipping) {
-      await this.ordersService.updateOrder(id, {
-        shippingName: `${shipping.firstName} ${shipping.lastName}`.trim(),
-        shippingLine1: shipping.address1,
-        shippingLine2: shipping.address2,
-        shippingCity: shipping.city,
-        shippingState: shipping.state,
-        shippingPostal: shipping.postcode,
-        shippingCountry: shipping.country,
-        shippingPhone: shipping.phone,
-      });
+      updateData.shippingName = `${shipping.firstName} ${shipping.lastName}`.trim();
+      updateData.shippingLine1 = shipping.address1;
+      updateData.shippingLine2 = shipping.address2;
+      updateData.shippingCity = shipping.city;
+      updateData.shippingState = shipping.state;
+      updateData.shippingPostal = shipping.postcode;
+      updateData.shippingCountry = shipping.country;
+      updateData.shippingPhone = shipping.phone;
+    }
+    
+    if (couponId) {
+      updateData.couponId = couponId;
+      updateData.discountAmount = discountAmount;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await this.ordersService.updateOrder(id, updateData);
     }
 
     const razorpayOrder = await this.razorpayService.createOrder(id, amount);
     
     await this.ordersService.updateOrder(id, {
       razorpayOrderId: razorpayOrder.id,
-      amountPaid: amount * 100, // stored in paise
+      amountPaid: Math.round(amount * 100), // stored in paise
       currency: 'INR',
     });
 

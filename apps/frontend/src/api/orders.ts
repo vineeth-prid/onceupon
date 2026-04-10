@@ -33,8 +33,13 @@ export async function downloadPdf(id: string): Promise<Blob> {
   return data;
 }
 
-export async function createRazorpayOrder(id: string, amount?: number, shipping?: any) {
-  const { data } = await api.post(`/orders/${id}/razorpay`, { amount, shipping });
+export async function createRazorpayOrder(id: string, amount?: number, shipping?: any, couponCode?: string) {
+  const { data } = await api.post(`/orders/${id}/razorpay`, { amount, shipping, couponCode });
+  return data;
+}
+
+export async function validateCoupon(code: string, amount: number) {
+  const { data } = await api.post('/coupons/validate', { code, amount });
   return data;
 }
 

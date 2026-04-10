@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder } from '../api/orders';
+import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -36,7 +36,10 @@ export function CheckoutPage() {
   const [addons, setAddons] = useState<Record<string, boolean>>({});
   const [promo, setPromo] = useState('');
   const [promoApplied, setPromoApplied] = useState<null | 'success' | 'error'>(null);
+  const [promoMessage, setPromoMessage] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountPct, setDiscountPct] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0); // in paise
   const [payment, setPayment] = useState<PaymentMethod>('card');
 
   const [shipping, setShipping] = useState({
@@ -64,27 +67,42 @@ export function CheckoutPage() {
   const toggleAddon = (id: string) =>
     setAddons(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const applyPromo = () => {
-    if (promo.trim().toUpperCase() === 'MEMORY10') {
+  const applyPromo = async () => {
+    if (!promo.trim()) return;
+    
+    const chosen = FORMATS.find(f => f.id === format)!;
+    const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
+    const addonTotal = ADDONS.reduce((sum, a) => sum + (addons[a.id] ? a.price : 0), 0);
+    const subtotal = (chosen.price + deliveryPrice + addonTotal) * 100;
+
+    try {
+      const result = await validateCoupon(promo.trim(), subtotal);
+      setAppliedCoupon(result.coupon);
+      setDiscountPct(result.coupon.type === 'percentage' ? result.coupon.value : 0);
+      setDiscountAmount(result.discountAmount);
       setPromoApplied('success');
-      setDiscountPct(10);
-    } else {
+      setPromoMessage(`${result.coupon.code} applied!`);
+    } catch (err: any) {
       setPromoApplied('error');
+      setPromoMessage(err.response?.data?.message || 'Invalid promo code');
+      setAppliedCoupon(null);
       setDiscountPct(0);
+      setDiscountAmount(0);
     }
   };
 
   const breakdown = useMemo(() => {
     const chosen = FORMATS.find(f => f.id === format)!;
     const bookPrice = chosen.price;
-    const printPrice = isPrint ? 0 : 0; // included in format price
     const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
     const addonTotal = ADDONS.reduce((sum, a) => sum + (addons[a.id] ? a.price : 0), 0);
     const subtotal = bookPrice + deliveryPrice + addonTotal;
-    const discount = Math.round(subtotal * discountPct / 100);
-    const total = subtotal - discount;
-    return { bookPrice, printPrice, deliveryPrice, addonTotal, discount, total };
-  }, [format, delivery, addons, discountPct, isPrint]);
+    
+    const discount = discountAmount / 100; 
+    const total = Math.max(0, subtotal - discount);
+    
+    return { bookPrice, printPrice: 0, deliveryPrice, addonTotal, discount, total };
+  }, [format, delivery, addons, discountAmount, isPrint]);
 
   const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8zpjzk5bLxS6K7';
 
@@ -93,17 +111,16 @@ export function CheckoutPage() {
     setPaying(true);
     
     try {
-      // 1. Create Razorpay Order with total amount and shipping (if applicable)
       const rzpOrder = await createRazorpayOrder(
         orderId, 
         breakdown.total, 
-        isPrint ? shipping : null
+        isPrint ? shipping : null,
+        appliedCoupon?.code
       );
       
-      // 2. Open Razorpay Checkout Modal
       const options = {
         key: RZP_KEY_ID,
-        amount: rzpOrder.amount, // already in paise from backend
+        amount: rzpOrder.amount,
         currency: rzpOrder.currency,
         name: 'Once Upon a Time',
         description: `${format === 'ebook' ? 'eBook' : 'Print Book'} for ${childName}`,
@@ -400,10 +417,10 @@ export function CheckoutPage() {
               </button>
             </div>
             {promoApplied === 'success' && (
-              <p style={{ fontSize: 13, color: '#2E7D32', marginTop: 8 }}>MEMORY10 applied — 10% off!</p>
+              <p style={{ fontSize: 13, color: '#2E7D32', marginTop: 8 }}>{promoMessage}</p>
             )}
             {promoApplied === 'error' && (
-              <p style={{ fontSize: 13, color: '#C62828', marginTop: 8 }}>Invalid promo code.</p>
+              <p style={{ fontSize: 13, color: '#C62828', marginTop: 8 }}>{promoMessage}</p>
             )}
           </section>
 

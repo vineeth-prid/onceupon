@@ -69,6 +69,33 @@ export class RazorpayService {
       }
     }
 
+
     return isValid;
+  }
+
+  async createCoupon(data: {
+    name: string;
+    type: 'flat' | 'percentage';
+    value: number;
+    valid_till?: number;
+  }) {
+    try {
+      // Razorpay Node SDK might not exhibit the .coupons property yet in all versions.
+      // We use the base API helper provided by the SDK to make the request.
+      const coupon = await (this.razorpay as any).api.post({
+        url: '/coupons',
+        data: {
+          name: data.name,
+          type: data.type,
+          value: data.value,
+          valid_till: data.valid_till,
+        },
+      });
+      return coupon;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error creating Razorpay coupon: ${errorMessage}`);
+      throw error;
+    }
   }
 }

@@ -33,10 +33,29 @@ export class OrdersController {
   ) {}
 
   @Post(':id/razorpay')
-  async createRazorpayOrder(@Param('id') id: string) {
+  async createRazorpayOrder(
+    @Param('id') id: string,
+    @Body('amount') amountFromClient?: number,
+    @Body('shipping') shipping?: any
+  ) {
     const order = await this.ordersService.findById(id);
-    // Fixed amount for now, e.g., ₹499
-    const amount = 499; 
+    // Use amount from client (converted to INR) or fallback to 499
+    const amount = amountFromClient || 499; 
+    
+    // Update shipping details if provided
+    if (shipping) {
+      await this.ordersService.updateOrder(id, {
+        shippingName: `${shipping.firstName} ${shipping.lastName}`.trim(),
+        shippingLine1: shipping.address1,
+        shippingLine2: shipping.address2,
+        shippingCity: shipping.city,
+        shippingState: shipping.state,
+        shippingPostal: shipping.postcode,
+        shippingCountry: shipping.country,
+        shippingPhone: shipping.phone,
+      });
+    }
+
     const razorpayOrder = await this.razorpayService.createOrder(id, amount);
     
     await this.ordersService.updateOrder(id, {
@@ -73,6 +92,9 @@ export class OrdersController {
       status: 'PAID',
     });
 
+    // Automatically trigger full book generation upon payment verification
+    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: body.orderId });
+
     return { success: true };
   }
 
@@ -106,9 +128,11 @@ export class OrdersController {
   async completeOrder(@Param('id') id: string) {
     const order = await this.ordersService.findById(id);
 
-    // Mark as paid and queue the full generation
-    await this.ordersService.updateStatus(id, 'PAID' as any);
-    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+    // Idempotent: Only update and queue if not already paid/processing
+    if (order.status !== 'PAID') {
+      await this.ordersService.updateStatus(id, 'PAID' as any);
+      await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+    }
 
     return { message: 'Full book generation started', orderId: id };
   }

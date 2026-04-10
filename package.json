@@ -7,9 +7,9 @@
     "test:all": "turbo run test",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
-    "db:migrate": "pnpm --filter backend prisma migrate dev",
-    "db:generate": "pnpm --filter backend prisma generate",
-    "db:seed": "pnpm --filter backend prisma db seed"
+    "db:migrate": "pnpm --filter backend exec prisma migrate dev",
+    "db:generate": "pnpm --filter backend exec prisma generate",
+    "db:seed": "pnpm --filter backend exec prisma db seed"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { completeOrder } from '../api/orders';
+import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -36,13 +36,27 @@ export function CheckoutPage() {
   const [addons, setAddons] = useState<Record<string, boolean>>({});
   const [promo, setPromo] = useState('');
   const [promoApplied, setPromoApplied] = useState<null | 'success' | 'error'>(null);
+  const [promoMessage, setPromoMessage] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountPct, setDiscountPct] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0); // in paise
   const [payment, setPayment] = useState<PaymentMethod>('card');
 
   const [shipping, setShipping] = useState({
     firstName: '', lastName: '', address1: '', address2: '',
-    city: '', postcode: '', country: 'IN', phone: '',
+    city: '', state: '', postcode: '', country: 'IN', phone: '',
   });
+
+  const [childName, setChildName] = useState('');
+  const [paying, setPaying] = useState(false);
+
+  useEffect(() => {
+    if (orderId) {
+      getOrder(orderId).then(data => {
+        setChildName(data.order.childName || '');
+      });
+    }
+  }, [orderId]);
 
   const [card, setCard] = useState({
     number: '', expiry: '', cvv: '', name: '',
@@ -53,39 +67,100 @@ export function CheckoutPage() {
   const toggleAddon = (id: string) =>
     setAddons(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const applyPromo = () => {
-    if (promo.trim().toUpperCase() === 'MEMORY10') {
+  const applyPromo = async () => {
+    if (!promo.trim()) return;
+    
+    const chosen = FORMATS.find(f => f.id === format)!;
+    const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
+    const addonTotal = ADDONS.reduce((sum, a) => sum + (addons[a.id] ? a.price : 0), 0);
+    const subtotal = (chosen.price + deliveryPrice + addonTotal) * 100;
+
+    try {
+      const result = await validateCoupon(promo.trim(), subtotal);
+      setAppliedCoupon(result.coupon);
+      setDiscountPct(result.coupon.type === 'percentage' ? result.coupon.value : 0);
+      setDiscountAmount(result.discountAmount);
       setPromoApplied('success');
-      setDiscountPct(10);
-    } else {
+      setPromoMessage(`${result.coupon.code} applied!`);
+    } catch (err: any) {
       setPromoApplied('error');
+      setPromoMessage(err.response?.data?.message || 'Invalid promo code');
+      setAppliedCoupon(null);
       setDiscountPct(0);
+      setDiscountAmount(0);
     }
   };
 
   const breakdown = useMemo(() => {
     const chosen = FORMATS.find(f => f.id === format)!;
     const bookPrice = chosen.price;
-    const printPrice = isPrint ? 0 : 0; // included in format price
     const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
     const addonTotal = ADDONS.reduce((sum, a) => sum + (addons[a.id] ? a.price : 0), 0);
     const subtotal = bookPrice + deliveryPrice + addonTotal;
-    const discount = Math.round(subtotal * discountPct / 100);
-    const total = subtotal - discount;
-    return { bookPrice, printPrice, deliveryPrice, addonTotal, discount, total };
-  }, [format, delivery, addons, discountPct, isPrint]);
+    
+    const discount = discountAmount / 100; 
+    const total = Math.max(0, subtotal - discount);
+    
+    return { bookPrice, printPrice: 0, deliveryPrice, addonTotal, discount, total };
+  }, [format, delivery, addons, discountAmount, isPrint]);
 
-  const [placing, setPlacing] = useState(false);
+  const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8zpjzk5bLxS6K7';
 
   const handlePlaceOrder = async () => {
     if (!orderId) return;
-    setPlacing(true);
+    setPaying(true);
+    
     try {
-      await completeOrder(orderId);
-      navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
-    } catch {
-      setPlacing(false);
-      alert('Failed to process order. Please try again.');
+      const rzpOrder = await createRazorpayOrder(
+        orderId, 
+        breakdown.total, 
+        isPrint ? shipping : null,
+        appliedCoupon?.code
+      );
+      
+      const options = {
+        key: RZP_KEY_ID,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        name: 'Once Upon a Time',
+        description: `${format === 'ebook' ? 'eBook' : 'Print Book'} for ${childName}`,
+        order_id: rzpOrder.id,
+        handler: async (response: any) => {
+          try {
+            // 3. Verify Payment (this also triggers the completion job on the backend)
+            await verifyRazorpayPayment({
+              orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            // 4. Redirect to progress page
+            navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
+          } catch (err) {
+            console.error('Payment verification failed:', err);
+            alert('Payment verification failed. Please contact support.');
+            setPaying(false);
+          }
+        },
+        prefill: {
+          name: `${shipping.firstName} ${shipping.lastName}`.trim(),
+          email: '',
+          contact: shipping.phone
+        },
+        theme: {
+          color: '#000000'
+        },
+        modal: {
+          ondismiss: () => setPaying(false)
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert('Failed to initiate payment. Please try again.');
+      setPaying(false);
     }
   };
 
@@ -245,6 +320,14 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
+                  <label style={label}>State / Province</label>
+                  <input
+                    style={input}
+                    value={shipping.state}
+                    onChange={e => setShipping(s => ({ ...s, state: e.target.value }))}
+                  />
+                </div>
+                <div>
                   <label style={label}>Postcode</label>
                   <input
                     style={input}
@@ -334,91 +417,52 @@ export function CheckoutPage() {
               </button>
             </div>
             {promoApplied === 'success' && (
-              <p style={{ fontSize: 13, color: '#2E7D32', marginTop: 8 }}>MEMORY10 applied — 10% off!</p>
+              <p style={{ fontSize: 13, color: '#2E7D32', marginTop: 8 }}>{promoMessage}</p>
             )}
             {promoApplied === 'error' && (
-              <p style={{ fontSize: 13, color: '#C62828', marginTop: 8 }}>Invalid promo code.</p>
+              <p style={{ fontSize: 13, color: '#C62828', marginTop: 8 }}>{promoMessage}</p>
             )}
           </section>
 
-          {/* --- Payment Method --- */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={sectionTitle}>Payment Method</h2>
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               {([
-                { id: 'card' as PaymentMethod, label: 'Credit / Debit Card' },
-                { id: 'apple' as PaymentMethod, label: 'Apple Pay' },
-                { id: 'google' as PaymentMethod, label: 'Google Pay' },
+                { id: 'card' as PaymentMethod, label: 'Razorpay (Secure)' },
+                { id: 'apple' as PaymentMethod, label: 'UPI' },
+                { id: 'google' as PaymentMethod, label: 'Net Banking' },
               ]).map(m => (
                 <div
                   key={m.id}
                   style={{
-                    ...radioCard(payment === m.id),
+                    ...radioCard(true), // Always active since Razorpay handles all
                     flex: 1, textAlign: 'center' as const, padding: '14px 10px',
+                    borderColor: '#000', background: '#FAFAFA'
                   }}
-                  onClick={() => setPayment(m.id)}
                 >
-                  <span style={{ fontSize: 13, fontWeight: 500, color: payment === m.id ? '#000' : '#6F6F6F' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#000' }}>
                     {m.label}
                   </span>
                 </div>
               ))}
             </div>
-
-            {payment === 'card' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={label}>Card Number</label>
-                  <input
-                    style={input}
-                    placeholder="1234 5678 9012 3456"
-                    value={card.number}
-                    onChange={e => setCard(c => ({ ...c, number: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label style={label}>Expiry</label>
-                  <input
-                    style={input}
-                    placeholder="MM / YY"
-                    value={card.expiry}
-                    onChange={e => setCard(c => ({ ...c, expiry: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label style={label}>CVV</label>
-                  <input
-                    style={input}
-                    placeholder="123"
-                    value={card.cvv}
-                    onChange={e => setCard(c => ({ ...c, cvv: e.target.value }))}
-                  />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={label}>Name on Card</label>
-                  <input
-                    style={input}
-                    value={card.name}
-                    onChange={e => setCard(c => ({ ...c, name: e.target.value }))}
-                  />
-                </div>
-              </div>
-            )}
+            <p style={{ fontSize: 12, color: '#6F6F6F', textAlign: 'center' }}>
+              All payments are processed securely via Razorpay.
+            </p>
           </section>
 
-          {/* --- Place Order --- */}
           <button
             onClick={handlePlaceOrder}
-            disabled={placing}
+            disabled={paying}
             style={{
               width: '100%', padding: '16px 0',
-              background: placing ? '#666' : '#000', color: '#FFF',
+              background: paying ? '#666' : '#000', color: '#FFF',
               border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600,
-              cursor: placing ? 'wait' : 'pointer', fontFamily: '"Inter", sans-serif',
+              cursor: paying ? 'wait' : 'pointer', fontFamily: '"Inter", sans-serif',
               letterSpacing: 0.3,
             }}
           >
-            {placing ? 'Processing...' : `Place Order — ${formatPrice(breakdown.total)}`}
+            {paying ? 'Processing...' : `Pay & Place Order — ${formatPrice(breakdown.total)}`}
           </button>
         </div>
 

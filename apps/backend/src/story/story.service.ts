@@ -47,7 +47,7 @@ Return JSON with:
 Return ONLY valid JSON, nothing else.`;
 
     let lastError: Error | null = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
         this.logger.log(`Generating preview page attempt ${attempt + 1} for theme: ${theme}`);
         const response = await this.client.models.generateContent({
@@ -62,7 +62,8 @@ Return ONLY valid JSON, nothing else.`;
         const text = response.text;
         if (!text) throw new Error('Empty response from Gemini');
 
-        const parsed = JSON.parse(text);
+        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanedText);
         if (!parsed.title || !parsed.pages?.[0]) throw new Error('Invalid preview response structure');
 
         // Ensure only 1 page
@@ -75,9 +76,10 @@ Return ONLY valid JSON, nothing else.`;
       } catch (error) {
         lastError = error as Error;
         this.logger.warn(`Preview page attempt ${attempt + 1} failed: ${lastError.message}`);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
-    throw new Error(`Preview page generation failed after 3 attempts: ${lastError?.message}`);
+    throw new Error(`Preview page generation failed after 5 attempts: ${lastError?.message}`);
   }
 
   async generateStory(
@@ -91,7 +93,7 @@ Return ONLY valid JSON, nothing else.`;
     const prompt = builder(childName, childAge, childGender);
 
     let lastError: Error | null = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
         this.logger.log(`Generating story attempt ${attempt + 1} for theme: ${theme}`);
 
@@ -112,7 +114,8 @@ Return ONLY valid JSON, nothing else.`;
           throw new Error('Empty response from Gemini');
         }
 
-        const parsed = JSON.parse(text);
+        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanedText);
 
         // Pad or trim to TOTAL_PAGES if Gemini returns wrong count
         if (parsed.pages && parsed.pages.length > 0 && parsed.pages.length < TOTAL_PAGES) {
@@ -140,9 +143,10 @@ Return ONLY valid JSON, nothing else.`;
       } catch (error) {
         lastError = error as Error;
         this.logger.warn(`Story generation attempt ${attempt + 1} failed: ${lastError.message}`);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
 
-    throw new Error(`Story generation failed after 3 attempts: ${lastError?.message}`);
+    throw new Error(`Story generation failed after 5 attempts: ${lastError?.message}`);
   }
 }

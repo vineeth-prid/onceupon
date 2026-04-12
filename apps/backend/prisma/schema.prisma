@@ -112,6 +112,7 @@ model Order {
 
   // Payment
   paymentId         String?     @unique
+  razorpayOrderId   String?     @unique
   paymentProvider   String?
   amountPaid        Int?        // in smallest currency unit (paise/cents)
   currency          String?
@@ -130,6 +131,10 @@ model Order {
   luluJobId         String?     @unique
   trackingNumber    String?
 
+  couponId          String?
+  coupon            Coupon?     @relation(fields: [couponId], references: [id])
+  discountAmount    Int?        // in paise
+
   user              User?       @relation(fields: [userId], references: [id])
   pages             Page[]
 
@@ -139,6 +144,29 @@ model Order {
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+}
+
+model Coupon {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  type          String   @default("percentage") // "flat" or "percentage"
+  value         Int      // percentage (0-100) or flat amount in paise
+  maxDiscount   Int?     // Max discount for percentage coupons in paise
+  minAmount     Int?     // Min order amount in paise
+  validFrom     DateTime @default(now())
+  validTill     DateTime?
+  usageLimit    Int?
+  usageCount    Int      @default(0)
+  active        Boolean  @default(true)
+  razorpayId    String?  @unique
+
+  orders        Order[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([code])
 }
 
 model Page {

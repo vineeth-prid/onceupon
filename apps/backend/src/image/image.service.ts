@@ -9,7 +9,7 @@ import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, ILLUSTRATION_STYLES } from '@bookmag
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 function getStyleConfig(styleId?: string) {
-  const style = ILLUSTRATION_STYLES.find((s) => s.id === styleId);
+  const style = ILLUSTRATION_STYLES.find((s: any) => s.id === styleId);
   return style || ILLUSTRATION_STYLES[0]; // fallback to disney
 }
 
@@ -121,7 +121,7 @@ CRITICAL RULES:
 
     // DRAMATIC-IMAGE-ONLY pages: Generate scene WITHOUT face embedding.
     if (layout === 'dramatic-image-only') {
-      const sceneOnlyPrompt = `${imagePrompt}, ${style.promptSuffix}, cinematic wide shot, detailed background, epic scene`;
+      const sceneOnlyPrompt = `A img scene, ${imagePrompt}, ${style.promptSuffix}, cinematic wide shot, detailed background, epic scene`;
       this.logger.log(`Generating scene-only image (no face embed) for order ${orderId}, page ${pageNumber}`);
       this.logger.log(`Prompt: ${sceneOnlyPrompt.substring(0, 200)}...`);
       const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);

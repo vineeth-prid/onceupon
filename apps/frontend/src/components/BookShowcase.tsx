@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import HTMLFlipBook from 'react-pageflip';
+import WavyRibbonMarquee from './WavyRibbonMarquee';
 
 // ─── Riya's Sparkling Christmas Wish — real book from database ───
 
@@ -391,31 +392,35 @@ export default function BookShowcase() {
   const bookShift = useSpread && bookPhase === 'closed-front' ? -PAGE_W : 0;
 
   return (
-    <section style={{ padding: '80px 0 100px', background: '#FAFAFA' }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 48, padding: '0 24px' }}>
-        <div className="flex items-center justify-center gap-3" style={{ marginBottom: 16 }}>
-        </div>
-        <h2
-          className="font-display"
-          style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', color: '#000', lineHeight: 1.1, fontWeight: 400, marginBottom: 12 }}
-        >
-          Flip through a <em style={{ fontStyle: 'italic', color: '#6F6F6F' }}>sample</em> book
-        </h2>
-        <p className="font-body" style={{ fontSize: 15, color: '#6F6F6F', maxWidth: 440, margin: '0 auto' }}>
-          Every book is a one-of-a-kind story. Here's a peek at what yours could look like.
-        </p>
-      </div>
+    <section style={{ position: 'relative', background: '#FAFAFA' }}>
+      {/* Curved top edge */}
+      <div
+        style={{
+          position: 'absolute',
+          top: -60,
+          left: 0,
+          right: 0,
+          height: 80,
+          background: '#FAFAFA',
+          borderRadius: '40px 40px 0 0',
+          zIndex: 1,
+        }}
+      />
 
-      {/* Book area — scroll-to-flip on hover */}
+      {/* Book area with background text + ribbon overlay */}
       <div
         ref={bookAreaRef}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-        style={{ padding: '0 24px' }}
+        style={{ position: 'relative', padding: '80px 24px 100px', overflow: 'hidden' }}
       >
+        {/* Wavy ribbon marquee */}
+        <div style={{ position: 'relative', zIndex: 1, marginBottom: 48 }}>
+          <WavyRibbonMarquee />
+        </div>
+
         {/* Centering wrapper */}
         <div style={{
+          position: 'relative',
+          zIndex: 5,
           display: 'flex',
           justifyContent: 'center',
           maxWidth: SPREAD_W + 60,
@@ -423,6 +428,8 @@ export default function BookShowcase() {
         }}>
           {/* Animated viewport — clips the book to create open/close effect */}
           <div
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             style={{
               width: viewportWidth,
               overflow: 'hidden',
@@ -609,6 +616,7 @@ export default function BookShowcase() {
           {isHovering ? 'Scroll to flip pages' : 'Hover over book & scroll to flip'}
         </p>
       </div>
+
     </section>
   );
 }

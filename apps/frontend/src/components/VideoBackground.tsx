@@ -52,7 +52,7 @@ export function VideoBackground() {
       className="pointer-events-none"
       style={{
         position: 'fixed',
-        top: '300px',
+        top: 0,
         left: 0,
         right: 0,
         bottom: 0,

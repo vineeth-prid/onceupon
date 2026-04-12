@@ -50,11 +50,11 @@ export function LandingPage() {
       {/* Book Flip Animation Showcase */}
       <BookShowcase />
 
-      {/* Occasion Gallery */}
-      <OccasionGallery />
-
       {/* Video Testimonials */}
       <VideoTestimonials />
+
+      {/* Occasion Gallery */}
+      <OccasionGallery />
 
       {/* Footer */}
       <Footer />

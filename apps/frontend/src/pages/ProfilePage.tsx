@@ -306,7 +306,7 @@ function OrdersTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   };
 
   const getOrderType = (order: any): 'ebook' | 'print' => {
-    if (order.shippingName || order.shippingLine1 || order.luluJobId || order.trackingNumber) {
+    if (order.shippingName || order.shippingLine1 || order.trackingNumber) {
       return 'print';
     }
     return 'ebook';

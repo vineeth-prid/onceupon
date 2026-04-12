@@ -17,6 +17,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
 
 function ConditionalNavBar() {
@@ -77,7 +78,9 @@ export function App() {
               <Route path="/tracking/:orderId" element={
                 <ProtectedRoute><TrackingPage /></ProtectedRoute>
               } />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/*" element={
+                <AdminProtectedRoute><AdminPage /></AdminProtectedRoute>
+              } />
             </Routes>
           </main>
           <GlobalSections />

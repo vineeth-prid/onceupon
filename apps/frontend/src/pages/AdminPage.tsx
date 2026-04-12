@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 type Tab =
   | 'dashboard'
@@ -8,11 +9,22 @@ type Tab =
   | 'coupons'
   | 'users'
   | 'books'
-  | 'api'
-  | 'payments'
-  | 'notifications'
-  | 'settings'
-  | 'audit';
+  | 'payments';
+
+const tabPaths: Record<Tab, string> = {
+  dashboard: '/admin',
+  orders: '/admin/orders',
+  pricing: '/admin/pricing',
+  coupons: '/admin/coupons',
+  users: '/admin/users',
+  books: '/admin/books',
+  payments: '/admin/payments',
+};
+
+function getTabFromPath(pathname: string): Tab {
+  const match = Object.entries(tabPaths).find(([, path]) => pathname === path);
+  return (match?.[0] as Tab) || 'dashboard';
+}
 
 interface NavItem {
   id: Tab;
@@ -45,16 +57,7 @@ const navSections: NavSection[] = [
   {
     title: 'Integrations',
     items: [
-      { id: 'api', label: 'API', emoji: '🔌' },
       { id: 'payments', label: 'Payments', emoji: '💳' },
-      { id: 'notifications', label: 'Notifications', emoji: '🔔' },
-    ],
-  },
-  {
-    title: 'Settings',
-    items: [
-      { id: 'settings', label: 'Site Settings', emoji: '⚙️' },
-      { id: 'audit', label: 'Audit Logs', emoji: '📋' },
     ],
   },
 ];
@@ -66,11 +69,7 @@ const tabTitles: Record<Tab, { title: string; subtitle: string }> = {
   coupons: { title: 'Coupons', subtitle: 'Manage discount codes' },
   users: { title: 'Users', subtitle: 'Manage registered users' },
   books: { title: 'Books', subtitle: 'All generated storybooks' },
-  api: { title: 'API Management', subtitle: 'Third-party integrations & keys' },
   payments: { title: 'Payments', subtitle: 'Transaction history & analytics' },
-  notifications: { title: 'Notifications', subtitle: 'Messaging & automated triggers' },
-  settings: { title: 'Site Settings', subtitle: 'Platform configuration' },
-  audit: { title: 'Audit Logs', subtitle: 'Admin activity history' },
 };
 
 /* ── Shared Styles ── */
@@ -764,103 +763,6 @@ function BooksTab() {
   );
 }
 
-function APITab() {
-  const StatusDot = ({ color }: { color: string }) => (
-    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: color, marginRight: 8 }} />
-  );
-
-  const cards = [
-    {
-      title: 'AI Generation',
-      color: '#3a7048',
-      fields: [
-        { label: 'API Key', value: 'r8_****************************3kF9', type: 'text' },
-        { label: 'Model', value: 'photomaker-style', type: 'select', options: ['photomaker-style', 'flux-pulid', 'sdxl'] },
-        { label: 'Monthly Budget Cap', value: '50000', type: 'text', prefix: '₹' },
-      ],
-      stats: [
-        { label: 'API Calls (MTD)', value: '12,847' },
-        { label: 'Cost (MTD)', value: '₹34,290' },
-        { label: 'Avg Latency', value: '8.2s' },
-      ],
-    },
-    {
-      title: 'Payment Gateway',
-      color: '#3a7048',
-      fields: [
-        { label: 'Key ID', value: 'rzp_live_****8kF2', type: 'text' },
-        { label: 'Key Secret', value: '****************************', type: 'text' },
-        { label: 'Mode', value: 'Live', type: 'select', options: ['Live', 'Sandbox'] },
-      ],
-      stats: [
-        { label: 'Volume (MTD)', value: '₹69,98,560' },
-        { label: 'Decline Rate', value: '2.1%' },
-        { label: 'Uptime', value: '99.98%' },
-      ],
-    },
-    {
-      title: 'Print Partner',
-      color: '#3a7048',
-      fields: [
-        { label: 'API Key', value: 'lulu_****************************xK2', type: 'text' },
-        { label: 'Store ID', value: 'BOOKMAGIC-IN-001', type: 'text' },
-        { label: 'Mode', value: 'Production', type: 'select', options: ['Production', 'Sandbox'] },
-      ],
-      stats: [],
-    },
-    {
-      title: 'Email & SMS',
-      color: '#3a7048',
-      fields: [
-        { label: 'SendGrid Key', value: 'SG.****************************mN4', type: 'text' },
-        { label: 'From Email', value: 'hello@onceuponatime.in', type: 'text' },
-        { label: 'Twilio Token', value: '****************************', type: 'text' },
-      ],
-      stats: [],
-    },
-  ];
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      {cards.map((c) => (
-        <div key={c.title} style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-            <StatusDot color={c.color} />
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{c.title}</h3>
-          </div>
-          {c.fields.map((f) => (
-            <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <label style={{ width: 120, fontSize: 12, color: '#8a8578', flexShrink: 0 }}>{f.label}</label>
-              {f.type === 'select' ? (
-                <select style={{ ...selectStyle, flex: 1 }} defaultValue={f.value}>
-                  {f.options?.map((o) => <option key={o}>{o}</option>)}
-                </select>
-              ) : (
-                <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
-                  {f.prefix && (
-                    <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{f.prefix}</span>
-                  )}
-                  <input style={{ ...inputStyle, flex: 1, borderRadius: f.prefix ? '0 8px 8px 0' : 8, fontFamily: 'monospace', fontSize: 12 }} defaultValue={f.value} />
-                </div>
-              )}
-            </div>
-          ))}
-          {c.stats.length > 0 && (
-            <div style={{ display: 'flex', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid #e8e4de' }}>
-              {c.stats.map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1814' }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: '#8a8578' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function PaymentsTab() {
   const stats = [
     { label: 'Captured', value: '₹64,82,100', color: '#3a7048' },
@@ -923,228 +825,26 @@ function PaymentsTab() {
   );
 }
 
-function NotificationsTab() {
-  const [triggers, setTriggers] = useState<Record<string, boolean>>({
-    bookComplete: true,
-    orderConfirmation: true,
-    sentToPrint: true,
-    dispatched: true,
-    delivered: true,
-    ebookDownload: true,
-    abandonedDraft: false,
-    reviewRequest: true,
-  });
-
-  const triggerLabels: Record<string, string> = {
-    bookComplete: 'Book generation complete',
-    orderConfirmation: 'Order confirmation',
-    sentToPrint: 'Sent to print partner',
-    dispatched: 'Order dispatched',
-    delivered: 'Order delivered',
-    ebookDownload: 'eBook ready for download',
-    abandonedDraft: 'Abandoned draft (48h)',
-    reviewRequest: 'Review request (7 days post-delivery)',
-  };
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Send Notification</h3>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Audience</label>
-          <select style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}>
-            <option>All Users</option>
-            <option>Active Users (30 days)</option>
-            <option>Users with Pending Orders</option>
-            <option>Users with Abandoned Drafts</option>
-          </select>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Channel</label>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {['Email', 'Push', 'SMS'].map((ch) => (
-              <label key={ch} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked={ch === 'Email'} /> {ch}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Subject</label>
-          <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="Notification subject..." />
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Message</label>
-          <textarea
-            style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', minHeight: 100, resize: 'vertical' as const }}
-            placeholder="Write your message..."
-          />
-        </div>
-        <button style={{ ...btnPrimary, width: '100%' }}>Send Notification</button>
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Automated Triggers</h3>
-        {Object.entries(triggerLabels).map(([key, label]) => (
-          <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0ede8' }}>
-            <span style={{ fontSize: 13, color: '#1a1814' }}>{label}</span>
-            <button
-              onClick={() => setTriggers((prev) => ({ ...prev, [key]: !prev[key] }))}
-              style={{
-                width: 44,
-                height: 24,
-                borderRadius: 12,
-                border: 'none',
-                background: triggers[key] ? '#3a7048' : '#d5d0c8',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'background 0.2s',
-              }}
-            >
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 3,
-                  left: triggers[key] ? 23 : 3,
-                  width: 18,
-                  height: 18,
-                  borderRadius: '50%',
-                  background: '#fff',
-                  transition: 'left 0.2s',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                }}
-              />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SettingsTab() {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Site Settings</h3>
-        {[
-          { label: 'Site Name', value: 'Once Upon a Time', type: 'text' },
-          { label: 'Support Email', value: 'support@onceuponatime.in', type: 'text' },
-          { label: 'Max Photos per Book', value: '5', type: 'text' },
-          { label: 'Max Regenerations', value: '3', type: 'text' },
-        ].map((f) => (
-          <div key={f.label} style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>{f.label}</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue={f.value} />
-          </div>
-        ))}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 13, color: '#1a1814' }}>Maintenance Mode</span>
-          <button style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: '#d5d0c8', cursor: 'pointer', position: 'relative' }}>
-            <span style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-          </button>
-        </div>
-        <button style={{ ...btnPrimary, width: '100%' }}>Save Settings</button>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Google OAuth</h3>
-          {[
-            { label: 'Client ID', value: '******.apps.googleusercontent.com' },
-            { label: 'Client Secret', value: 'GOCSPX-****************************' },
-            { label: 'Redirect URI', value: 'https://onceuponatime.in/auth/callback' },
-            { label: 'Apple Client ID', value: 'com.onceuponatime.auth' },
-          ].map((f) => (
-            <div key={f.label} style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>{f.label}</label>
-              <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: 12 }} defaultValue={f.value} />
-            </div>
-          ))}
-        </div>
-
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Admin Access</h3>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Admin Email</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue="admin@onceuponatime.in" />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 13, color: '#1a1814' }}>Two-Factor Authentication</span>
-            <button style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: '#3a7048', cursor: 'pointer', position: 'relative' }}>
-              <span style={{ position: 'absolute', top: 3, left: 23, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-            </button>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Session Timeout (minutes)</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue="30" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AuditTab() {
-  const logs = [
-    { timestamp: '2026-04-07 14:32:01', admin: 'admin@onceuponatime.in', action: 'Update Pricing', resource: 'Premium Print', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-07 13:15:44', admin: 'admin@onceuponatime.in', action: 'Create Coupon', resource: 'SUMMER25', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-07 11:02:18', admin: 'admin@onceuponatime.in', action: 'Suspend User', resource: 'USR-004', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-06 18:45:33', admin: 'admin@onceuponatime.in', action: 'Refund Order', resource: 'ORD-4819', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-06 16:20:09', admin: 'admin@onceuponatime.in', action: 'Update API Key', resource: 'Replicate', ip: '103.42.18.201', result: 'Failed' },
-  ];
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search logs..." />
-        <select style={selectStyle}>
-          <option>All Actions</option>
-          <option>Update Pricing</option>
-          <option>Create Coupon</option>
-          <option>Suspend User</option>
-          <option>Refund Order</option>
-          <option>Update API Key</option>
-        </select>
-        <input style={inputStyle} type="date" />
-        <button style={btnPrimary}>Export</button>
-      </div>
-
-      <div style={cardStyle}>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Timestamp</th>
-              <th style={thStyle}>Admin</th>
-              <th style={thStyle}>Action</th>
-              <th style={thStyle}>Resource</th>
-              <th style={thStyle}>IP</th>
-              <th style={thStyle}>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((l, i) => (
-              <tr key={i}>
-                <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 12 }}>{l.timestamp}</td>
-                <td style={tdStyle}>{l.admin}</td>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{l.action}</td>
-                <td style={tdStyle}>{l.resource}</td>
-                <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 12 }}>{l.ip}</td>
-                <td style={tdStyle}><span style={badge(l.result)}>{l.result}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main Admin Page ── */
 
 export function AdminPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const location = useLocation();
+  const activeTab = getTabFromPath(location.pathname);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const renderTab = () => {
     switch (activeTab) {
@@ -1154,11 +854,7 @@ export function AdminPage() {
       case 'coupons': return <CouponsTab />;
       case 'users': return <UsersTab />;
       case 'books': return <BooksTab />;
-      case 'api': return <APITab />;
       case 'payments': return <PaymentsTab />;
-      case 'notifications': return <NotificationsTab />;
-      case 'settings': return <SettingsTab />;
-      case 'audit': return <AuditTab />;
     }
   };
 
@@ -1212,7 +908,7 @@ export function AdminPage() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => navigate(tabPaths[item.id])}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1305,19 +1001,79 @@ export function AdminPage() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3a7048' }} />
                 Live
               </span>
-              <div style={{
-                width: 34,
-                height: 34,
-                borderRadius: '50%',
-                background: '#1a1814',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-                fontWeight: 600,
-              }}>
-                A
+              <div ref={profileRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    background: '#1a1814',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {user?.firstName?.[0]?.toUpperCase() || 'A'}
+                </button>
+                {showProfileMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 42,
+                    right: 0,
+                    width: 220,
+                    background: '#fff',
+                    borderRadius: 12,
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)',
+                    border: '1px solid #e8e4de',
+                    overflow: 'hidden',
+                    zIndex: 100,
+                  }}>
+                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f0ede8' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1814' }}>
+                        {user?.firstName} {user?.lastName}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#8a8578', marginTop: 2 }}>
+                        {user?.email}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate('/');
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#c47560',
+                        fontSize: 13,
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#faf9f7'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

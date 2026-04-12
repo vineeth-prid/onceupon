@@ -95,7 +95,7 @@ export function LoginPage() {
     const renderGoogle = () => {
       if (!initialized && (window as any).google?.accounts?.id && document.getElementById('google-btn')) {
         (window as any).google.accounts.id.initialize({
-          client_id: '131535683460-jji94fgcvgoiip28ntpaj6f7o9pnp6ei.apps.googleusercontent.com',
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: async (response: any) => {
             setLoading(true);
             try {

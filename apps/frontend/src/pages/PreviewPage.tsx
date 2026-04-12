@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
 import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment, completeOrder } from '../api/orders';
 
-const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8zpjzk5bLxS6K7';
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const FONT_BODY = "'Crimson Text', 'Georgia', serif";
 const FONT_TITLE = "'Playfair Display', 'Georgia', serif";

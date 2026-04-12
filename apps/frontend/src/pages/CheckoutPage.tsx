@@ -104,7 +104,7 @@ export function CheckoutPage() {
     return { bookPrice, printPrice: 0, deliveryPrice, addonTotal, discount, total };
   }, [format, delivery, addons, discountAmount, isPrint]);
 
-  const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8zpjzk5bLxS6K7';
+  const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
   const handlePlaceOrder = async () => {
     if (!orderId) return;

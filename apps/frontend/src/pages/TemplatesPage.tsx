@@ -263,7 +263,7 @@ export function TemplatesPage() {
             <BookCard
               key={book.id}
               book={book}
-              onClick={() => navigate(`/personalize/${book.slug}`)}
+              onClick={() => navigate(`/books/${book.id}`)}
             />
           ))}
         </div>

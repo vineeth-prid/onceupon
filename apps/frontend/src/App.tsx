@@ -7,6 +7,7 @@ import { PreviewPage } from './pages/PreviewPage';
 import { CreatePage } from './pages/CreatePage';
 import { LoginPage } from './pages/LoginPage';
 import { TemplatesPage } from './pages/TemplatesPage';
+import { BookDetailPage } from './pages/BookDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { FAQPage } from './pages/FAQPage';
 import { ContactPage } from './pages/ContactPage';
@@ -53,6 +54,7 @@ export function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="/books/:slug" element={<BookDetailPage />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />

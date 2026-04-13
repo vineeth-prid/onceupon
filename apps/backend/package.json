@@ -12,7 +12,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "seed:admin": "node seed-admin.js"
   },
   "dependencies": {
     "@bookmagic/shared": "workspace:*",

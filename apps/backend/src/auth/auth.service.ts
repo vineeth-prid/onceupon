@@ -101,6 +101,19 @@ export class AuthService {
     return this.sanitizeUser(user);
   }
 
+  async adminResetPassword(dto: { email: string; newPassword: string }) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (user.role !== 'ADMIN') throw new UnauthorizedException('Access denied');
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+    return { message: 'Password reset successful' };
+  }
+
   private signToken(userId: string, email: string, role: string): string {
     return this.jwt.sign({ sub: userId, email, role });
   }
@@ -110,3 +123,4 @@ export class AuthService {
     return rest;
   }
 }
+

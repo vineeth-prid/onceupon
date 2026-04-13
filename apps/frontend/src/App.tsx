@@ -6,6 +6,7 @@ import { ProgressPage } from './pages/ProgressPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { CreatePage } from './pages/CreatePage';
 import { LoginPage } from './pages/LoginPage';
+import { AdminLoginPage } from './pages/AdminLoginPage';
 import { TemplatesPage } from './pages/TemplatesPage';
 import { AboutPage } from './pages/AboutPage';
 import { FAQPage } from './pages/FAQPage';
@@ -17,6 +18,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 import { Footer } from './components/Footer';
 
 function ConditionalNavBar() {
@@ -24,6 +26,7 @@ function ConditionalNavBar() {
   if (location.pathname.startsWith('/admin')) return null;
   return <NavBar />;
 }
+
 
 function GlobalSections() {
   const location = useLocation();
@@ -77,7 +80,10 @@ export function App() {
               <Route path="/tracking/:orderId" element={
                 <ProtectedRoute><TrackingPage /></ProtectedRoute>
               } />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin" element={
+                <AdminRoute><AdminPage /></AdminRoute>
+              } />
             </Routes>
           </main>
           <GlobalSections />

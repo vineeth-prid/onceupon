@@ -121,6 +121,16 @@ export function NavBar() {
                     >
                       My Books
                     </Link>
+                    {user?.role === 'ADMIN' && (
+                      <Link
+                        to="/admin"
+                        className="block no-underline font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50"
+                        style={{ color: '#000', borderTop: '1px solid #f0f0f0' }}
+                        onClick={() => setAvatarMenuOpen(false)}
+                      >
+                        ⚙️ Admin Portal
+                      </Link>
+                    )}
                     <button
                       onClick={() => { logout(); setAvatarMenuOpen(false); }}
                       className="block w-full text-left font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50 border-none bg-transparent cursor-pointer"
@@ -132,13 +142,22 @@ export function NavBar() {
                 )}
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="no-underline font-body text-xs uppercase transition-colors"
-                style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
-              >
-                Sign In
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className="no-underline font-body text-xs uppercase transition-colors"
+                  style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/admin/login"
+                  className="no-underline font-body text-xs uppercase transition-colors"
+                  style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
+                >
+                  Admin
+                </Link>
+              </>
             )}
           </nav>
 
@@ -204,14 +223,24 @@ export function NavBar() {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="no-underline font-display text-2xl"
-                style={{ color: '#000' }}
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign In
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className="no-underline font-display text-2xl"
+                  style={{ color: '#000' }}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/admin/login"
+                  className="no-underline font-display text-2xl"
+                  style={{ color: '#6F6F6F' }}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Admin
+                </Link>
+              </>
             )}
            
           </nav>

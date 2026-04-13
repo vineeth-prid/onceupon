@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 type Tab =
   | 'dashboard'
@@ -1006,6 +1007,12 @@ function AuditTab() {
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/admin/login', { replace: true });
+  };
 
   const renderTab = () => {
     switch (activeTab) {
@@ -1166,19 +1173,37 @@ export function AdminPage() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3a7048' }} />
                 Live
               </span>
-              <div style={{
-                width: 34,
-                height: 34,
-                borderRadius: '50%',
-                background: '#1a1814',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-                fontWeight: 600,
-              }}>
-                A
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '6px 16px',
+                  background: 'transparent',
+                  border: '1px solid #d5d0c8',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontFamily: 'Inter, sans-serif',
+                  color: '#8a8578',
+                  cursor: 'pointer',
+                }}
+              >
+                Logout
+              </button>
+              <div 
+                title={user?.email || 'Admin'}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  background: '#1a1814',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                {user?.firstName?.[0]?.toUpperCase() ?? 'A'}
               </div>
             </div>
           </div>

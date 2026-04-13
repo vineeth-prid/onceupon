@@ -12,7 +12,7 @@
     "db:seed": "pnpm --filter backend exec prisma db seed"
   },
   "devDependencies": {
-    "turbo": "^2.5.0",
+    "turbo": "^2.9.5",
     "typescript": "^5.8.0"
   },
   "engines": {

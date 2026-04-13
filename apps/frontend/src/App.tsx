@@ -8,6 +8,7 @@ import { CreatePage } from './pages/CreatePage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { TemplatesPage } from './pages/TemplatesPage';
+import { BookDetailPage } from './pages/BookDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { FAQPage } from './pages/FAQPage';
 import { ContactPage } from './pages/ContactPage';
@@ -18,7 +19,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { AdminRoute } from './components/AdminRoute';
+import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
 
 function ConditionalNavBar() {
@@ -55,6 +56,7 @@ export function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="/books/:slug" element={<BookDetailPage />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
@@ -80,9 +82,8 @@ export function App() {
               <Route path="/tracking/:orderId" element={
                 <ProtectedRoute><TrackingPage /></ProtectedRoute>
               } />
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={
-                <AdminRoute><AdminPage /></AdminRoute>
+              <Route path="/admin/*" element={
+                <AdminProtectedRoute><AdminPage /></AdminProtectedRoute>
               } />
             </Routes>
           </main>

@@ -77,7 +77,13 @@ export function PersonalizePage() {
       const order = await createOrder(orderData);
       navigate(`/progress/${order.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      const responseData = err.response?.data;
+      if (responseData?.errors && Array.isArray(responseData.errors)) {
+        const detail = responseData.errors.map((e: any) => e.message).join(', ');
+        setError(`Validation failed: ${detail}`);
+      } else {
+        setError(responseData?.message || 'Something went wrong');
+      }
       setLoading(false);
     }
   };

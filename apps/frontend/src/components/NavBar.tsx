@@ -25,8 +25,8 @@ export function NavBar() {
   if (isPreview) return null;
 
   const navLinks = [
-    { to: '/templates', label: 'Pre-made Books' },
-    { to: '/create', label: 'Create Custom Books' },
+    { to: '/templates', label: 'Books' },
+    { to: '/create', label: 'Custom' },
     { to: '/about', label: 'About' },
     { to: '/faq', label: 'FAQ' },
     { to: '/contact', label: 'Contact' },

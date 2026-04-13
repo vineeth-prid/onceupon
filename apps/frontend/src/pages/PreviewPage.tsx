@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
-import { getOrder, downloadPdf } from '../api/orders';
+import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment, completeOrder } from '../api/orders';
+
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const FONT_BODY = "'Crimson Text', 'Georgia', serif";
 const FONT_TITLE = "'Playfair Display', 'Georgia', serif";
@@ -255,14 +257,18 @@ export function PreviewPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [downloading, setDownloading] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [useSpread, setUseSpread] = useState(window.innerWidth >= 860);
 
-  // Determine if this is a preview-only order (1 image) vs full book
   const pagesWithImages = pages.filter((p: any) => p.imageUrl);
   const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
-  const isPreviewOnly = pagesWithImages.length <= 1 && totalStoryPages > 1
-    && !['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus);
+  
+  // Use payment status to determine if preview wall should be shown
+  const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!pages.some((p: any) => p.order?.paymentId);
+  
+  // Determine if this is a preview-only order (1 image) vs full book
+  const isPreviewOnly = !isPaid && pagesWithImages.length <= 1 && totalStoryPages > 1;
 
   const totalBookPages = pages.length + 2;
 
@@ -297,20 +303,72 @@ export function PreviewPage() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Data fetching
-  useEffect(() => {
+  const fetchOrder = () => {
     if (!orderId) return;
     getOrder(orderId).then((data) => {
       const orderPages = data.order.pages || [];
       setPages(orderPages);
       setTitle(data.order.storyJson?.title || 'Your Storybook');
       setChildName(data.order.childName || '');
-      setOrderStatus(data.order.status || '');
+      
+      // If paymentId exists in the order record, force a Paid status check
+      const effectiveStatus = data.order.paymentId ? 'PAID' : (data.order.status || '');
+      setOrderStatus(effectiveStatus);
+      
       const firstPageWithImage = orderPages.find((p: any) => p.imageUrl);
       setCoverImageUrl(firstPageWithImage?.imageUrl || null);
       setLoading(false);
     }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchOrder();
   }, [orderId]);
+
+  const handlePayment = async () => {
+    if (!orderId) return;
+    setPaying(true);
+    try {
+      const rzpOrder = await createRazorpayOrder(orderId);
+      
+      const options = {
+        key: RZP_KEY_ID,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        name: 'Once Upon a Time',
+        description: `Personalized storybook for ${childName}`,
+        order_id: rzpOrder.id,
+        handler: async (response: any) => {
+          try {
+            await verifyRazorpayPayment({
+              orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            alert('Payment Successful!');
+            fetchOrder();
+          } catch (err) {
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#2d1b69'
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert('Failed to initiate payment. Please try again.');
+    }
+    setPaying(false);
+  };
 
   // Scroll-based page flipping (wheel)
   useEffect(() => {
@@ -783,6 +841,60 @@ export function PreviewPage() {
               {downloading ? 'Generating...' : 'Download eBook'}
             </button>
 
+            {orderStatus === 'FAILED' && isPaid && (
+              <button
+                onClick={async () => {
+                  try {
+                    await completeOrder(orderId!);
+                    alert('Re-starting generation. Please wait a few minutes.');
+                    fetchOrder();
+                  } catch (err) {
+                    alert('Failed to retry. Please contact support.');
+                  }
+                }}
+                style={{
+                  padding: '0.65rem 1.8rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  fontFamily: FONT_UI,
+                  borderRadius: 50,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #FF6B6B, #EE5253)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(238, 82, 83, 0.4)',
+                }}
+              >
+                Retry Generation
+              </button>
+            )}
+
+            {orderStatus === 'PREVIEW_READY' && !isPaid && (
+              <button
+                onClick={handlePayment}
+                disabled={paying}
+                style={{
+                  padding: '0.65rem 2.2rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  fontFamily: FONT_UI,
+                  borderRadius: 50,
+                  border: 'none',
+                  background: paying
+                    ? 'rgba(255,215,0,0.5)'
+                    : 'linear-gradient(135deg, #FFD700, #FFA500)',
+                  color: '#1a0533',
+                  cursor: paying ? 'wait' : 'pointer',
+                  transition: 'all 0.25s ease',
+                  boxShadow: '0 4px 20px rgba(255,215,0,0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                {paying ? 'Initiating...' : 'Unlock eBook ₹499'}
+              </button>
+            )}
             <button
               onClick={() => navigate(`/checkout/${orderId}`)}
               style={{

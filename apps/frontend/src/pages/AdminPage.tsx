@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAdminOrders } from '../api/orders';
 
 type Tab =
   | 'dashboard'
@@ -9,11 +10,22 @@ type Tab =
   | 'coupons'
   | 'users'
   | 'books'
-  | 'api'
-  | 'payments'
-  | 'notifications'
-  | 'settings'
-  | 'audit';
+  | 'payments';
+
+const tabPaths: Record<Tab, string> = {
+  dashboard: '/admin',
+  orders: '/admin/orders',
+  pricing: '/admin/pricing',
+  coupons: '/admin/coupons',
+  users: '/admin/users',
+  books: '/admin/books',
+  payments: '/admin/payments',
+};
+
+function getTabFromPath(pathname: string): Tab {
+  const match = Object.entries(tabPaths).find(([, path]) => pathname === path);
+  return (match?.[0] as Tab) || 'dashboard';
+}
 
 interface NavItem {
   id: Tab;
@@ -46,16 +58,7 @@ const navSections: NavSection[] = [
   {
     title: 'Integrations',
     items: [
-      { id: 'api', label: 'API', emoji: '🔌' },
       { id: 'payments', label: 'Payments', emoji: '💳' },
-      { id: 'notifications', label: 'Notifications', emoji: '🔔' },
-    ],
-  },
-  {
-    title: 'Settings',
-    items: [
-      { id: 'settings', label: 'Site Settings', emoji: '⚙️' },
-      { id: 'audit', label: 'Audit Logs', emoji: '📋' },
     ],
   },
 ];
@@ -67,11 +70,7 @@ const tabTitles: Record<Tab, { title: string; subtitle: string }> = {
   coupons: { title: 'Coupons', subtitle: 'Manage discount codes' },
   users: { title: 'Users', subtitle: 'Manage registered users' },
   books: { title: 'Books', subtitle: 'All generated storybooks' },
-  api: { title: 'API Management', subtitle: 'Third-party integrations & keys' },
   payments: { title: 'Payments', subtitle: 'Transaction history & analytics' },
-  notifications: { title: 'Notifications', subtitle: 'Messaging & automated triggers' },
-  settings: { title: 'Site Settings', subtitle: 'Platform configuration' },
-  audit: { title: 'Audit Logs', subtitle: 'Admin activity history' },
 };
 
 /* ── Shared Styles ── */
@@ -151,18 +150,17 @@ const selectStyle: React.CSSProperties = {
 
 function badge(status: string): React.CSSProperties {
   const map: Record<string, { bg: string; color: string }> = {
-    Generating: { bg: '#c8a45c10', color: '#9a7020' },
-    Printing: { bg: '#4a90d910', color: '#2a6cb8' },
-    Dispatched: { bg: '#5bc0de10', color: '#31708f' },
-    Shipped: { bg: '#5bc0de10', color: '#31708f' },
-    Delivered: { bg: '#6e997310', color: '#3a7048' },
+    PAID: { bg: '#6e997310', color: '#3a7048' },
+    PRINTING: { bg: '#4a90d910', color: '#2a6cb8' },
+    SHIPPED: { bg: '#5bc0de10', color: '#31708f' },
+    DELIVERED: { bg: '#6e997310', color: '#3a7048' },
+    FAILED: { bg: '#c4756010', color: '#c47560' },
+    CREATED: { bg: '#c8a45c10', color: '#9a7020' },
+    STORY_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
+    IMAGES_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
+    PDF_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
+    PREVIEW_READY: { bg: '#6e997310', color: '#3a7048' },
     Active: { bg: '#6e997310', color: '#3a7048' },
-    Success: { bg: '#6e997310', color: '#3a7048' },
-    Captured: { bg: '#6e997310', color: '#3a7048' },
-    Completed: { bg: '#6e997310', color: '#3a7048' },
-    Failed: { bg: '#c4756010', color: '#c47560' },
-    Expired: { bg: '#c4756010', color: '#c47560' },
-    Refunded: { bg: '#c4756010', color: '#c47560' },
     Pending: { bg: '#c8a45c10', color: '#9a7020' },
     Suspended: { bg: '#c4756010', color: '#c47560' },
   };
@@ -268,13 +266,23 @@ function DashboardTab() {
 }
 
 function OrdersTab() {
-  const orders = [
-    { id: 'ORD-4821', date: '2026-04-07', customer: 'Priya Sharma', book: 'Dino Adventure', format: 'Premium Print', delivery: 'Express', status: 'Printing', total: '₹2,499' },
-    { id: 'ORD-4820', date: '2026-04-06', customer: 'Rahul Mehta', book: 'Space Journey', format: 'eBook', delivery: 'Instant', status: 'Delivered', total: '₹499' },
-    { id: 'ORD-4819', date: '2026-04-06', customer: 'Anita Desai', book: 'Fairy Garden', format: 'Classic Print', delivery: 'Standard', status: 'Dispatched', total: '₹1,299' },
-    { id: 'ORD-4818', date: '2026-04-05', customer: 'Vikram Patel', book: 'Ocean Quest', format: 'Grand Print', delivery: 'Priority', status: 'Generating', total: '₹3,999' },
-    { id: 'ORD-4817', date: '2026-04-05', customer: 'Meera Iyer', book: 'Jungle Safari', format: 'Premium Print', delivery: 'Express', status: 'Failed', total: '₹2,499' },
-  ];
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAdminOrders()
+      .then((data) => setOrders(data.orders || []))
+      .catch((err) => console.error('Failed to fetch orders:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ fontSize: 13, color: '#8a8578' }}>Loading orders...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -282,18 +290,16 @@ function OrdersTab() {
         <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search orders..." />
         <select style={selectStyle}>
           <option>All Statuses</option>
-          <option>Generating</option>
-          <option>Printing</option>
-          <option>Dispatched</option>
-          <option>Delivered</option>
-          <option>Failed</option>
+          <option>PAID</option>
+          <option>PRINTING</option>
+          <option>SHIPPED</option>
+          <option>DELIVERED</option>
+          <option>FAILED</option>
         </select>
         <select style={selectStyle}>
           <option>All Formats</option>
           <option>eBook</option>
-          <option>Classic Print</option>
-          <option>Premium Print</option>
-          <option>Grand Print</option>
+          <option>Print + eBook</option>
         </select>
         <input style={inputStyle} type="date" />
         <button style={btnPrimary}>Export CSV</button>
@@ -306,7 +312,7 @@ function OrdersTab() {
               <th style={thStyle}>Order ID</th>
               <th style={thStyle}>Date</th>
               <th style={thStyle}>Customer</th>
-              <th style={thStyle}>Book</th>
+              <th style={thStyle}>Book Theme</th>
               <th style={thStyle}>Format</th>
               <th style={thStyle}>Delivery</th>
               <th style={thStyle}>Status</th>
@@ -315,31 +321,41 @@ function OrdersTab() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
-              <tr key={o.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id}</td>
-                <td style={tdStyle}>{o.date}</td>
-                <td style={tdStyle}>{o.customer}</td>
-                <td style={tdStyle}>{o.book}</td>
-                <td style={tdStyle}>{o.format}</td>
-                <td style={tdStyle}>{o.delivery}</td>
-                <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
-                <td style={tdStyle}>{o.total}</td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>View</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Refund</button>
-                  </div>
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ ...tdStyle, textAlign: 'center', padding: '40px 0', color: '#8a8578' }}>
+                  No orders found. Create a book to see it here!
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.map((o) => (
+                <tr key={o.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id.slice(0, 8).toUpperCase()}</td>
+                  <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}>{o.user ? `${o.user.firstName} ${o.user.lastName}` : (o.shippingName || 'Guest')}</td>
+                  <td style={tdStyle}>{o.theme || 'Custom'}</td>
+                  <td style={tdStyle}>{o.shippingName ? 'Print + eBook' : 'eBook'}</td>
+                  <td style={tdStyle}>{o.shippingName ? 'Standard' : 'Instant'}</td>
+                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                  <td style={tdStyle}>{o.amountPaid ? `₹${(o.amountPaid / 100).toLocaleString('en-IN')}` : '₹0'}</td>
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button style={btnOutline}>View</button>
+                      <button style={{ ...btnOutline, color: '#c47560' }}>Refund</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-          <button style={btnOutline}>Prev</button>
-          <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of 208</span>
-          <button style={btnOutline}>Next</button>
-        </div>
+        {orders.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+            <button style={btnOutline}>Prev</button>
+            <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of {Math.ceil(orders.length / 10)}</span>
+            <button style={btnOutline}>Next</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -401,12 +417,89 @@ function PricingTab() {
 }
 
 function CouponsTab() {
-  const coupons = [
-    { code: 'WELCOME20', type: 'Percentage', value: '20%', used: 342, max: 1000, expiry: '2026-06-30', status: 'Active' },
-    { code: 'FLAT500', type: 'Fixed', value: '₹500', used: 89, max: 200, expiry: '2026-05-15', status: 'Active' },
-    { code: 'DIWALI50', type: 'Percentage', value: '50%', used: 500, max: 500, expiry: '2025-11-15', status: 'Expired' },
-    { code: 'FREESHIP', type: 'Free Shipping', value: '100%', used: 1204, max: 5000, expiry: '2026-12-31', status: 'Active' },
-  ];
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [newCoupon, setNewCoupon] = useState({
+    code: '',
+    type: 'percentage',
+    value: '',
+    maxUses: '',
+    expiryDate: '',
+    minOrder: '',
+    syncWithRazorpay: true,
+  });
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await fetch('/api/coupons');
+      if (res.ok) {
+        const data = await res.json();
+        setCoupons(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch coupons:', e);
+    }
+  };
+
+  useState(() => {
+    fetchCoupons();
+  });
+
+  const handleCreate = async () => {
+    if (!newCoupon.code || !newCoupon.value) {
+      alert('Please provide at least a code and a value');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: newCoupon.code,
+          name: newCoupon.code,
+          type: newCoupon.type === 'Fixed Amount' ? 'flat' : 'percentage',
+          value: parseInt(newCoupon.value),
+          usageLimit: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : undefined,
+          validTill: newCoupon.expiryDate ? new Date(newCoupon.expiryDate).toISOString() : undefined,
+          minAmount: newCoupon.minOrder ? parseInt(newCoupon.minOrder) * 100 : undefined,
+          syncWithRazorpay: newCoupon.syncWithRazorpay,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Coupon created successfully!');
+        setNewCoupon({
+          code: '',
+          type: 'percentage',
+          value: '',
+          maxUses: '',
+          expiryDate: '',
+          minOrder: '',
+          syncWithRazorpay: true,
+        });
+        fetchCoupons();
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.message || 'Failed to create coupon'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to connect to backend');
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    try {
+      await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+      fetchCoupons();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -415,41 +508,91 @@ function CouponsTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Code</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. SUMMER25" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. SUMMER25" 
+              value={newCoupon.code}
+              onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Discount Type</label>
-            <select style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}>
-              <option>Percentage</option>
-              <option>Fixed Amount</option>
-              <option>Free Shipping</option>
+            <select 
+              style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}
+              value={newCoupon.type}
+              onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value })}
+            >
+              <option value="percentage">Percentage (%)</option>
+              <option value="flat">Fixed Amount (Paise)</option>
             </select>
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Value</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 25" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 20" 
+              value={newCoupon.value}
+              onChange={(e) => setNewCoupon({ ...newCoupon, value: e.target.value })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Max Uses</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 500" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 500" 
+              value={newCoupon.maxUses}
+              onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: e.target.value })}
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Expiry Date</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} type="date" />
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              type="date" 
+              value={newCoupon.expiryDate}
+              onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
+            />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Min Order</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="e.g. 999" />
+            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Min Order (INR)</label>
+            <input 
+              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
+              placeholder="e.g. 999" 
+              value={newCoupon.minOrder}
+              onChange={(e) => setNewCoupon({ ...newCoupon, minOrder: e.target.value })}
+            />
           </div>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18 }}>
+          <input 
+            type="checkbox" 
+            checked={newCoupon.syncWithRazorpay} 
+            onChange={(e) => setNewCoupon({ ...newCoupon, syncWithRazorpay: e.target.checked })}
+          />
+          <label style={{ fontSize: 13, color: '#1a1814' }}>Sync with Razorpay API</label>
+        </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          <button style={btnPrimary}>Create Coupon</button>
-          <button style={btnOutline}>Auto-Generate Code</button>
+          <button 
+            style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }} 
+            onClick={handleCreate}
+            disabled={loading}
+          >
+            {loading ? 'Creating...' : 'Create Coupon'}
+          </button>
+          <button 
+            style={btnOutline}
+            onClick={() => setNewCoupon({ ...newCoupon, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}
+          >
+            Auto-Generate Code
+          </button>
         </div>
       </div>
 
       <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
+          <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={fetchCoupons}>Refresh</button>
+        </div>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -464,23 +607,35 @@ function CouponsTab() {
             </tr>
           </thead>
           <tbody>
-            {coupons.map((c) => (
-              <tr key={c.code}>
-                <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
-                <td style={tdStyle}>{c.type}</td>
-                <td style={tdStyle}>{c.value}</td>
-                <td style={tdStyle}>{c.used}</td>
-                <td style={tdStyle}>{c.max}</td>
-                <td style={tdStyle}>{c.expiry}</td>
-                <td style={tdStyle}><span style={badge(c.status)}>{c.status}</span></td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>Edit</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Delete</button>
-                  </div>
+            {coupons.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                  No coupons found. Create your first discount code above.
                 </td>
               </tr>
-            ))}
+            ) : (
+              coupons.map((c) => (
+                <tr key={c.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
+                  <td style={tdStyle}>{c.type}</td>
+                  <td style={tdStyle}>{c.type === 'percentage' ? `${c.value}%` : `₹${c.value/100}`}</td>
+                  <td style={tdStyle}>{c.usageCount}</td>
+                  <td style={tdStyle}>{c.usageLimit || '∞'}</td>
+                  <td style={tdStyle}>{c.validTill ? new Date(c.validTill).toLocaleDateString() : 'Never'}</td>
+                  <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button 
+                        style={{ ...btnOutline, color: '#c47560' }}
+                        onClick={() => handleDelete(c.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -626,103 +781,6 @@ function BooksTab() {
   );
 }
 
-function APITab() {
-  const StatusDot = ({ color }: { color: string }) => (
-    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: color, marginRight: 8 }} />
-  );
-
-  const cards = [
-    {
-      title: 'AI Generation',
-      color: '#3a7048',
-      fields: [
-        { label: 'API Key', value: 'r8_****************************3kF9', type: 'text' },
-        { label: 'Model', value: 'photomaker-style', type: 'select', options: ['photomaker-style', 'flux-pulid', 'sdxl'] },
-        { label: 'Monthly Budget Cap', value: '50000', type: 'text', prefix: '₹' },
-      ],
-      stats: [
-        { label: 'API Calls (MTD)', value: '12,847' },
-        { label: 'Cost (MTD)', value: '₹34,290' },
-        { label: 'Avg Latency', value: '8.2s' },
-      ],
-    },
-    {
-      title: 'Payment Gateway',
-      color: '#3a7048',
-      fields: [
-        { label: 'Key ID', value: 'rzp_live_****8kF2', type: 'text' },
-        { label: 'Key Secret', value: '****************************', type: 'text' },
-        { label: 'Mode', value: 'Live', type: 'select', options: ['Live', 'Sandbox'] },
-      ],
-      stats: [
-        { label: 'Volume (MTD)', value: '₹69,98,560' },
-        { label: 'Decline Rate', value: '2.1%' },
-        { label: 'Uptime', value: '99.98%' },
-      ],
-    },
-    {
-      title: 'Print Partner',
-      color: '#3a7048',
-      fields: [
-        { label: 'API Key', value: 'lulu_****************************xK2', type: 'text' },
-        { label: 'Store ID', value: 'BOOKMAGIC-IN-001', type: 'text' },
-        { label: 'Mode', value: 'Production', type: 'select', options: ['Production', 'Sandbox'] },
-      ],
-      stats: [],
-    },
-    {
-      title: 'Email & SMS',
-      color: '#3a7048',
-      fields: [
-        { label: 'SendGrid Key', value: 'SG.****************************mN4', type: 'text' },
-        { label: 'From Email', value: 'hello@onceuponatime.in', type: 'text' },
-        { label: 'Twilio Token', value: '****************************', type: 'text' },
-      ],
-      stats: [],
-    },
-  ];
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      {cards.map((c) => (
-        <div key={c.title} style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-            <StatusDot color={c.color} />
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{c.title}</h3>
-          </div>
-          {c.fields.map((f) => (
-            <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <label style={{ width: 120, fontSize: 12, color: '#8a8578', flexShrink: 0 }}>{f.label}</label>
-              {f.type === 'select' ? (
-                <select style={{ ...selectStyle, flex: 1 }} defaultValue={f.value}>
-                  {f.options?.map((o) => <option key={o}>{o}</option>)}
-                </select>
-              ) : (
-                <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
-                  {f.prefix && (
-                    <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{f.prefix}</span>
-                  )}
-                  <input style={{ ...inputStyle, flex: 1, borderRadius: f.prefix ? '0 8px 8px 0' : 8, fontFamily: 'monospace', fontSize: 12 }} defaultValue={f.value} />
-                </div>
-              )}
-            </div>
-          ))}
-          {c.stats.length > 0 && (
-            <div style={{ display: 'flex', gap: 16, marginTop: 16, paddingTop: 16, borderTop: '1px solid #e8e4de' }}>
-              {c.stats.map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1814' }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: '#8a8578' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function PaymentsTab() {
   const stats = [
     { label: 'Captured', value: '₹64,82,100', color: '#3a7048' },
@@ -785,234 +843,26 @@ function PaymentsTab() {
   );
 }
 
-function NotificationsTab() {
-  const [triggers, setTriggers] = useState<Record<string, boolean>>({
-    bookComplete: true,
-    orderConfirmation: true,
-    sentToPrint: true,
-    dispatched: true,
-    delivered: true,
-    ebookDownload: true,
-    abandonedDraft: false,
-    reviewRequest: true,
-  });
-
-  const triggerLabels: Record<string, string> = {
-    bookComplete: 'Book generation complete',
-    orderConfirmation: 'Order confirmation',
-    sentToPrint: 'Sent to print partner',
-    dispatched: 'Order dispatched',
-    delivered: 'Order delivered',
-    ebookDownload: 'eBook ready for download',
-    abandonedDraft: 'Abandoned draft (48h)',
-    reviewRequest: 'Review request (7 days post-delivery)',
-  };
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Send Notification</h3>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Audience</label>
-          <select style={{ ...selectStyle, width: '100%', boxSizing: 'border-box' }}>
-            <option>All Users</option>
-            <option>Active Users (30 days)</option>
-            <option>Users with Pending Orders</option>
-            <option>Users with Abandoned Drafts</option>
-          </select>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Channel</label>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {['Email', 'Push', 'SMS'].map((ch) => (
-              <label key={ch} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked={ch === 'Email'} /> {ch}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Subject</label>
-          <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} placeholder="Notification subject..." />
-        </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Message</label>
-          <textarea
-            style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', minHeight: 100, resize: 'vertical' as const }}
-            placeholder="Write your message..."
-          />
-        </div>
-        <button style={{ ...btnPrimary, width: '100%' }}>Send Notification</button>
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Automated Triggers</h3>
-        {Object.entries(triggerLabels).map(([key, label]) => (
-          <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0ede8' }}>
-            <span style={{ fontSize: 13, color: '#1a1814' }}>{label}</span>
-            <button
-              onClick={() => setTriggers((prev) => ({ ...prev, [key]: !prev[key] }))}
-              style={{
-                width: 44,
-                height: 24,
-                borderRadius: 12,
-                border: 'none',
-                background: triggers[key] ? '#3a7048' : '#d5d0c8',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'background 0.2s',
-              }}
-            >
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 3,
-                  left: triggers[key] ? 23 : 3,
-                  width: 18,
-                  height: 18,
-                  borderRadius: '50%',
-                  background: '#fff',
-                  transition: 'left 0.2s',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                }}
-              />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SettingsTab() {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Site Settings</h3>
-        {[
-          { label: 'Site Name', value: 'Once Upon a Time', type: 'text' },
-          { label: 'Support Email', value: 'support@onceuponatime.in', type: 'text' },
-          { label: 'Max Photos per Book', value: '5', type: 'text' },
-          { label: 'Max Regenerations', value: '3', type: 'text' },
-        ].map((f) => (
-          <div key={f.label} style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>{f.label}</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue={f.value} />
-          </div>
-        ))}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 13, color: '#1a1814' }}>Maintenance Mode</span>
-          <button style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: '#d5d0c8', cursor: 'pointer', position: 'relative' }}>
-            <span style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-          </button>
-        </div>
-        <button style={{ ...btnPrimary, width: '100%' }}>Save Settings</button>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Google OAuth</h3>
-          {[
-            { label: 'Client ID', value: '******.apps.googleusercontent.com' },
-            { label: 'Client Secret', value: 'GOCSPX-****************************' },
-            { label: 'Redirect URI', value: 'https://onceuponatime.in/auth/callback' },
-            { label: 'Apple Client ID', value: 'com.onceuponatime.auth' },
-          ].map((f) => (
-            <div key={f.label} style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>{f.label}</label>
-              <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: 12 }} defaultValue={f.value} />
-            </div>
-          ))}
-        </div>
-
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Admin Access</h3>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Admin Email</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue="admin@onceuponatime.in" />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 13, color: '#1a1814' }}>Two-Factor Authentication</span>
-            <button style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: '#3a7048', cursor: 'pointer', position: 'relative' }}>
-              <span style={{ position: 'absolute', top: 3, left: 23, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-            </button>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Session Timeout (minutes)</label>
-            <input style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} defaultValue="30" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AuditTab() {
-  const logs = [
-    { timestamp: '2026-04-07 14:32:01', admin: 'admin@onceuponatime.in', action: 'Update Pricing', resource: 'Premium Print', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-07 13:15:44', admin: 'admin@onceuponatime.in', action: 'Create Coupon', resource: 'SUMMER25', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-07 11:02:18', admin: 'admin@onceuponatime.in', action: 'Suspend User', resource: 'USR-004', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-06 18:45:33', admin: 'admin@onceuponatime.in', action: 'Refund Order', resource: 'ORD-4819', ip: '103.42.18.201', result: 'Success' },
-    { timestamp: '2026-04-06 16:20:09', admin: 'admin@onceuponatime.in', action: 'Update API Key', resource: 'Replicate', ip: '103.42.18.201', result: 'Failed' },
-  ];
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search logs..." />
-        <select style={selectStyle}>
-          <option>All Actions</option>
-          <option>Update Pricing</option>
-          <option>Create Coupon</option>
-          <option>Suspend User</option>
-          <option>Refund Order</option>
-          <option>Update API Key</option>
-        </select>
-        <input style={inputStyle} type="date" />
-        <button style={btnPrimary}>Export</button>
-      </div>
-
-      <div style={cardStyle}>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Timestamp</th>
-              <th style={thStyle}>Admin</th>
-              <th style={thStyle}>Action</th>
-              <th style={thStyle}>Resource</th>
-              <th style={thStyle}>IP</th>
-              <th style={thStyle}>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((l, i) => (
-              <tr key={i}>
-                <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 12 }}>{l.timestamp}</td>
-                <td style={tdStyle}>{l.admin}</td>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{l.action}</td>
-                <td style={tdStyle}>{l.resource}</td>
-                <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 12 }}>{l.ip}</td>
-                <td style={tdStyle}><span style={badge(l.result)}>{l.result}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main Admin Page ── */
 
 export function AdminPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const location = useLocation();
+  const activeTab = getTabFromPath(location.pathname);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login', { replace: true });
-  };
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const renderTab = () => {
     switch (activeTab) {
@@ -1022,11 +872,7 @@ export function AdminPage() {
       case 'coupons': return <CouponsTab />;
       case 'users': return <UsersTab />;
       case 'books': return <BooksTab />;
-      case 'api': return <APITab />;
       case 'payments': return <PaymentsTab />;
-      case 'notifications': return <NotificationsTab />;
-      case 'settings': return <SettingsTab />;
-      case 'audit': return <AuditTab />;
     }
   };
 
@@ -1080,7 +926,7 @@ export function AdminPage() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => navigate(tabPaths[item.id])}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1173,37 +1019,79 @@ export function AdminPage() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3a7048' }} />
                 Live
               </span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: '6px 16px',
-                  background: 'transparent',
-                  border: '1px solid #d5d0c8',
-                  borderRadius: 8,
-                  fontSize: 12,
-                  fontFamily: 'Inter, sans-serif',
-                  color: '#8a8578',
-                  cursor: 'pointer',
-                }}
-              >
-                Logout
-              </button>
-              <div 
-                title={user?.email || 'Admin'}
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: '50%',
-                  background: '#1a1814',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                {user?.firstName?.[0]?.toUpperCase() ?? 'A'}
+              <div ref={profileRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    background: '#1a1814',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {user?.firstName?.[0]?.toUpperCase() || 'A'}
+                </button>
+                {showProfileMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 42,
+                    right: 0,
+                    width: 220,
+                    background: '#fff',
+                    borderRadius: 12,
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)',
+                    border: '1px solid #e8e4de',
+                    overflow: 'hidden',
+                    zIndex: 100,
+                  }}>
+                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f0ede8' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1814' }}>
+                        {user?.firstName} {user?.lastName}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#8a8578', marginTop: 2 }}>
+                        {user?.email}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate('/');
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#c47560',
+                        fontSize: 13,
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#faf9f7'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

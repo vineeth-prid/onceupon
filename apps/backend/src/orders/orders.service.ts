@@ -22,6 +22,16 @@ export class OrdersService {
     });
   }
 
+  async findAllAdmin() {
+    return this.prisma.order.findMany({
+      include: {
+        user: true,
+        pages: { orderBy: { pageNumber: 'asc' } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findAll() {
     return this.prisma.order.findMany({
       include: {

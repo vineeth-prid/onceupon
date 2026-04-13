@@ -1,294 +1,271 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CATEGORIES, BOOK_TEMPLATES, type CategoryId } from '@bookmagic/shared';
+import {
+  BOOK_CATALOG,
+  CATALOG_CATEGORIES,
+  type CatalogBook,
+  type CatalogCategory,
+} from '../data/bookCatalog';
 
-// Book-level display data (emoji, gradient, price) keyed by book template id
-const bookDisplayData: Record<string, { emoji: string; gradient: string; price: string }> = {
-  // Adventure
-  'pirate-quest':    { emoji: '\u{1F3F4}\u200D\u2620\uFE0F', gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,499' },
-  'jungle-explorer': { emoji: '\u{1F334}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,499' },
-  'space-mission':   { emoji: '\u{1F680}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,499' },
-  // Animals
-  'puppy-rescue':    { emoji: '\u{1F436}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,299' },
-  'ocean-friends':   { emoji: '\u{1F42C}',   gradient: 'linear-gradient(148deg, #7ec8e3, #3a8bb0, #0a3d5c)', price: '\u20B91,299' },
-  'safari-adventure':{ emoji: '\u{1F981}',   gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,299' },
-  // Education
-  'learning-to-walk':{ emoji: '\u{1F6B6}',   gradient: 'linear-gradient(148deg, #a0c0a4, #437048, #1c3820)', price: '\u20B9999' },
-  'first-words':     { emoji: '\u{1F4AC}',   gradient: 'linear-gradient(148deg, #b8a9d4, #6b4f9e, #2e1a5e)', price: '\u20B9999' },
-  'alphabets':       { emoji: '\u{1F524}',   gradient: 'linear-gradient(148deg, #e8c170, #c08930, #5a3a10)', price: '\u20B9999' },
-  'counting-fun':    { emoji: '\u{1F522}',   gradient: 'linear-gradient(148deg, #7ec8e3, #3a8bb0, #0a3d5c)', price: '\u20B9999' },
-  // Fantasy
-  'dragon-friend':   { emoji: '\u{1F409}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,499' },
-  'fairy-kingdom':   { emoji: '\u{1F9DA}',   gradient: 'linear-gradient(148deg, #d4a8d4, #8a4f8a, #3a1e3a)', price: '\u20B91,499' },
-  'wizard-school':   { emoji: '\u{1F9D9}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,499' },
-  // Fiction
-  'time-traveler':   { emoji: '\u{231A}',    gradient: 'linear-gradient(148deg, #d4aa6a, #8a5a28, #3a1e0e)', price: '\u20B91,299' },
-  'tiny-giant':      { emoji: '\u{1F9D2}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,299' },
-  'dream-world':     { emoji: '\u{1F30C}',   gradient: 'linear-gradient(148deg, #b8a9d4, #6b4f9e, #2e1a5e)', price: '\u20B91,299' },
-  // Nurture
-  'new-sibling':     { emoji: '\u{1F476}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,199' },
-  'first-day-school':{ emoji: '\u{1F392}',   gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)', price: '\u20B91,199' },
-  'kindness-garden': { emoji: '\u{1F33B}',   gradient: 'linear-gradient(148deg, #a0c0a4, #437048, #1c3820)', price: '\u20B91,199' },
-  // Cook
-  'baking-day':      { emoji: '\u{1F382}',   gradient: 'linear-gradient(148deg, #e8c170, #c08930, #5a3a10)', price: '\u20B91,199' },
-  'pizza-adventure': { emoji: '\u{1F355}',   gradient: 'linear-gradient(148deg, #e0a898, #c46858, #621c14)', price: '\u20B91,199' },
-  'fruit-forest':    { emoji: '\u{1F353}',   gradient: 'linear-gradient(148deg, #88b48a, #3e7246, #1b3c22)', price: '\u20B91,199' },
-};
-
-type FilterValue = 'all' | CategoryId;
+type GenderFilter = 'all' | 'boy' | 'girl';
 
 export function TemplatesPage() {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState<FilterValue>('all');
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | CatalogCategory>('all');
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>('all');
 
-  const allBooks = BOOK_TEMPLATES.filter((t) => t.id !== 'custom');
+  const filtered = useMemo(() => {
+    let books: CatalogBook[] = BOOK_CATALOG;
 
-  const filtered =
-    activeFilter === 'all'
-      ? allBooks
-      : allBooks.filter((t) => t.categoryId === activeFilter);
-
-  const getCategoryForBook = (categoryId: string) =>
-    CATEGORIES.find((c) => c.id === categoryId);
+    if (categoryFilter !== 'all') {
+      books = books.filter((b) => b.category === categoryFilter);
+    }
+    if (genderFilter !== 'all') {
+      books = books.filter((b) => b.gender === genderFilter || b.gender === 'neutral');
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      books = books.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          b.subtitle.toLowerCase().includes(q) ||
+          b.category.toLowerCase().includes(q),
+      );
+    }
+    return books;
+  }, [categoryFilter, genderFilter, search]);
 
   return (
-    <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
-      {/* Hero Section */}
+    <div style={{ background: '#fff', minHeight: '100vh' }}>
+      {/* ─── Hero Banner ──────────────────────────────────────── */}
       <section
+        className="books-hero"
         style={{
-          background: '#000',
-          padding: '80px 24px 60px',
-          textAlign: 'center',
-        }}
-      >
-        <nav
-          className="font-body"
-          style={{ fontSize: 14, color: '#6F6F6F', marginBottom: 32 }}
-        >
-          <Link to="/" style={{ color: '#6F6F6F', textDecoration: 'none' }}>
-            Home
-          </Link>
-          <span style={{ margin: '0 8px' }}>/</span>
-          <span style={{ color: '#FFF' }}>Pre-made Books</span>
-        </nav>
-
-        <h1
-          className="font-display"
-          style={{
-            color: '#FFF',
-            fontSize: 48,
-            fontWeight: 400,
-            margin: '0 0 16px',
-            lineHeight: 1.2,
-          }}
-        >
-          Find Your Perfect Story
-        </h1>
-        <p
-          className="font-body"
-          style={{
-            color: '#6F6F6F',
-            fontSize: 18,
-            maxWidth: 520,
-            margin: '0 auto',
-            lineHeight: 1.6,
-          }}
-        >
-          Browse our collection of beautifully crafted stories and bring your
-          child's imagination to life.
-        </p>
-      </section>
-
-      {/* Filter Bar */}
-      <section
-        style={{
-          background: '#FAFAFA',
-          borderBottom: '1px solid #E5E5E5',
-          padding: '20px 24px',
+          position: 'relative',
+          background: 'linear-gradient(135deg, #f5f0ff 0%, #ede5ff 40%, #e8dff5 100%)',
+          overflow: 'hidden',
         }}
       >
         <div
           style={{
-            maxWidth: 1120,
+            maxWidth: 1200,
             margin: '0 auto',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 12,
+            minHeight: 340,
           }}
         >
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setActiveFilter('all')}
+          {/* Left — Text */}
+          <div
+            className="books-hero-text"
+            style={{
+              flex: '0 0 50%',
+              padding: '60px 24px 60px 40px',
+              position: 'relative',
+              zIndex: 2,
+            }}
+          >
+            <nav
               className="font-body"
+              style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}
+            >
+              <Link to="/" style={{ color: '#9ca3af', textDecoration: 'none' }}>
+                Home
+              </Link>
+              <span style={{ margin: '0 6px' }}>/</span>
+              <span style={{ color: '#6b21a8', fontWeight: 600 }}>Books</span>
+            </nav>
+
+            <h1
+              className="font-display"
               style={{
-                padding: '8px 20px',
-                borderRadius: 999,
-                border: activeFilter === 'all' ? '1.5px solid #000' : '1px solid #D0D0D0',
-                background: activeFilter === 'all' ? '#000' : '#FFF',
-                color: activeFilter === 'all' ? '#FFF' : '#000',
-                fontSize: 14,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
+                color: '#6b21a8',
+                fontSize: 44,
+                fontWeight: 700,
+                margin: '0 0 16px',
+                lineHeight: 1.15,
               }}
             >
-              All Books
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveFilter(cat.id)}
-                className="font-body"
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: 999,
-                  border:
-                    activeFilter === cat.id
-                      ? `1.5px solid ${cat.color}`
-                      : '1px solid #D0D0D0',
-                  background: activeFilter === cat.id ? cat.color : '#FFF',
-                  color: activeFilter === cat.id ? '#FFF' : '#000',
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {cat.icon} {cat.name}
-              </button>
-            ))}
+              Personalised<br />
+              Storybooks for Kids
+            </h1>
+            <p
+              className="font-body"
+              style={{
+                color: '#4b5563',
+                fontSize: 17,
+                maxWidth: 420,
+                lineHeight: 1.6,
+                margin: 0,
+              }}
+            >
+              Crafted to spark imagination and lasting memories.
+            </p>
+          </div>
+
+          {/* Right — Image */}
+          <div
+            className="books-hero-img"
+            style={{
+              flex: '0 0 50%',
+              position: 'relative',
+              height: '100%',
+              minHeight: 340,
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              src="/banner-reading.png"
+              alt="Parent and child reading a personalized storybook"
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center top',
+              }}
+            />
           </div>
         </div>
       </section>
 
-      {/* Book Grid */}
+      {/* ─── Filter / Search Bar ──────────────────────────────── */}
       <section
         style={{
-          maxWidth: 1120,
-          margin: '0 auto',
-          padding: '48px 24px 80px',
+          background: '#FAFAFA',
+          borderBottom: '1px solid #eee',
+          padding: '16px 24px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 20,
         }}
       >
         <div
           style={{
+            maxWidth: 1200,
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Search */}
+          <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: 280 }}>
+            <svg
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 16,
+                height: 16,
+                color: '#999',
+              }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search books..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="font-body"
+              style={{
+                width: '100%',
+                padding: '10px 14px 10px 36px',
+                border: '1px solid #ddd',
+                borderRadius: 10,
+                fontSize: 14,
+                outline: 'none',
+                background: '#fff',
+              }}
+            />
+          </div>
+
+          {/* Gender Filter */}
+          <select
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value as GenderFilter)}
+            className="font-body"
+            style={{
+              padding: '10px 14px',
+              border: '1px solid #ddd',
+              borderRadius: 10,
+              fontSize: 14,
+              background: '#fff',
+              cursor: 'pointer',
+              color: '#333',
+            }}
+          >
+            <option value="all">Gender</option>
+            <option value="boy">Boy</option>
+            <option value="girl">Girl</option>
+          </select>
+
+          {/* Category Filter */}
+          <select
+            value={categoryFilter}
+            onChange={(e) =>
+              setCategoryFilter(e.target.value as 'all' | CatalogCategory)
+            }
+            className="font-body"
+            style={{
+              padding: '10px 14px',
+              border: '1px solid #ddd',
+              borderRadius: 10,
+              fontSize: 14,
+              background: '#fff',
+              cursor: 'pointer',
+              color: '#333',
+            }}
+          >
+            <option value="all">All Categories</option>
+            {CATALOG_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          {/* Result count */}
+          <span
+            className="font-body"
+            style={{ fontSize: 13, color: '#999', marginLeft: 'auto' }}
+          >
+            {filtered.length} book{filtered.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+      </section>
+
+      {/* ─── Book Grid ────────────────────────────────────────── */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px 80px' }}>
+        <div
+          className="books-grid"
+          style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 28,
+            gap: 32,
           }}
-          className="premade-grid"
         >
-          {filtered.map((book) => {
-            const display = bookDisplayData[book.id] || {
-              emoji: '\u{1F4D6}',
-              gradient: 'linear-gradient(148deg, #a8bcd4, #4e6e90, #0c1e30)',
-              price: '\u20B91,299',
-            };
-            const cat = getCategoryForBook(book.categoryId);
-
-            return (
-              <div
-                key={book.id}
-                style={{
-                  borderRadius: 16,
-                  overflow: 'hidden',
-                  border: '1px solid #E5E5E5',
-                  background: '#FFF',
-                  transition: 'box-shadow 0.2s, transform 0.2s',
-                  cursor: 'pointer',
-                }}
-                onClick={() => navigate(`/personalize/${book.id}`)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                {/* Cover */}
-                <div
-                  style={{
-                    background: display.gradient,
-                    padding: '40px 24px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div style={{ fontSize: 56, marginBottom: 12 }}>{display.emoji}</div>
-                  <h3
-                    className="font-display"
-                    style={{
-                      color: '#FFF',
-                      fontSize: 22,
-                      fontWeight: 400,
-                      margin: 0,
-                    }}
-                  >
-                    {book.name}
-                  </h3>
-                </div>
-
-                {/* Body */}
-                <div style={{ padding: '20px 24px 24px' }}>
-                  <span
-                    className="font-body"
-                    style={{
-                      display: 'inline-block',
-                      fontSize: 12,
-                      color: cat ? cat.color : '#6F6F6F',
-                      background: cat ? `${cat.color}12` : '#FAFAFA',
-                      border: `1px solid ${cat ? `${cat.color}30` : '#E5E5E5'}`,
-                      borderRadius: 999,
-                      padding: '4px 12px',
-                      marginBottom: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {cat?.icon} {cat?.name}
-                  </span>
-                  <p
-                    className="font-body"
-                    style={{
-                      fontSize: 14,
-                      color: '#6F6F6F',
-                      lineHeight: 1.6,
-                      margin: '0 0 20px',
-                    }}
-                  >
-                    {book.description}
-                  </p>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <span
-                      className="font-display"
-                      style={{ fontSize: 20, color: '#000' }}
-                    >
-                      {display.price}
-                    </span>
-                    <span
-                      className="font-body"
-                      style={{
-                        padding: '10px 24px',
-                        borderRadius: 999,
-                        background: '#000',
-                        color: '#FFF',
-                        fontSize: 14,
-                        textDecoration: 'none',
-                        transition: 'opacity 0.2s',
-                      }}
-                    >
-                      Create Book
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filtered.map((book) => (
+            <BookCard
+              key={book.id}
+              book={book}
+              onClick={() => navigate(`/books/${book.id}`)}
+            />
+          ))}
         </div>
 
         {filtered.length === 0 && (
@@ -296,50 +273,58 @@ export function TemplatesPage() {
             className="font-body"
             style={{
               textAlign: 'center',
-              color: '#6F6F6F',
+              color: '#999',
               fontSize: 16,
-              marginTop: 60,
+              marginTop: 80,
             }}
           >
-            No books found for this category.
+            No books match your search. Try a different filter.
           </p>
         )}
 
-        {/* CTA to custom story */}
+        {/* ─── CTA Banner ─────────────────────────────────────── */}
         <div
           style={{
-            marginTop: 60,
+            marginTop: 64,
             textAlign: 'center',
-            padding: '2.5rem 2rem',
-            background: 'linear-gradient(135deg, #E8F8EE 0%, #EAF1FA 100%)',
+            padding: '48px 32px',
+            background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 50%, #e0e7ff 100%)',
             borderRadius: 20,
           }}
         >
+          <h3
+            className="font-display"
+            style={{ fontSize: 26, margin: '0 0 8px', color: '#1e1b4b' }}
+          >
+            Don't see the perfect story?
+          </h3>
           <p
             className="font-body"
-            style={{ fontSize: 16, color: '#6F6F6F', margin: '0 0 1rem' }}
+            style={{ fontSize: 15, color: '#6b7280', margin: '0 0 24px' }}
           >
-            Can't find what you're looking for?
+            Create a completely custom story with your own idea.
           </p>
           <Link
             to="/create"
             className="font-body"
             style={{
               display: 'inline-block',
-              padding: '12px 32px',
+              padding: '14px 36px',
               borderRadius: 999,
-              background: '#000',
+              background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
               color: '#fff',
               fontSize: 15,
               fontWeight: 600,
               textDecoration: 'none',
-              transition: 'opacity 0.2s',
+              transition: 'transform 0.2s, box-shadow 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '0.85';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(124,58,237,0.3)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '1';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             Create a Custom Story
@@ -347,17 +332,193 @@ export function TemplatesPage() {
         </div>
       </section>
 
-      {/* Responsive grid styles */}
+      {/* ─── Responsive styles ────────────────────────────────── */}
       <style>{`
-        @media (max-width: 900px) {
-          .premade-grid {
+        .books-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
+        @media (max-width: 960px) {
+          .books-grid {
             grid-template-columns: repeat(2, 1fr) !important;
+            gap: 24px !important;
           }
         }
         @media (max-width: 580px) {
-          .premade-grid {
+          .books-grid {
             grid-template-columns: 1fr !important;
+            gap: 20px !important;
           }
+        }
+        @media (max-width: 768px) {
+          .books-hero > div {
+            flex-direction: column !important;
+            min-height: auto !important;
+          }
+          .books-hero-text {
+            flex: 1 1 auto !important;
+            padding: 40px 24px 32px !important;
+            text-align: center;
+          }
+          .books-hero-text h1 {
+            font-size: 32px !important;
+          }
+          .books-hero-text p {
+            margin: 0 auto !important;
+          }
+          .books-hero-img {
+            flex: 1 1 auto !important;
+            min-height: 220px !important;
+            width: 100%;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ─── Book Card Component ─────────────────────────────────────────────────── */
+
+function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  const categoryColors: Record<string, string> = {
+    Adventure: '#f97316',
+    Fantasy: '#a855f7',
+    Animals: '#22c55e',
+    Education: '#3b82f6',
+    Fiction: '#ec4899',
+    Nurture: '#f59e0b',
+    Holidays: '#ef4444',
+    Birthday: '#f472b6',
+    Sports: '#14b8a6',
+  };
+
+  const color = categoryColors[book.category] || '#6b7280';
+
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        cursor: 'pointer',
+        borderRadius: 16,
+        overflow: 'hidden',
+        background: '#fff',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: hovered
+          ? '0 20px 40px rgba(0,0,0,0.12)'
+          : '0 2px 8px rgba(0,0,0,0.06)',
+      }}
+    >
+      {/* Thumbnail */}
+      <div
+        style={{
+          position: 'relative',
+          aspectRatio: '1 / 1',
+          overflow: 'hidden',
+          background: '#f3f4f6',
+        }}
+      >
+        {!imgLoaded && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#f3f4f6',
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: '3px solid #e5e7eb',
+                borderTopColor: '#a855f7',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+          </div>
+        )}
+        <img
+          src={book.thumbnail}
+          alt={book.title}
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+            transition: 'transform 0.4s ease',
+            transform: hovered ? 'scale(1.05)' : 'scale(1)',
+            opacity: imgLoaded ? 1 : 0,
+          }}
+        />
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: '16px 18px 20px' }}>
+        <h3
+          className="font-display"
+          style={{
+            fontSize: 17,
+            fontWeight: 600,
+            margin: '0 0 4px',
+            color: '#111',
+            lineHeight: 1.3,
+          }}
+        >
+          {book.title}
+        </h3>
+        <p
+          className="font-body"
+          style={{
+            fontSize: 13,
+            color: '#6b7280',
+            margin: '0 0 12px',
+            lineHeight: 1.5,
+          }}
+        >
+          {book.subtitle}
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span className="font-body" style={{ fontSize: 16, fontWeight: 700, color }}>
+            From {book.priceFormatted}
+          </span>
+          <span
+            className="font-body"
+            style={{
+              fontSize: 11,
+              color,
+              background: `${color}14`,
+              border: `1px solid ${color}30`,
+              borderRadius: 999,
+              padding: '3px 10px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            }}
+          >
+            {book.category}
+          </span>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>

@@ -1,15 +1,19 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import HTMLFlipBook from 'react-pageflip';
+import WavyRibbonMarquee from './WavyRibbonMarquee';
 
-// ─── Dummy storybook images (Picsum with seeds for consistency) ───
+// ─── Riya's Sparkling Christmas Wish — real book from database ───
+
+const BOOK_ID = '2b061b35-2f4e-48a7-ae4f-99f7aff70f0c';
+const U = `/uploads/${BOOK_ID}`;
 
 const IMAGES = {
-  cover: 'https://picsum.photos/seed/storybook-starry/400/500',
-  page1: 'https://picsum.photos/seed/enchanted-forest-path/400/280',
-  page2: 'https://picsum.photos/seed/magical-river-dawn/400/280',
-  page3: 'https://picsum.photos/seed/starlit-mountain/400/280',
-  page4: 'https://picsum.photos/seed/golden-meadow-sun/400/280',
-  back: 'https://picsum.photos/seed/storybook-galaxy/400/500',
+  cover: `${U}-page-2.png`,    // cover background
+  page1: `${U}-page-3.png`,
+  page2: `${U}-page-5.png`,
+  page3: `${U}-page-6.png`,
+  page4: `${U}-page-8.png`,
+  back: `${U}-page-11.png`,
 };
 
 const PAGE_W = 400;
@@ -86,28 +90,41 @@ function CoverContent() {
         <p
           className="font-body"
           style={{
-            fontSize: 9,
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: 'rgba(212,168,67,0.6)',
-            marginBottom: 24,
+            fontSize: 10,
+            letterSpacing: '0.2em',
+            fontStyle: 'italic',
+            color: 'rgba(212,168,67,0.8)',
+            marginBottom: 12,
           }}
         >
-          Once Upon a Time
+          A personalized story for
         </p>
         <h3
           className="font-display"
           style={{
-            fontSize: 32,
+            fontSize: 36,
             color: '#fff',
             lineHeight: 1.15,
             textShadow: '0 2px 20px rgba(0,0,0,0.3)',
+            marginBottom: 8,
           }}
         >
-          A Sky Full
-          <br />
-          of Stars
+          riya
         </h3>
+        <div style={{ width: 40, height: 2, background: 'rgba(212,168,67,0.6)', margin: '0 auto 12px' }} />
+        <h4
+          className="font-display"
+          style={{
+            fontSize: 20,
+            color: 'rgba(255,255,255,0.85)',
+            lineHeight: 1.3,
+            fontStyle: 'italic',
+          }}
+        >
+          Riya's Sparkling
+          <br />
+          Christmas Wish
+        </h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '24px 0' }}>
           <span style={{ width: 24, height: 1, background: 'rgba(212,168,67,0.5)' }} />
           <span style={{ fontSize: 14, color: 'rgba(212,168,67,0.6)' }}>&#10022;</span>
@@ -375,31 +392,35 @@ export default function BookShowcase() {
   const bookShift = useSpread && bookPhase === 'closed-front' ? -PAGE_W : 0;
 
   return (
-    <section style={{ padding: '80px 0 100px', background: '#FAFAFA' }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 48, padding: '0 24px' }}>
-        <div className="flex items-center justify-center gap-3" style={{ marginBottom: 16 }}>
-        </div>
-        <h2
-          className="font-display"
-          style={{ fontSize: 'clamp(2rem, 4.5vw, 3.2rem)', color: '#000', lineHeight: 1.1, fontWeight: 400, marginBottom: 12 }}
-        >
-          Flip through a <em style={{ fontStyle: 'italic', color: '#6F6F6F' }}>sample</em> book
-        </h2>
-        <p className="font-body" style={{ fontSize: 15, color: '#6F6F6F', maxWidth: 440, margin: '0 auto' }}>
-          Every book is a one-of-a-kind story. Here's a peek at what yours could look like.
-        </p>
-      </div>
+    <section style={{ position: 'relative', background: '#FAFAFA' }}>
+      {/* Curved top edge */}
+      <div
+        style={{
+          position: 'absolute',
+          top: -60,
+          left: 0,
+          right: 0,
+          height: 80,
+          background: '#FAFAFA',
+          borderRadius: '40px 40px 0 0',
+          zIndex: 1,
+        }}
+      />
 
-      {/* Book area — scroll-to-flip on hover */}
+      {/* Book area with background text + ribbon overlay */}
       <div
         ref={bookAreaRef}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-        style={{ padding: '0 24px' }}
+        style={{ position: 'relative', padding: '80px 24px 100px', overflow: 'hidden' }}
       >
+        {/* Wavy ribbon marquee */}
+        <div style={{ position: 'relative', zIndex: 1, marginBottom: 48 }}>
+          <WavyRibbonMarquee />
+        </div>
+
         {/* Centering wrapper */}
         <div style={{
+          position: 'relative',
+          zIndex: 5,
           display: 'flex',
           justifyContent: 'center',
           maxWidth: SPREAD_W + 60,
@@ -407,6 +428,8 @@ export default function BookShowcase() {
         }}>
           {/* Animated viewport — clips the book to create open/close effect */}
           <div
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             style={{
               width: viewportWidth,
               overflow: 'hidden',
@@ -521,8 +544,8 @@ export default function BookShowcase() {
                 <Page>
                   <StoryContent
                     chapterNum={1}
-                    chapterTitle="The Journey Begins"
-                    text="Once upon a time, a brave little explorer set off on an adventure beyond the clouds, where the sky turned to gold and the wind carried whispers of magic..."
+                    chapterTitle="A Festive Surprise"
+                    text="Riya quickly put on her most festive red dress. She spun around, feeling like a little Christmas star, shining so bright! Today was going to be the best day ever."
                     imageUrl={IMAGES.page1}
                     accentColor="#c9a96e"
                   />
@@ -531,28 +554,28 @@ export default function BookShowcase() {
                 <Page>
                   <StoryContent
                     chapterNum={2}
-                    chapterTitle="The Enchanted Forest"
-                    text="Through enchanted forests and over sparkling rivers, the journey continued. Every leaf seemed to sing, and every stone held a secret waiting to be discovered..."
+                    chapterTitle="Sharing Sweet Treats"
+                    text="Next, Riya helped put yummy Christmas cookies on a big, festive plate. It was so much fun to share them with everyone, big and small!"
                     imageUrl={IMAGES.page2}
-                    accentColor="#6b8f6b"
+                    accentColor="#d4534b"
                   />
                 </Page>
 
                 <Page>
                   <StoryContent
                     chapterNum={3}
-                    chapterTitle="Whispers of the Stars"
-                    text="The stars whispered secrets only the bravest hearts could hear. High above the world, a constellation spelled out a name that meant courage..."
+                    chapterTitle="The Christmas Tree"
+                    text="Then, Riya saw the big, green Christmas tree! It stood tall and proud, just waiting to be made beautiful. Her eyes sparkled with sheer excitement."
                     imageUrl={IMAGES.page3}
-                    accentColor="#7B68AE"
+                    accentColor="#2d7d46"
                   />
                 </Page>
 
                 <Page>
                   <StoryContent
                     chapterNum={4}
-                    chapterTitle="To Be Continued..."
-                    text="And the adventure was only just beginning. For every child who dares to dream, there is a story waiting — a story where they are the hero..."
+                    chapterTitle="Sparkling Lights"
+                    text="First came the sparkly lights, like a long, glowing snake coiling! Riya carefully draped them onto the lower branches, humming happily. Soon, the tree began to shimmer with a soft glow."
                     imageUrl={IMAGES.page4}
                     accentColor="#c9a96e"
                   />
@@ -593,6 +616,7 @@ export default function BookShowcase() {
           {isHovering ? 'Scroll to flip pages' : 'Hover over book & scroll to flip'}
         </p>
       </div>
+
     </section>
   );
 }

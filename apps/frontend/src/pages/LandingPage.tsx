@@ -15,8 +15,7 @@ export function LandingPage() {
 
       {/* Hero Section */}
       <section
-        className="relative z-10 flex flex-col items-center justify-center text-center px-6 pb-40"
-        style={{ paddingTop: 'calc(8rem - 75px)' }}
+        className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen"
       >
         {/* Headline */}
         <h1
@@ -50,11 +49,11 @@ export function LandingPage() {
       {/* Book Flip Animation Showcase */}
       <BookShowcase />
 
-      {/* Occasion Gallery */}
-      <OccasionGallery />
-
       {/* Video Testimonials */}
       <VideoTestimonials />
+
+      {/* Occasion Gallery */}
+      <OccasionGallery />
 
       {/* Footer */}
       <Footer />

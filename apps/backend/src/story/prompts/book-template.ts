@@ -2,8 +2,8 @@ import { BOOK_TEMPLATES, CATEGORIES } from '@bookmagic/shared';
 import { LAYOUT_INSTRUCTIONS, LAYOUT_JSON_STRUCTURE } from './layout-instructions';
 
 export function buildPrompt(childName: string, childAge: number, childGender: string, bookTemplateId: string): string {
-  const template = BOOK_TEMPLATES.find((t) => t.id === bookTemplateId);
-  const category = template ? CATEGORIES.find((c) => c.id === template.categoryId) : null;
+  const template = BOOK_TEMPLATES.find((t: any) => t.id === bookTemplateId);
+  const category = template ? CATEGORIES.find((c: any) => c.id === template.categoryId) : null;
 
   const bookName = template?.name || bookTemplateId;
   const bookDesc = template?.description || '';

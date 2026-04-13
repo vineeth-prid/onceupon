@@ -79,5 +79,5 @@ export interface PaymentSessionDto {
   amount: number;
   currency: string;
   sessionId: string;
-  provider: 'razorpay' | 'stripe';
+  provider: 'razorpay';
 }

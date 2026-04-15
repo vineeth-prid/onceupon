@@ -73,7 +73,7 @@ CRITICAL RULES:
 - The identity tag will be repeated in EVERY image prompt to ensure the character looks the same across all 16 pages`;
 
     const response = await this.genai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-flash-latest',
       contents: [{
         role: 'user',
         parts: [

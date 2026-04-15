@@ -12,8 +12,13 @@
     "db:seed": "pnpm --filter backend exec prisma db seed"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "eslint": "^10.2.0",
     "turbo": "^2.5.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.58.1"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -25,7 +30,10 @@
       "@prisma/client",
       "@prisma/engines",
       "esbuild",
-      "prisma"
+      "msgpackr-extract",
+      "prisma",
+      "protobufjs",
+      "sharp"
     ]
   }
 }

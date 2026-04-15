@@ -60,6 +60,10 @@ export class OrdersService {
       throw new NotFoundException(`Order ${id} not found`);
     }
 
+    if (order.status === newStatus) {
+      return order;
+    }
+
     const allowed = STATUS_TRANSITIONS[order.status] || [];
     if (!allowed.includes(newStatus)) {
       throw new BadRequestException(

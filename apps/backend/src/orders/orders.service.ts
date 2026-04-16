@@ -32,6 +32,53 @@ export class OrdersService {
     });
   }
 
+  async getAdminDashboardStats() {
+    const totalOrders = await this.prisma.order.count();
+    
+    // Books generated (status beyond PDF_GENERATING or has a preview ready)
+    const totalBooks = await this.prisma.order.count({
+      where: {
+        status: {
+          in: ['PREVIEW_READY', 'PAYMENT_PENDING', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED']
+        }
+      }
+    });
+
+    const totalUsers = await this.prisma.user.count();
+
+    // MTD Revenue
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const mtdOrders = await this.prisma.order.findMany({
+      where: {
+        createdAt: { gte: startOfMonth },
+        status: { in: ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'] },
+        amountPaid: { not: null }
+      },
+      select: { amountPaid: true }
+    });
+    
+    const revenueMtd = mtdOrders.reduce((sum, order) => sum + (order.amountPaid || 0), 0);
+
+    const recentOrders = await this.prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: true,
+      },
+    });
+
+    return {
+      totalOrders,
+      totalBooks,
+      totalUsers,
+      revenueMtd,
+      recentOrders,
+    };
+  }
+
   async findAll() {
     return this.prisma.order.findMany({
       include: {

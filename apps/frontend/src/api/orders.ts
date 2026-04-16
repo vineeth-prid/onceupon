@@ -23,6 +23,11 @@ export async function getAdminOrders() {
   return data;
 }
 
+export async function getAdminDashboardStats() {
+  const { data } = await api.get('/orders/admin/dashboard/stats');
+  return data;
+}
+
 export async function getOrder(id: string) {
   const { data } = await api.get(`/orders/${id}`);
   return data;
@@ -57,3 +62,20 @@ export async function verifyRazorpayPayment(payload: {
   const { data } = await api.post('/orders/razorpay/verify', payload);
   return data;
 }
+
+export interface PricingConfig {
+  ebookPrice: number;
+  physicalPrice: number;
+  shippingPrice: number;
+}
+
+export async function getPricing(): Promise<PricingConfig> {
+  const { data } = await api.get('/pricing');
+  return data;
+}
+
+export async function savePricing(config: PricingConfig): Promise<PricingConfig> {
+  const { data } = await api.put('/pricing', config);
+  return data;
+}
+

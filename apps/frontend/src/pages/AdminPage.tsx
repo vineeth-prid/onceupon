@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAdminOrders } from '../api/orders';
+import { getAdminOrders, getAdminDashboardStats, getPricing, savePricing } from '../api/orders';
 
 type Tab =
   | 'dashboard'
@@ -179,21 +179,30 @@ function badge(status: string): React.CSSProperties {
 /* ── Tab Components ── */
 
 function DashboardTab() {
-  const stats = [
-    { emoji: '📦', label: 'Total Orders', value: '1,247', delta: '+12.3%', up: true },
-    { emoji: '💰', label: 'Revenue MTD', value: '₹69,98,560', delta: '+8.1%', up: true },
-    { emoji: '👥', label: 'Registered Users', value: '3,891', delta: '+15.7%', up: true },
-    { emoji: '📚', label: 'Books Generated', value: '5,024', delta: '+22.4%', up: true },
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  useEffect(() => {
+    getAdminDashboardStats()
+      .then((data) => setDashboardData(data))
+      .catch((err) => console.error('Failed to fetch stats:', err));
+  }, []);
+
+  const stats: any[] = [
+    { emoji: '📦', label: 'Total Orders', value: dashboardData ? dashboardData.totalOrders.toLocaleString() : '...' },
+    { emoji: '💰', label: 'Revenue MTD', value: dashboardData ? `₹${(dashboardData.revenueMtd / 100).toLocaleString('en-IN')}` : '...' },
+    { emoji: '👥', label: 'Registered Users', value: dashboardData ? dashboardData.totalUsers.toLocaleString() : '...' },
+    { emoji: '📚', label: 'Books Generated', value: dashboardData ? dashboardData.totalBooks.toLocaleString() : '...' },
     { emoji: '⭐', label: 'Avg Rating', value: '4.92', delta: '+0.03', up: true },
     { emoji: '📈', label: 'Conversion Rate', value: '23.4%', delta: '-1.2%', up: false },
   ];
 
-  const recentOrders = [
-    { id: 'ORD-4821', customer: 'Priya Sharma', format: 'Premium Print', status: 'Printing', amount: '₹2,499' },
-    { id: 'ORD-4820', customer: 'Rahul Mehta', format: 'eBook', status: 'Delivered', amount: '₹499' },
-    { id: 'ORD-4819', customer: 'Anita Desai', format: 'Classic Print', status: 'Dispatched', amount: '₹1,299' },
-    { id: 'ORD-4818', customer: 'Vikram Patel', format: 'Grand Print', status: 'Generating', amount: '₹3,999' },
-  ];
+  const recentOrders = dashboardData?.recentOrders?.map((o: any) => ({
+    id: o.id.slice(0, 8).toUpperCase(),
+    customer: o.user ? `${o.user.firstName} ${o.user.lastName}` : (o.shippingName || 'Guest'),
+    format: o.shippingName ? 'Print + eBook' : 'eBook',
+    status: o.status,
+    amount: o.amountPaid ? `₹${(o.amountPaid / 100).toLocaleString('en-IN')}` : '₹0'
+  })) || [];
 
   const quickActions = [
     '📦 Process Pending Orders',
@@ -216,9 +225,11 @@ function DashboardTab() {
               </div>
               <span style={{ fontSize: 28 }}>{s.emoji}</span>
             </div>
-            <div style={{ marginTop: 8, fontSize: 12, color: s.up ? '#3a7048' : '#c47560', fontWeight: 600 }}>
-              {s.up ? '↑' : '↓'} {s.delta}
-            </div>
+            {'delta' in s && s.delta && (
+              <div style={{ marginTop: 8, fontSize: 12, color: s.up ? '#3a7048' : '#c47560', fontWeight: 600 }}>
+                {s.up ? '↑' : '↓'} {s.delta}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -238,16 +249,30 @@ function DashboardTab() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((o) => (
-                <tr key={o.id}>
-                  <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id}</td>
-                  <td style={tdStyle}>{o.customer}</td>
-                  <td style={tdStyle}>{o.format}</td>
-                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
-                  <td style={tdStyle}>{o.amount}</td>
-                  <td style={tdStyle}><button style={btnOutline}>View</button></td>
+              {!dashboardData ? (
+                <tr>
+                  <td colSpan={6} style={{ ...tdStyle, textAlign: 'center', padding: '20px 0', color: '#8a8578' }}>
+                    Loading recent orders...
+                  </td>
                 </tr>
-              ))}
+              ) : recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ ...tdStyle, textAlign: 'center', padding: '20px 0', color: '#8a8578' }}>
+                    No recent orders found.
+                  </td>
+                </tr>
+              ) : (
+                recentOrders.map((o: any) => (
+                  <tr key={o.id}>
+                    <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id}</td>
+                    <td style={tdStyle}>{o.customer}</td>
+                    <td style={tdStyle}>{o.format}</td>
+                    <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                    <td style={tdStyle}>{o.amount}</td>
+                    <td style={tdStyle}><button style={btnOutline}>View</button></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -362,55 +387,122 @@ function OrdersTab() {
 }
 
 function PricingTab() {
+  const [pricing, setPricing] = useState({ ebookPrice: 499, physicalPrice: 1299, shippingPrice: 99 });
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPricing()
+      .then((data) => { setPricing(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleSavePricing = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      await savePricing(pricing);
+      setSaveMsg('Pricing saved successfully!');
+    } catch {
+      setSaveMsg('Failed to save pricing.');
+    }
+    setSaving(false);
+    setTimeout(() => setSaveMsg(''), 3000);
+  };
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       <div style={cardStyle}>
         <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Product Pricing</h3>
-        {[
-          { label: 'AI Creation Fee', value: '199' },
-          { label: 'eBook Price', value: '499' },
-          { label: 'Print Classic', value: '1299' },
-          { label: 'Print Premium', value: '2499' },
-          { label: 'Print Grand', value: '3999' },
-          { label: 'Gift Packaging', value: '299' },
-        ].map((f) => (
-          <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>{f.label}</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-              <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>₹</span>
-              <input style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }} defaultValue={f.value} />
-            </div>
-          </div>
-        ))}
-        <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Pricing</button>
+        {loading ? (
+          <div style={{ fontSize: 13, color: '#8a8578' }}>Loading...</div>
+        ) : (
+          <>
+            {[
+              { label: 'eBook Price', key: 'ebookPrice' as const },
+              { label: 'Physical Book Price', key: 'physicalPrice' as const },
+            ].map((f) => (
+              <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>{f.label}</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                  <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{'\u20b9'}</span>
+                  <input
+                    style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }}
+                    value={pricing[f.key]}
+                    onChange={(e) => setPricing({ ...pricing, [f.key]: Number(e.target.value) })}
+                    type="number"
+                    min={0}
+                  />
+                </div>
+              </div>
+            ))}
+            {saveMsg && (
+              <div style={{ fontSize: 12, color: saveMsg.includes('success') ? '#3a7048' : '#c47560', marginBottom: 8 }}>
+                {saveMsg}
+              </div>
+            )}
+            <button
+              style={{ ...btnPrimary, marginTop: 8, width: '100%', opacity: saving ? 0.7 : 1 }}
+              onClick={handleSavePricing}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Pricing'}
+            </button>
+          </>
+        )}
       </div>
 
       <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Shipping & Tax</h3>
-        {[
-          { label: 'Standard Delivery', value: '99', prefix: '₹' },
-          { label: 'Express Delivery', value: '199', prefix: '₹' },
-          { label: 'Priority Delivery', value: '349', prefix: '₹' },
-          { label: 'Free Shipping Threshold', value: '1999', prefix: '₹' },
-          { label: 'Tax Rate', value: '18', prefix: '%' },
-        ].map((f) => (
-          <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>{f.label}</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-              <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{f.prefix}</span>
-              <input style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }} defaultValue={f.value} />
+        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Shipping &amp; Tax</h3>
+        {loading ? (
+          <div style={{ fontSize: 13, color: '#8a8578' }}>Loading...</div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>Standard Shipping</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{'\u20b9'}</span>
+                <input
+                  style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }}
+                  value={pricing.shippingPrice}
+                  onChange={(e) => setPricing({ ...pricing, shippingPrice: Number(e.target.value) })}
+                  type="number"
+                  min={0}
+                />
+              </div>
             </div>
-          </div>
-        ))}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>Default Currency</label>
-          <select style={{ ...selectStyle, width: 140 }}>
-            <option>INR (₹)</option>
-            <option>USD ($)</option>
-            <option>EUR (€)</option>
-          </select>
-        </div>
-        <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Shipping & Tax</button>
+            {[
+              { label: 'Express Delivery', value: '199', prefix: '₹' },
+              { label: 'Priority Delivery', value: '349', prefix: '₹' },
+              { label: 'Free Shipping Threshold', value: '1999', prefix: '₹' },
+              { label: 'Tax Rate', value: '18', prefix: '%' },
+            ].map((f) => (
+              <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>{f.label}</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                  <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{f.prefix}</span>
+                  <input style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }} defaultValue={f.value} />
+                </div>
+              </div>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>Default Currency</label>
+              <select style={{ ...selectStyle, width: 140 }}>
+                <option>INR (₹)</option>
+                <option>USD ($)</option>
+                <option>EUR (€)</option>
+              </select>
+            </div>
+            <button
+              style={{ ...btnPrimary, marginTop: 8, width: '100%', opacity: saving ? 0.7 : 1 }}
+              onClick={handleSavePricing}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Shipping & Tax'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

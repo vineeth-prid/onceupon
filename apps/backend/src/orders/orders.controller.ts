@@ -150,6 +150,13 @@ export class OrdersController {
     return { orders };
   }
 
+  @Get('admin/dashboard/stats')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async getAdminDashboardStats() {
+    const stats = await this.ordersService.getAdminDashboardStats();
+    return stats;
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const order = await this.ordersService.findById(id);

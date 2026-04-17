@@ -28,6 +28,21 @@ export async function getAdminDashboardStats() {
   return data;
 }
 
+export async function getAdminUsers() {
+  const { data } = await api.get('/orders/admin/users');
+  return data;
+}
+
+export async function getAdminBooks() {
+  const { data } = await api.get('/orders/admin/books');
+  return data;
+}
+
+export async function getAdminPayments() {
+  const { data } = await api.get('/orders/admin/payments');
+  return data;
+}
+
 export async function getOrder(id: string) {
   const { data } = await api.get(`/orders/${id}`);
   return data;

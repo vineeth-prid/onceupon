@@ -54,11 +54,13 @@ export class PdfService {
             const imgBuffer = await this.loadImage(firstPageWithImage.imageUrl);
             doc.save();
             doc.opacity(0.35);
-            doc.image(imgBuffer, 0, 0, {
-              width: A4_WIDTH,
-              height: A4_HEIGHT,
-              cover: [A4_WIDTH, A4_HEIGHT] as any,
-            });
+            // Manual center-fill with clip to prevent overflow lines
+            const { width: iw, height: ih } = this.getImageDimensions(imgBuffer);
+            const cScale = Math.max(A4_WIDTH / iw, A4_HEIGHT / ih);
+            const cW = iw * cScale;
+            const cH = ih * cScale;
+            doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).clip();
+            doc.image(imgBuffer, (A4_WIDTH - cW) / 2, (A4_HEIGHT - cH) / 2, { width: cW, height: cH });
             doc.restore();
           } catch { /* solid bg fallback */ }
         }
@@ -106,41 +108,68 @@ export class PdfService {
         for (const page of pages) {
           doc.addPage({ size: 'A4', margins: { top: 0, bottom: 0, left: 0, right: 0 } });
 
+          // Fill page background first (prevents white border artifacts)
+          doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).fill('#1a0533');
+
           // Full-bleed image covering entire A4 page
+          // Use 'fit' + manual centering instead of 'cover' to avoid overflow-clipping lines
           if (page.imageUrl) {
             try {
               const imgBuffer = await this.loadImage(page.imageUrl);
-              doc.image(imgBuffer, 0, 0, {
-                width: A4_WIDTH,
-                height: A4_HEIGHT,
-                cover: [A4_WIDTH, A4_HEIGHT] as any,
-              });
+              // Scale image to fill page without overflow artifacts
+              const { width: imgW, height: imgH } = this.getImageDimensions(imgBuffer);
+              const scale = Math.max(A4_WIDTH / imgW, A4_HEIGHT / imgH);
+              const drawW = imgW * scale;
+              const drawH = imgH * scale;
+              const drawX = (A4_WIDTH - drawW) / 2;
+              const drawY = (A4_HEIGHT - drawH) / 2;
+              doc.save();
+              // Clip strictly to page bounds to prevent any overflow lines
+              doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).clip();
+              doc.image(imgBuffer, drawX, drawY, { width: drawW, height: drawH });
+              doc.restore();
             } catch (err) {
               this.logger.warn(`Failed to load image for page ${page.pageNumber}: ${(err as Error).message}`);
-              doc.rect(0, 0, A4_WIDTH, A4_HEIGHT)
-                .fill('linear-gradient(135deg, #1a0533, #2d1b69)');
+              doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).fill('#2d1b69');
             }
           } else {
             doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).fill('#2d1b69');
           }
 
-          // Dark gradient overlay at bottom for text (matching web version)
-          // Simulate gradient with overlapping semi-transparent rects
+          // Dark gradient overlay at bottom for text readability
+          // Use layered large blocks instead of banded strips to avoid horizontal line artifacts
           const gradientStart = A4_HEIGHT * 0.55;
-          const gradientEnd = A4_HEIGHT;
-          const steps = 40;
-          const stripHeight = (gradientEnd - gradientStart) / steps;
-          for (let i = 0; i < steps; i++) {
-            const t = i / (steps - 1);
-            const y = gradientStart + i * stripHeight;
-            // Each rect extends 2px extra to overlap and prevent gaps
-            const h = stripHeight + 2;
-            const opacity = t * t * 0.85;
-            doc.save();
-            doc.opacity(opacity);
-            doc.rect(0, y, A4_WIDTH, h).fill('#0a0514');
-            doc.restore();
-          }
+          const gradientHeight = A4_HEIGHT - gradientStart;
+
+          // Layer 1: subtle base wash from mid-page
+          doc.save();
+          doc.opacity(0.25);
+          doc.rect(0, gradientStart, A4_WIDTH, gradientHeight).fill('#0a0514');
+          doc.restore();
+
+          // Layer 2: stronger from 65% down
+          doc.save();
+          doc.opacity(0.35);
+          doc.rect(0, A4_HEIGHT * 0.65, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.65).fill('#0a0514');
+          doc.restore();
+
+          // Layer 3: dense from 75% down
+          doc.save();
+          doc.opacity(0.45);
+          doc.rect(0, A4_HEIGHT * 0.75, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.75).fill('#0a0514');
+          doc.restore();
+
+          // Layer 4: near-opaque at bottom strip
+          doc.save();
+          doc.opacity(0.60);
+          doc.rect(0, A4_HEIGHT * 0.83, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.83).fill('#0a0514');
+          doc.restore();
+
+          // Layer 5: fully opaque base block at very bottom (ensures legible text bg)
+          doc.save();
+          doc.opacity(0.70);
+          doc.rect(0, A4_HEIGHT - 210, A4_WIDTH, 210).fill('#0a0514');
+          doc.restore();
 
           // Story text overlaid at bottom
           const textY = A4_HEIGHT - 180;
@@ -175,11 +204,13 @@ export class PdfService {
             const imgBuffer = await this.loadImage(firstPageWithImage.imageUrl);
             doc.save();
             doc.opacity(0.15);
-            doc.image(imgBuffer, 0, 0, {
-              width: A4_WIDTH,
-              height: A4_HEIGHT,
-              cover: [A4_WIDTH, A4_HEIGHT] as any,
-            });
+            // Manual center-fill with clip to prevent overflow lines
+            const { width: iw, height: ih } = this.getImageDimensions(imgBuffer);
+            const cScale = Math.max(A4_WIDTH / iw, A4_HEIGHT / ih);
+            const cW = iw * cScale;
+            const cH = ih * cScale;
+            doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).clip();
+            doc.image(imgBuffer, (A4_WIDTH - cW) / 2, (A4_HEIGHT - cH) / 2, { width: cW, height: cH });
             doc.restore();
           } catch { /* solid bg fallback */ }
         }
@@ -258,5 +289,38 @@ export class PdfService {
       ? join(process.cwd(), imageUrl)
       : imageUrl;
     return readFile(filePath);
+  }
+
+  /**
+   * Read image width/height from PNG or JPEG buffer headers.
+   * Falls back to square assumption (A4 points) if format is unrecognized.
+   */
+  private getImageDimensions(buf: Buffer): { width: number; height: number } {
+    try {
+      // PNG: signature 8 bytes, then IHDR chunk (4 len + 4 type + 4 width + 4 height)
+      if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+        const width = buf.readUInt32BE(16);
+        const height = buf.readUInt32BE(20);
+        return { width, height };
+      }
+      // JPEG: find SOF0/SOF2 marker (0xFF 0xC0 or 0xFF 0xC2)
+      let i = 2;
+      while (i < buf.length - 8) {
+        if (buf[i] === 0xff) {
+          const marker = buf[i + 1];
+          if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
+            const height = buf.readUInt16BE(i + 5);
+            const width = buf.readUInt16BE(i + 7);
+            return { width, height };
+          }
+          const segLen = buf.readUInt16BE(i + 2);
+          i += 2 + segLen;
+        } else {
+          i++;
+        }
+      }
+    } catch { /* fall through */ }
+    // Fallback: assume square 1024×1024 (PDFKit will scale to fit anyway)
+    return { width: 1024, height: 1024 };
   }
 }

@@ -14,7 +14,7 @@ import { ORCHESTRATOR_QUEUE } from './queue.constants';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         connection: {
-          host: config.get('REDIS_HOST', 'localhost'),
+          host: config.get('REDIS_HOST', '127.0.0.1'),
           port: config.get('REDIS_PORT', 6379),
           skipVersionCheck: true,
         },

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAdminOrders, getAdminDashboardStats, getPricing, savePricing } from '../api/orders';
+import { getAdminOrders, getAdminDashboardStats, getPricing, savePricing, getAdminUsers, getAdminBooks, getAdminPayments } from '../api/orders';
 
 type Tab =
   | 'dashboard'
@@ -192,8 +192,8 @@ function DashboardTab() {
     { emoji: '💰', label: 'Revenue MTD', value: dashboardData ? `₹${(dashboardData.revenueMtd / 100).toLocaleString('en-IN')}` : '...' },
     { emoji: '👥', label: 'Registered Users', value: dashboardData ? dashboardData.totalUsers.toLocaleString() : '...' },
     { emoji: '📚', label: 'Books Generated', value: dashboardData ? dashboardData.totalBooks.toLocaleString() : '...' },
-    { emoji: '⭐', label: 'Avg Rating', value: '4.92', delta: '+0.03', up: true },
-    { emoji: '📈', label: 'Conversion Rate', value: '23.4%', delta: '-1.2%', up: false },
+    { emoji: '⭐', label: 'Avg Rating', value: dashboardData ? (dashboardData.avgRating > 0 ? dashboardData.avgRating.toFixed(2) : 'N/A') : '...' },
+    { emoji: '📈', label: 'Conversion Rate', value: dashboardData ? `${dashboardData.conversionRate}%` : '...' },
   ];
 
   const recentOrders = dashboardData?.recentOrders?.map((o: any) => ({
@@ -225,11 +225,6 @@ function DashboardTab() {
               </div>
               <span style={{ fontSize: 28 }}>{s.emoji}</span>
             </div>
-            {'delta' in s && s.delta && (
-              <div style={{ marginTop: 8, fontSize: 12, color: s.up ? '#3a7048' : '#c47560', fontWeight: 600 }}>
-                {s.up ? '↑' : '↓'} {s.delta}
-              </div>
-            )}
           </div>
         ))}
       </div>
@@ -736,12 +731,23 @@ function CouponsTab() {
 }
 
 function UsersTab() {
-  const users = [
-    { id: 'USR-001', name: 'Priya Sharma', email: 'priya@email.com', auth: 'Google', books: 4, orders: 3, spent: '₹6,297', joined: '2025-12-01', status: 'Active' },
-    { id: 'USR-002', name: 'Rahul Mehta', email: 'rahul@email.com', auth: 'Email', books: 2, orders: 2, spent: '₹998', joined: '2026-01-15', status: 'Active' },
-    { id: 'USR-003', name: 'Anita Desai', email: 'anita@email.com', auth: 'Google', books: 7, orders: 5, spent: '₹12,495', joined: '2025-11-20', status: 'Active' },
-    { id: 'USR-004', name: 'Vikram Patel', email: 'vikram@email.com', auth: 'Apple', books: 1, orders: 1, spent: '₹3,999', joined: '2026-03-28', status: 'Suspended' },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAdminUsers()
+      .then((data) => setUsers(data.users || []))
+      .catch((err) => console.error('Failed to fetch users:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ fontSize: 13, color: '#8a8578' }}>Loading users...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -749,14 +755,13 @@ function UsersTab() {
         <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search users..." />
         <select style={selectStyle}>
           <option>All Auth Methods</option>
-          <option>Google</option>
-          <option>Apple</option>
-          <option>Email</option>
+          <option>GOOGLE</option>
+          <option>EMAIL</option>
         </select>
         <select style={selectStyle}>
-          <option>All Statuses</option>
-          <option>Active</option>
-          <option>Suspended</option>
+          <option>All Roles</option>
+          <option>USER</option>
+          <option>ADMIN</option>
         </select>
         <button style={btnPrimary}>Export CSV</button>
       </div>
@@ -770,68 +775,88 @@ function UsersTab() {
               <th style={thStyle}>Email</th>
               <th style={thStyle}>Auth</th>
               <th style={thStyle}>Books</th>
-              <th style={thStyle}>Orders</th>
-              <th style={thStyle}>Spent</th>
+              <th style={thStyle}>Total Spent</th>
               <th style={thStyle}>Joined</th>
-              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Role</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{u.id}</td>
-                <td style={tdStyle}>{u.name}</td>
-                <td style={tdStyle}>{u.email}</td>
-                <td style={tdStyle}>{u.auth}</td>
-                <td style={tdStyle}>{u.books}</td>
-                <td style={tdStyle}>{u.orders}</td>
-                <td style={tdStyle}>{u.spent}</td>
-                <td style={tdStyle}>{u.joined}</td>
-                <td style={tdStyle}><span style={badge(u.status)}>{u.status}</span></td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>View</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Suspend</button>
-                  </div>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                  No users found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              users.map((u) => {
+                const totalSpent = (u.orders || []).reduce((sum: number, o: any) => sum + (o.amountPaid || 0), 0);
+                return (
+                  <tr key={u.id}>
+                    <td style={{ ...tdStyle, fontWeight: 600 }}>{u.id.slice(0, 8).toUpperCase()}</td>
+                    <td style={tdStyle}>{u.firstName} {u.lastName}</td>
+                    <td style={tdStyle}>{u.email}</td>
+                    <td style={tdStyle}>{u.authProvider}</td>
+                    <td style={tdStyle}>{u.orders?.length || 0}</td>
+                    <td style={tdStyle}>₹{(totalSpent / 100).toLocaleString('en-IN')}</td>
+                    <td style={tdStyle}>{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td style={tdStyle}><span style={badge(u.role === 'ADMIN' ? 'Active' : 'Pending')}>{u.role}</span></td>
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button style={btnOutline}>View</button>
+                        <button style={{ ...btnOutline, color: '#c47560' }}>Deactivate</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-          <button style={btnOutline}>Prev</button>
-          <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of 78</span>
-          <button style={btnOutline}>Next</button>
-        </div>
+        {users.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+            <button style={btnOutline}>Prev</button>
+            <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of {Math.ceil(users.length / 10)}</span>
+            <button style={btnOutline}>Next</button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function BooksTab() {
-  const books = [
-    { id: 'BK-5024', title: 'Dino Adventure', occasion: 'Birthday', style: 'Disney/Pixar', user: 'Priya Sharma', generated: '2026-04-07', pages: 16, status: 'Completed' },
-    { id: 'BK-5023', title: 'Space Journey', occasion: 'Just Because', style: 'Disney/Pixar', user: 'Rahul Mehta', generated: '2026-04-06', pages: 16, status: 'Completed' },
-    { id: 'BK-5022', title: 'Fairy Garden', occasion: 'Christmas', style: 'Watercolor', user: 'Anita Desai', generated: '2026-04-06', pages: 16, status: 'Completed' },
-    { id: 'BK-5021', title: 'Ocean Quest', occasion: 'Birthday', style: 'Disney/Pixar', user: 'Vikram Patel', generated: '2026-04-05', pages: 16, status: 'Generating' },
-    { id: 'BK-5020', title: 'Jungle Safari', occasion: 'Graduation', style: 'Comic Book', user: 'Meera Iyer', generated: '2026-04-05', pages: 16, status: 'Failed' },
-  ];
+  const [books, setBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAdminBooks()
+      .then((data) => setBooks(data.books || []))
+      .catch((err) => console.error('Failed to fetch books:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ fontSize: 13, color: '#8a8578' }}>Loading books...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search books..." />
         <select style={selectStyle}>
-          <option>All Occasions</option>
-          <option>Birthday</option>
-          <option>Christmas</option>
-          <option>Just Because</option>
-          <option>Graduation</option>
+          <option>All Themes</option>
+          <option>Adventure</option>
+          <option>Animals</option>
+          <option>Fantasy</option>
         </select>
         <select style={selectStyle}>
           <option>All Styles</option>
-          <option>Disney/Pixar</option>
+          <option>Disney Character</option>
           <option>Watercolor</option>
           <option>Comic Book</option>
         </select>
@@ -842,30 +867,36 @@ function BooksTab() {
           <thead>
             <tr>
               <th style={thStyle}>Book ID</th>
-              <th style={thStyle}>Title</th>
-              <th style={thStyle}>Occasion</th>
+              <th style={thStyle}>Child Name</th>
+              <th style={thStyle}>Theme</th>
               <th style={thStyle}>Style</th>
               <th style={thStyle}>User</th>
               <th style={thStyle}>Generated</th>
-              <th style={thStyle}>Pages</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {books.map((b) => (
-              <tr key={b.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{b.id}</td>
-                <td style={tdStyle}>{b.title}</td>
-                <td style={tdStyle}>{b.occasion}</td>
-                <td style={tdStyle}>{b.style}</td>
-                <td style={tdStyle}>{b.user}</td>
-                <td style={tdStyle}>{b.generated}</td>
-                <td style={tdStyle}>{b.pages}</td>
-                <td style={tdStyle}><span style={badge(b.status)}>{b.status}</span></td>
-                <td style={tdStyle}><button style={btnOutline}>Preview</button></td>
+            {books.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                  No generated books found.
+                </td>
               </tr>
-            ))}
+            ) : (
+              books.map((b) => (
+                <tr key={b.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600 }}>{b.id.slice(0, 8).toUpperCase()}</td>
+                  <td style={tdStyle}>{b.childName}</td>
+                  <td style={tdStyle}>{b.theme || 'Custom'}</td>
+                  <td style={tdStyle}>{b.illustrationStyle}</td>
+                  <td style={tdStyle}>{b.user ? `${b.user.firstName} ${b.user.lastName}` : (b.shippingName || 'Guest')}</td>
+                  <td style={tdStyle}>{new Date(b.createdAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}><span style={badge(b.status)}>{b.status}</span></td>
+                  <td style={tdStyle}><button style={btnOutline}>Preview</button></td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -874,20 +905,34 @@ function BooksTab() {
 }
 
 function PaymentsTab() {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAdminPayments()
+      .then((data) => setPayments(data.payments || []))
+      .catch((err) => console.error('Failed to fetch payments:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalCaptured = payments.reduce((sum, p) => sum + (p.status === 'PAID' || p.status === 'DELIVERED' ? (p.amountPaid || 0) : 0), 0);
+  const totalPending = payments.reduce((sum, p) => sum + (p.status === 'PAYMENT_PENDING' ? (p.amountPaid || 0) : 0), 0);
+  const totalFailed = payments.reduce((sum, p) => sum + (p.status === 'FAILED' ? (p.amountPaid || 0) : 0), 0);
+
   const stats = [
-    { label: 'Captured', value: '₹64,82,100', color: '#3a7048' },
-    { label: 'Pending', value: '₹3,41,200', color: '#9a7020' },
-    { label: 'Refunded', value: '₹1,24,860', color: '#c47560' },
-    { label: 'Failed', value: '₹50,400', color: '#c47560' },
+    { label: 'Captured', value: `₹${(totalCaptured / 100).toLocaleString('en-IN')}`, color: '#3a7048' },
+    { label: 'Pending', value: `₹${(totalPending / 100).toLocaleString('en-IN')}`, color: '#9a7020' },
+    { label: 'Refunded', value: '₹0', color: '#c47560' }, // Refund logic not implemented yet
+    { label: 'Failed', value: `₹${(totalFailed / 100).toLocaleString('en-IN')}`, color: '#c47560' },
   ];
 
-  const transactions = [
-    { id: 'TXN-98201', date: '2026-04-07', customer: 'Priya Sharma', order: 'ORD-4821', method: 'UPI', amount: '₹2,499', status: 'Captured' },
-    { id: 'TXN-98200', date: '2026-04-06', customer: 'Rahul Mehta', order: 'ORD-4820', method: 'Card', amount: '₹499', status: 'Captured' },
-    { id: 'TXN-98199', date: '2026-04-06', customer: 'Anita Desai', order: 'ORD-4819', method: 'UPI', amount: '₹1,299', status: 'Refunded' },
-    { id: 'TXN-98198', date: '2026-04-05', customer: 'Vikram Patel', order: 'ORD-4818', method: 'Net Banking', amount: '₹3,999', status: 'Pending' },
-    { id: 'TXN-98197', date: '2026-04-05', customer: 'Meera Iyer', order: 'ORD-4817', method: 'Card', amount: '₹2,499', status: 'Failed' },
-  ];
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ fontSize: 13, color: '#8a8578' }}>Loading transactions...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -908,26 +953,34 @@ function PaymentsTab() {
               <th style={thStyle}>Txn ID</th>
               <th style={thStyle}>Date</th>
               <th style={thStyle}>Customer</th>
-              <th style={thStyle}>Order</th>
-              <th style={thStyle}>Method</th>
+              <th style={thStyle}>Order ID</th>
+              <th style={thStyle}>Provider</th>
               <th style={thStyle}>Amount</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id}>
-                <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{t.id}</td>
-                <td style={tdStyle}>{t.date}</td>
-                <td style={tdStyle}>{t.customer}</td>
-                <td style={tdStyle}>{t.order}</td>
-                <td style={tdStyle}>{t.method}</td>
-                <td style={tdStyle}>{t.amount}</td>
-                <td style={tdStyle}><span style={badge(t.status)}>{t.status}</span></td>
-                <td style={tdStyle}><button style={btnOutline}>View</button></td>
+            {payments.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                  No payment transactions found.
+                </td>
               </tr>
-            ))}
+            ) : (
+              payments.map((p) => (
+                <tr key={p.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{p.paymentId || 'N/A'}</td>
+                  <td style={tdStyle}>{new Date(p.updatedAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}>{p.user ? `${p.user.firstName} ${p.user.lastName}` : (p.shippingName || 'Guest')}</td>
+                  <td style={tdStyle}>{p.id.slice(0, 8).toUpperCase()}</td>
+                  <td style={tdStyle}>{p.paymentProvider || 'Internal'}</td>
+                  <td style={tdStyle}>₹{(p.amountPaid / 100).toLocaleString('en-IN')}</td>
+                  <td style={tdStyle}><span style={badge(p.status)}>{p.status}</span></td>
+                  <td style={tdStyle}><button style={btnOutline}>View</button></td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

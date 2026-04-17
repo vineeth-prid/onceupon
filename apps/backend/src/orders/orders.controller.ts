@@ -150,11 +150,38 @@ export class OrdersController {
     return { orders };
   }
 
+  @Get('admin/dashboard')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async getAdminDashboardSimple() {
+    return this.ordersService.getAdminDashboardStats();
+  }
+
   @Get('admin/dashboard/stats')
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   async getAdminDashboardStats() {
     const stats = await this.ordersService.getAdminDashboardStats();
     return stats;
+  }
+
+  @Get('admin/users')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async findAllAdminUsers() {
+    const users = await this.ordersService.findAllAdminUsers();
+    return { users };
+  }
+
+  @Get('admin/books')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async findAllAdminBooks() {
+    const books = await this.ordersService.findAllAdminBooks();
+    return { books };
+  }
+
+  @Get('admin/payments')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async findAllAdminPayments() {
+    const payments = await this.ordersService.findAllAdminPayments();
+    return { payments };
   }
 
   @Get(':id')
@@ -186,19 +213,24 @@ export class OrdersController {
       throw new NotFoundException('Book not ready for download yet');
     }
 
-    // Must be paid to download
-    if (order.status !== 'PAID' && order.status !== 'DELIVERED') {
+    // Allow download for any post-payment status (PAID, PREVIEW_READY, PRINTING, SHIPPED, DELIVERED)
+    const downloadableStatuses = ['PAID', 'PREVIEW_READY', 'PRINTING', 'SHIPPED', 'DELIVERED'];
+    if (!downloadableStatuses.includes(order.status)) {
       throw new ForbiddenException('Please purchase access to download the PDF');
     }
 
-    const pdfBuffer = await this.pdfService.generateStorybook(order as any);
-    const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;
+    try {
+      const pdfBuffer = await this.pdfService.generateStorybook(order as any);
+      const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}"`,
-      'Content-Length': pdfBuffer.length,
-    });
-    res.end(pdfBuffer);
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBuffer.length,
+      });
+      res.end(pdfBuffer);
+    } catch (error) {
+      throw new BadRequestException(`PDF generation failed: ${(error as Error).message}`);
+    }
   }
 }

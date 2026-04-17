@@ -9,7 +9,8 @@
     "dev": "turbo run dev",
     "db:migrate": "pnpm --filter backend exec prisma migrate dev",
     "db:generate": "pnpm --filter backend exec prisma generate",
-    "db:seed": "pnpm --filter backend exec prisma db seed"
+    "db:seed": "pnpm --filter backend exec prisma db seed",
+    "redis:start": "node run-redis.js"
   },
   "devDependencies": {
     "turbo": "^2.9.5",

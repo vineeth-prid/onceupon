@@ -24,6 +24,6 @@ function finishDownload() {
   execSync('powershell Expand-Archive -Path redis.zip -DestinationPath redis -Force');
   console.log("Starting Redis...");
   const { spawn } = require('child_process');
-  spawn('.\\redis\\redis-server.exe', ['--port', '6380'], { detached: true, stdio: 'ignore' }).unref();
-  console.log("Redis started on 6380");
+  spawn('.\\redis\\redis-server.exe', ['--port', '6379'], { detached: true, stdio: 'ignore' }).unref();
+  console.log("Redis started on 6379");
 }

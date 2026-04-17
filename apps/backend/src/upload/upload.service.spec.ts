@@ -31,9 +31,11 @@ describe('UploadService', () => {
 
   it('should save a file and return a URL path', async () => {
     const url = await service.savePhoto(mockFile());
-    expect(url).toMatch(/^\/uploads\/[\w-]+\.jpg$/);
+    expect(url).toMatch(/^\/api\/uploads\/[\w-]+\.jpg$/);
 
-    const fullPath = join(process.cwd(), url);
+    // URL is /api/uploads/file.jpg, actual file is in {cwd}/uploads/file.jpg
+    const filename = url.replace(/^\/api\/uploads\//, '');
+    const fullPath = join(process.cwd(), 'uploads', filename);
     savedFiles.push(fullPath);
     expect(existsSync(fullPath)).toBe(true);
   });
@@ -55,7 +57,7 @@ describe('UploadService', () => {
       mockFile({ originalname: 'photo.png', mimetype: 'image/png' }),
     );
     expect(url).toMatch(/\.png$/);
-    savedFiles.push(join(process.cwd(), url));
+    savedFiles.push(join(process.cwd(), 'uploads', url.replace(/^\/api\/uploads\//, '')));
   });
 
   it('should accept WebP files', async () => {
@@ -63,6 +65,6 @@ describe('UploadService', () => {
       mockFile({ originalname: 'photo.webp', mimetype: 'image/webp' }),
     );
     expect(url).toMatch(/\.webp$/);
-    savedFiles.push(join(process.cwd(), url));
+    savedFiles.push(join(process.cwd(), 'uploads', url.replace(/^\/api\/uploads\//, '')));
   });
 });

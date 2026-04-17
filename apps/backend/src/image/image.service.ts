@@ -37,7 +37,9 @@ export class ImageService {
   async describeCharacter(photoUrl: string, childName: string, childAge: number, childGender: string): Promise<string> {
     this.logger.log(`Describing character from photo for ${childName}`);
 
-    const filePath = photoUrl.startsWith('/') ? join(process.cwd(), photoUrl) : photoUrl;
+    const filePath = photoUrl.startsWith('/')
+      ? join(UPLOADS_DIR, photoUrl.replace(/^\/(?:api\/)?uploads\//, ''))
+      : photoUrl;
     const imageBytes = await readFile(filePath);
     const base64Image = imageBytes.toString('base64');
 
@@ -102,7 +104,7 @@ CRITICAL RULES:
     const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt, style.photoMakerStyleName);
     const filename = `ref-${orderId}.png`;
     await this.downloadAndSave(imageUrl, filename);
-    return `/uploads/${filename}`;
+    return `/api/uploads/${filename}`;
   }
 
   async generatePageImage(
@@ -128,7 +130,7 @@ CRITICAL RULES:
       const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt, style.photoMakerStyleName);
       const filename = `${orderId}-page-${pageNumber}.png`;
       await this.downloadAndSave(imageUrl, filename);
-      return `/uploads/${filename}`;
+      return `/api/uploads/${filename}`;
     }
 
     // For pages WITH the child: use PhotoMaker with face embedding
@@ -175,7 +177,7 @@ CRITICAL RULES:
     const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, style.photoMakerStyleName);
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
-    return `/uploads/${filename}`;
+    return `/api/uploads/${filename}`;
   }
 
   private async resolvePublicUrl(url: string): Promise<string> {
@@ -187,7 +189,7 @@ CRITICAL RULES:
       return this.cachedFileUrl;
     }
 
-    const filePath = join(process.cwd(), url);
+    const filePath = join(UPLOADS_DIR, url.replace(/^\/(?:api\/)?uploads\//, ''));
     this.logger.log(`Uploading local file to Replicate: ${url}`);
 
     const fileBuffer = await readFile(filePath);

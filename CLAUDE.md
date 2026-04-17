@@ -86,7 +86,7 @@ TOTAL_PAGES = 5  // reduced for testing (saves API credits)
 - Backend needs `.env` with `REPLICATE_API_TOKEN`, `GEMINI_API_KEY`, `DATABASE_URL`, `REDIS_URL`
 - Must run `pnpm build` in `packages/shared` after changing shared constants
 - Must run `npx prisma generate` in backend after schema changes
-- Vite proxies `/api` to backend at localhost:3000
+- Vite proxies `/api` to backend at localhost:3000 (uploaded images are served at `/api/uploads/`)
 
 ## Branches
 - `main` — stable with FLUX PuLID model

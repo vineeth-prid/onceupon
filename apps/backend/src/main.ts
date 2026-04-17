@@ -12,8 +12,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('api');
 
-  // Serve uploaded files statically
-  app.useStaticAssets(uploadsDir, { prefix: '/uploads' });
+  // Serve uploaded files at /api/uploads so they go through the same
+  // Nginx proxy rule as regular API routes — no extra Nginx config needed.
+  app.useStaticAssets(uploadsDir, { prefix: '/api/uploads' });
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',

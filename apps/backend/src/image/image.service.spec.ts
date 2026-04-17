@@ -82,7 +82,7 @@ describe('ImageService', () => {
 
     it('should return local upload URL', async () => {
       const result = await service.generateReferenceSheet('https://example.com/photo.jpg', 'order-1');
-      expect(result).toBe('/uploads/ref-order-1.png');
+      expect(result).toBe('/api/uploads/ref-order-1.png');
     });
   });
 
@@ -120,7 +120,7 @@ describe('ImageService', () => {
         'order-1',
         5,
       );
-      expect(result).toBe('/uploads/order-1-page-5.png');
+      expect(result).toBe('/api/uploads/order-1-page-5.png');
     });
   });
 });

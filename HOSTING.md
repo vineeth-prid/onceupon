@@ -230,8 +230,9 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # API proxy
-    location /api/ {
+    # API + uploaded images (all backend traffic goes through /api)
+    # ^~ prevents the static asset regex below from intercepting /api/uploads/*.png
+    location ^~ /api/ {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -243,14 +244,7 @@ server {
         client_max_body_size 10M;
     }
 
-    # Uploaded files
-    location /uploads/ {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        expires 7d;
-    }
-
-    # Cache static assets
+    # Cache frontend static assets (JS, CSS, images in /assets/)
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|webp|mp4)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
@@ -379,7 +373,7 @@ cat ~/backup_YYYYMMDD.sql | docker exec -i deploy-postgres-1 \
 |---------|-------|-----|
 | 502 Bad Gateway | Backend not running | `pm2 status`, `pm2 restart storybook-api` |
 | CORS error | Wrong FRONTEND_URL | Set `FRONTEND_URL=https://yourdomain.com` in .env |
-| Images not loading | Uploads symlink broken | `ls -la apps/backend/uploads` - relink if needed |
+| Images not loading | Uploads symlink broken | `ls -la apps/backend/uploads` - relink if needed. Images are served at `/api/uploads/` |
 | DB connection error | Password mismatch | Check .env DATABASE_URL matches docker-compose password |
 | Blank page | Frontend not built/copied | Rebuild and copy to /var/www/frontend/ |
 | SSL error | DNS not propagated | Wait, check with `dig +short yourdomain.com`, rerun certbot |

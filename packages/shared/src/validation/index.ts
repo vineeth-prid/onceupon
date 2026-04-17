@@ -24,6 +24,7 @@ export const createOrderSchema = z.object({
     errorMap: () => ({ message: 'Please select a valid illustration style' }),
   }).default('disney-character'),
   photoUrl: z.string().min(1, 'Photo URL is required'),
+  email: z.string().email('Invalid email address').optional(),
   customStoryPrompt: z.string().max(2000, 'Story prompt must be under 2000 characters').optional(),
 });
 

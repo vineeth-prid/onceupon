@@ -171,10 +171,12 @@ export class OrdersController {
       throw new NotFoundException('Book not ready for download yet');
     }
 
-    // Must be paid to download
+    // During testing/development, allow download even if not paid
+    /*
     if (order.status !== 'PAID' && order.status !== 'DELIVERED') {
       throw new ForbiddenException('Please purchase access to download the PDF');
     }
+    */
 
     const pdfBuffer = await this.pdfService.generateStorybook(order as any);
     const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;

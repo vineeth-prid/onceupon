@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { api } from '../api/client';
-import { getMe, loginUser, registerUser, googleLogin as googleLoginUser, type User, type AuthResponse } from '../api/auth';
+import { getMe, loginUser, registerUser, type User, type AuthResponse } from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -9,7 +9,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
-  googleLogin: (credential: string) => Promise<void>;
   logout: () => void;
   setAuthFromResponse: (res: AuthResponse) => void;
 }
@@ -45,10 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthFromResponse(res);
   }, [setAuthFromResponse]);
 
-  const googleLogin = useCallback(async (credential: string) => {
-    const res = await googleLoginUser({ credential });
-    setAuthFromResponse(res);
-  }, [setAuthFromResponse]);
 
   useEffect(() => {
     if (token) {
@@ -73,7 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         login,
         register,
-        googleLogin,
         logout,
         setAuthFromResponse,
       }}

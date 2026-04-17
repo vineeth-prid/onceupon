@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
 
 type Tab =
   | 'dashboard'
@@ -9,22 +10,11 @@ type Tab =
   | 'coupons'
   | 'users'
   | 'books'
-  | 'payments';
-
-const tabPaths: Record<Tab, string> = {
-  dashboard: '/admin',
-  orders: '/admin/orders',
-  pricing: '/admin/pricing',
-  coupons: '/admin/coupons',
-  users: '/admin/users',
-  books: '/admin/books',
-  payments: '/admin/payments',
-};
-
-function getTabFromPath(pathname: string): Tab {
-  const match = Object.entries(tabPaths).find(([, path]) => pathname === path);
-  return (match?.[0] as Tab) || 'dashboard';
-}
+  | 'api'
+  | 'payments'
+  | 'notifications'
+  | 'settings'
+  | 'audit';
 
 interface NavItem {
   id: Tab;
@@ -57,7 +47,16 @@ const navSections: NavSection[] = [
   {
     title: 'Integrations',
     items: [
+      { id: 'api', label: 'API', emoji: '🔌' },
       { id: 'payments', label: 'Payments', emoji: '💳' },
+      { id: 'notifications', label: 'Notifications', emoji: '🔔' },
+    ],
+  },
+  {
+    title: 'Settings',
+    items: [
+      { id: 'settings', label: 'Site Settings', emoji: '⚙️' },
+      { id: 'audit', label: 'Audit Logs', emoji: '📋' },
     ],
   },
 ];
@@ -69,7 +68,11 @@ const tabTitles: Record<Tab, { title: string; subtitle: string }> = {
   coupons: { title: 'Coupons', subtitle: 'Manage discount codes' },
   users: { title: 'Users', subtitle: 'Manage registered users' },
   books: { title: 'Books', subtitle: 'All generated storybooks' },
+  api: { title: 'API Management', subtitle: 'Third-party integrations & keys' },
   payments: { title: 'Payments', subtitle: 'Transaction history & analytics' },
+  notifications: { title: 'Notifications', subtitle: 'Messaging & automated triggers' },
+  settings: { title: 'Site Settings', subtitle: 'Platform configuration' },
+  audit: { title: 'Audit Logs', subtitle: 'Admin activity history' },
 };
 
 /* ── Shared Styles ── */
@@ -163,6 +166,8 @@ function badge(status: string): React.CSSProperties {
     Refunded: { bg: '#c4756010', color: '#c47560' },
     Pending: { bg: '#c8a45c10', color: '#9a7020' },
     Suspended: { bg: '#c4756010', color: '#c47560' },
+    ADMIN: { bg: '#c8a45c20', color: '#c8a45c' },
+    USER: { bg: '#f0ede8', color: '#8a8578' },
   };
   const c = map[status] || { bg: '#e8e4de', color: '#8a8578' };
   return {
@@ -178,21 +183,14 @@ function badge(status: string): React.CSSProperties {
 
 /* ── Tab Components ── */
 
-function DashboardTab() {
-  const stats = [
-    { emoji: '📦', label: 'Total Orders', value: '1,247', delta: '+12.3%', up: true },
-    { emoji: '💰', label: 'Revenue MTD', value: '₹69,98,560', delta: '+8.1%', up: true },
-    { emoji: '👥', label: 'Registered Users', value: '3,891', delta: '+15.7%', up: true },
-    { emoji: '📚', label: 'Books Generated', value: '5,024', delta: '+22.4%', up: true },
+function DashboardTab({ stats }: { stats: any }) {
+  const displayStats = [
+    { emoji: '📦', label: 'Total Orders', value: stats?.totalOrders?.toString() || '0', delta: stats?.deltas?.orders || '+0%', up: true },
+    { emoji: '💰', label: 'Total Revenue', value: stats?.revenue ? `₹${stats.revenue.toLocaleString()}` : '₹0', delta: stats?.deltas?.revenue || '+0%', up: true },
+    { emoji: '👥', label: 'Registered Users', value: stats?.totalUsers?.toString() || '0', delta: stats?.deltas?.users || '+0%', up: true },
+    { emoji: '📚', label: 'Books Generated', value: stats?.booksGenerated?.toString() || '0', delta: stats?.deltas?.books || '+0%', up: true },
     { emoji: '⭐', label: 'Avg Rating', value: '4.92', delta: '+0.03', up: true },
     { emoji: '📈', label: 'Conversion Rate', value: '23.4%', delta: '-1.2%', up: false },
-  ];
-
-  const recentOrders = [
-    { id: 'ORD-4821', customer: 'Priya Sharma', format: 'Premium Print', status: 'Printing', amount: '₹2,499' },
-    { id: 'ORD-4820', customer: 'Rahul Mehta', format: 'eBook', status: 'Delivered', amount: '₹499' },
-    { id: 'ORD-4819', customer: 'Anita Desai', format: 'Classic Print', status: 'Dispatched', amount: '₹1,299' },
-    { id: 'ORD-4818', customer: 'Vikram Patel', format: 'Grand Print', status: 'Generating', amount: '₹3,999' },
   ];
 
   const quickActions = [
@@ -207,11 +205,11 @@ function DashboardTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-        {stats.map((s) => (
+        {displayStats.map((s) => (
           <div key={s.label} style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: '#1a1814', marginBottom: 4 }}>{s.value}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1814', marginBottom: 4 }}>{s.value}</div>
                 <div style={{ fontSize: 13, color: '#8a8578' }}>{s.label}</div>
               </div>
               <span style={{ fontSize: 28 }}>{s.emoji}</span>
@@ -225,31 +223,8 @@ function DashboardTab() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
         <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Recent Orders</h3>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Order ID</th>
-                <th style={thStyle}>Customer</th>
-                <th style={thStyle}>Format</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Amount</th>
-                <th style={thStyle}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((o) => (
-                <tr key={o.id}>
-                  <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id}</td>
-                  <td style={tdStyle}>{o.customer}</td>
-                  <td style={tdStyle}>{o.format}</td>
-                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
-                  <td style={tdStyle}>{o.amount}</td>
-                  <td style={tdStyle}><button style={btnOutline}>View</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Recent Activity</h3>
+          <p style={{ fontSize: 13, color: '#8a8578' }}>Recent orders and user activity will appear here in real-time.</p>
         </div>
 
         <div style={cardStyle}>
@@ -265,15 +240,7 @@ function DashboardTab() {
   );
 }
 
-function OrdersTab() {
-  const orders = [
-    { id: 'ORD-4821', date: '2026-04-07', customer: 'Priya Sharma', book: 'Dino Adventure', format: 'Premium Print', delivery: 'Express', status: 'Printing', total: '₹2,499' },
-    { id: 'ORD-4820', date: '2026-04-06', customer: 'Rahul Mehta', book: 'Space Journey', format: 'eBook', delivery: 'Instant', status: 'Delivered', total: '₹499' },
-    { id: 'ORD-4819', date: '2026-04-06', customer: 'Anita Desai', book: 'Fairy Garden', format: 'Classic Print', delivery: 'Standard', status: 'Dispatched', total: '₹1,299' },
-    { id: 'ORD-4818', date: '2026-04-05', customer: 'Vikram Patel', book: 'Ocean Quest', format: 'Grand Print', delivery: 'Priority', status: 'Generating', total: '₹3,999' },
-    { id: 'ORD-4817', date: '2026-04-05', customer: 'Meera Iyer', book: 'Jungle Safari', format: 'Premium Print', delivery: 'Express', status: 'Failed', total: '₹2,499' },
-  ];
-
+function OrdersTab({ orders }: { orders: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -286,14 +253,6 @@ function OrdersTab() {
           <option>Delivered</option>
           <option>Failed</option>
         </select>
-        <select style={selectStyle}>
-          <option>All Formats</option>
-          <option>eBook</option>
-          <option>Classic Print</option>
-          <option>Premium Print</option>
-          <option>Grand Print</option>
-        </select>
-        <input style={inputStyle} type="date" />
         <button style={btnPrimary}>Export CSV</button>
       </div>
 
@@ -304,40 +263,34 @@ function OrdersTab() {
               <th style={thStyle}>Order ID</th>
               <th style={thStyle}>Date</th>
               <th style={thStyle}>Customer</th>
-              <th style={thStyle}>Book</th>
-              <th style={thStyle}>Format</th>
-              <th style={thStyle}>Delivery</th>
+              <th style={thStyle}>Child</th>
+              <th style={thStyle}>Theme</th>
               <th style={thStyle}>Status</th>
-              <th style={thStyle}>Total</th>
+              <th style={thStyle}>Amount</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
-              <tr key={o.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{o.id}</td>
-                <td style={tdStyle}>{o.date}</td>
-                <td style={tdStyle}>{o.customer}</td>
-                <td style={tdStyle}>{o.book}</td>
-                <td style={tdStyle}>{o.format}</td>
-                <td style={tdStyle}>{o.delivery}</td>
-                <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
-                <td style={tdStyle}>{o.total}</td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>View</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Refund</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {orders.length === 0 ? (
+              <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No orders found</td></tr>
+            ) : (
+              orders.map((o) => (
+                <tr key={o.id}>
+                  <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{o.id.slice(0, 8)}...</td>
+                  <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td style={tdStyle}>{o.user?.firstName || 'Guest'}</td>
+                  <td style={tdStyle}>{o.childName}</td>
+                  <td style={tdStyle}>{o.theme}</td>
+                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                  <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '₹0'}</td>
+                  <td style={tdStyle}>
+                    <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-          <button style={btnOutline}>Prev</button>
-          <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of 208</span>
-          <button style={btnOutline}>Next</button>
-        </div>
       </div>
     </div>
   );
@@ -384,14 +337,6 @@ function PricingTab() {
             </div>
           </div>
         ))}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>Default Currency</label>
-          <select style={{ ...selectStyle, width: 140 }}>
-            <option>INR (₹)</option>
-            <option>USD ($)</option>
-            <option>EUR (€)</option>
-          </select>
-        </div>
         <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Shipping & Tax</button>
       </div>
     </div>
@@ -423,9 +368,9 @@ function CouponsTab() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchCoupons();
-  });
+  }, []);
 
   const handleCreate = async () => {
     if (!newCoupon.code || !newCoupon.value) {
@@ -517,107 +462,34 @@ function CouponsTab() {
               onChange={(e) => setNewCoupon({ ...newCoupon, value: e.target.value })}
             />
           </div>
-          <div>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Max Uses</label>
-            <input 
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
-              placeholder="e.g. 500" 
-              value={newCoupon.maxUses}
-              onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: e.target.value })}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Expiry Date</label>
-            <input 
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
-              type="date" 
-              value={newCoupon.expiryDate}
-              onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: '#8a8578', display: 'block', marginBottom: 6 }}>Min Order (INR)</label>
-            <input 
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }} 
-              placeholder="e.g. 999" 
-              value={newCoupon.minOrder}
-              onChange={(e) => setNewCoupon({ ...newCoupon, minOrder: e.target.value })}
-            />
-          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18 }}>
-          <input 
-            type="checkbox" 
-            checked={newCoupon.syncWithRazorpay} 
-            onChange={(e) => setNewCoupon({ ...newCoupon, syncWithRazorpay: e.target.checked })}
-          />
-          <label style={{ fontSize: 13, color: '#1a1814' }}>Sync with Razorpay API</label>
-        </div>
-        <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          <button 
-            style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }} 
-            onClick={handleCreate}
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Coupon'}
-          </button>
-          <button 
-            style={btnOutline}
-            onClick={() => setNewCoupon({ ...newCoupon, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}
-          >
-            Auto-Generate Code
-          </button>
-        </div>
+        <button style={{ ...btnPrimary, marginTop: 18 }} onClick={handleCreate} disabled={loading}>
+          {loading ? 'Creating...' : 'Create Coupon'}
+        </button>
       </div>
 
       <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
-          <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={fetchCoupons}>Refresh</button>
-        </div>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Active Coupons</h3>
         <table style={tableStyle}>
           <thead>
             <tr>
               <th style={thStyle}>Code</th>
               <th style={thStyle}>Type</th>
               <th style={thStyle}>Value</th>
-              <th style={thStyle}>Used</th>
-              <th style={thStyle}>Max</th>
-              <th style={thStyle}>Expiry</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {coupons.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
-                  No coupons found. Create your first discount code above.
-                </td>
+            {coupons.map((c) => (
+              <tr key={c.id}>
+                <td style={{ ...tdStyle, fontWeight: 600 }}>{c.code}</td>
+                <td style={tdStyle}>{c.type}</td>
+                <td style={tdStyle}>{c.type === 'percentage' ? `${c.value}%` : `₹${c.value/100}`}</td>
+                <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
+                <td style={tdStyle}><button style={{ ...btnOutline, color: '#c47560' }} onClick={() => handleDelete(c.id)}>Delete</button></td>
               </tr>
-            ) : (
-              coupons.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
-                  <td style={tdStyle}>{c.type}</td>
-                  <td style={tdStyle}>{c.type === 'percentage' ? `${c.value}%` : `₹${c.value/100}`}</td>
-                  <td style={tdStyle}>{c.usageCount}</td>
-                  <td style={tdStyle}>{c.usageLimit || '∞'}</td>
-                  <td style={tdStyle}>{c.validTill ? new Date(c.validTill).toLocaleDateString() : 'Never'}</td>
-                  <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
-                  <td style={tdStyle}>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button 
-                        style={{ ...btnOutline, color: '#c47560' }}
-                        onClick={() => handleDelete(c.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -625,32 +497,9 @@ function CouponsTab() {
   );
 }
 
-function UsersTab() {
-  const users = [
-    { id: 'USR-001', name: 'Priya Sharma', email: 'priya@email.com', auth: 'Google', books: 4, orders: 3, spent: '₹6,297', joined: '2025-12-01', status: 'Active' },
-    { id: 'USR-002', name: 'Rahul Mehta', email: 'rahul@email.com', auth: 'Email', books: 2, orders: 2, spent: '₹998', joined: '2026-01-15', status: 'Active' },
-    { id: 'USR-003', name: 'Anita Desai', email: 'anita@email.com', auth: 'Google', books: 7, orders: 5, spent: '₹12,495', joined: '2025-11-20', status: 'Active' },
-    { id: 'USR-004', name: 'Vikram Patel', email: 'vikram@email.com', auth: 'Apple', books: 1, orders: 1, spent: '₹3,999', joined: '2026-03-28', status: 'Suspended' },
-  ];
-
+function UsersTab({ users }: { users: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search users..." />
-        <select style={selectStyle}>
-          <option>All Auth Methods</option>
-          <option>Google</option>
-          <option>Apple</option>
-          <option>Email</option>
-        </select>
-        <select style={selectStyle}>
-          <option>All Statuses</option>
-          <option>Active</option>
-          <option>Suspended</option>
-        </select>
-        <button style={btnPrimary}>Export CSV</button>
-      </div>
-
       <div style={cardStyle}>
         <table style={tableStyle}>
           <thead>
@@ -658,432 +507,205 @@ function UsersTab() {
               <th style={thStyle}>ID</th>
               <th style={thStyle}>Name</th>
               <th style={thStyle}>Email</th>
-              <th style={thStyle}>Auth</th>
-              <th style={thStyle}>Books</th>
-              <th style={thStyle}>Orders</th>
-              <th style={thStyle}>Spent</th>
+              <th style={thStyle}>Role</th>
               <th style={thStyle}>Joined</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{u.id}</td>
-                <td style={tdStyle}>{u.name}</td>
+                <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{u.id.slice(0, 8)}...</td>
+                <td style={tdStyle}>{u.firstName} {u.lastName}</td>
                 <td style={tdStyle}>{u.email}</td>
-                <td style={tdStyle}>{u.auth}</td>
-                <td style={tdStyle}>{u.books}</td>
-                <td style={tdStyle}>{u.orders}</td>
-                <td style={tdStyle}>{u.spent}</td>
-                <td style={tdStyle}>{u.joined}</td>
-                <td style={tdStyle}><span style={badge(u.status)}>{u.status}</span></td>
-                <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button style={btnOutline}>View</button>
-                    <button style={{ ...btnOutline, color: '#c47560' }}>Suspend</button>
-                  </div>
-                </td>
+                <td style={tdStyle}><span style={badge(u.role)}>{u.role}</span></td>
+                <td style={tdStyle}>{new Date(u.createdAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-          <button style={btnOutline}>Prev</button>
-          <span style={{ fontSize: 13, color: '#8a8578' }}>Page 1 of 78</span>
-          <button style={btnOutline}>Next</button>
-        </div>
       </div>
     </div>
   );
 }
 
 function BooksTab() {
-  const books = [
-    { id: 'BK-5024', title: 'Dino Adventure', occasion: 'Birthday', style: 'Disney/Pixar', user: 'Priya Sharma', generated: '2026-04-07', pages: 16, status: 'Completed' },
-    { id: 'BK-5023', title: 'Space Journey', occasion: 'Just Because', style: 'Disney/Pixar', user: 'Rahul Mehta', generated: '2026-04-06', pages: 16, status: 'Completed' },
-    { id: 'BK-5022', title: 'Fairy Garden', occasion: 'Christmas', style: 'Watercolor', user: 'Anita Desai', generated: '2026-04-06', pages: 16, status: 'Completed' },
-    { id: 'BK-5021', title: 'Ocean Quest', occasion: 'Birthday', style: 'Disney/Pixar', user: 'Vikram Patel', generated: '2026-04-05', pages: 16, status: 'Generating' },
-    { id: 'BK-5020', title: 'Jungle Safari', occasion: 'Graduation', style: 'Comic Book', user: 'Meera Iyer', generated: '2026-04-05', pages: 16, status: 'Failed' },
-  ];
+  return <div style={cardStyle}>Book management coming soon...</div>;
+}
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search books..." />
-        <select style={selectStyle}>
-          <option>All Occasions</option>
-          <option>Birthday</option>
-          <option>Christmas</option>
-          <option>Just Because</option>
-          <option>Graduation</option>
-        </select>
-        <select style={selectStyle}>
-          <option>All Styles</option>
-          <option>Disney/Pixar</option>
-          <option>Watercolor</option>
-          <option>Comic Book</option>
-        </select>
-      </div>
-
-      <div style={cardStyle}>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Book ID</th>
-              <th style={thStyle}>Title</th>
-              <th style={thStyle}>Occasion</th>
-              <th style={thStyle}>Style</th>
-              <th style={thStyle}>User</th>
-              <th style={thStyle}>Generated</th>
-              <th style={thStyle}>Pages</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {books.map((b) => (
-              <tr key={b.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{b.id}</td>
-                <td style={tdStyle}>{b.title}</td>
-                <td style={tdStyle}>{b.occasion}</td>
-                <td style={tdStyle}>{b.style}</td>
-                <td style={tdStyle}>{b.user}</td>
-                <td style={tdStyle}>{b.generated}</td>
-                <td style={tdStyle}>{b.pages}</td>
-                <td style={tdStyle}><span style={badge(b.status)}>{b.status}</span></td>
-                <td style={tdStyle}><button style={btnOutline}>Preview</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+function APITab() {
+  return <div style={cardStyle}>API management coming soon...</div>;
 }
 
 function PaymentsTab() {
-  const stats = [
-    { label: 'Captured', value: '₹64,82,100', color: '#3a7048' },
-    { label: 'Pending', value: '₹3,41,200', color: '#9a7020' },
-    { label: 'Refunded', value: '₹1,24,860', color: '#c47560' },
-    { label: 'Failed', value: '₹50,400', color: '#c47560' },
-  ];
-
-  const transactions = [
-    { id: 'TXN-98201', date: '2026-04-07', customer: 'Priya Sharma', order: 'ORD-4821', method: 'UPI', amount: '₹2,499', status: 'Captured' },
-    { id: 'TXN-98200', date: '2026-04-06', customer: 'Rahul Mehta', order: 'ORD-4820', method: 'Card', amount: '₹499', status: 'Captured' },
-    { id: 'TXN-98199', date: '2026-04-06', customer: 'Anita Desai', order: 'ORD-4819', method: 'UPI', amount: '₹1,299', status: 'Refunded' },
-    { id: 'TXN-98198', date: '2026-04-05', customer: 'Vikram Patel', order: 'ORD-4818', method: 'Net Banking', amount: '₹3,999', status: 'Pending' },
-    { id: 'TXN-98197', date: '2026-04-05', customer: 'Meera Iyer', order: 'ORD-4817', method: 'Card', amount: '₹2,499', status: 'Failed' },
-  ];
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-        {stats.map((s) => (
-          <div key={s.label} style={cardStyle}>
-            <div style={{ fontSize: 12, color: '#8a8578', marginBottom: 4 }}>{s.label}</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Transaction History</h3>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Txn ID</th>
-              <th style={thStyle}>Date</th>
-              <th style={thStyle}>Customer</th>
-              <th style={thStyle}>Order</th>
-              <th style={thStyle}>Method</th>
-              <th style={thStyle}>Amount</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id}>
-                <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{t.id}</td>
-                <td style={tdStyle}>{t.date}</td>
-                <td style={tdStyle}>{t.customer}</td>
-                <td style={tdStyle}>{t.order}</td>
-                <td style={tdStyle}>{t.method}</td>
-                <td style={tdStyle}>{t.amount}</td>
-                <td style={tdStyle}><span style={badge(t.status)}>{t.status}</span></td>
-                <td style={tdStyle}><button style={btnOutline}>View</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  return <div style={cardStyle}>Payment history coming soon...</div>;
 }
 
-/* ── Main Admin Page ── */
+function NotificationsTab() {
+  return <div style={cardStyle}>Notification triggers coming soon...</div>;
+}
+
+function SettingsTab() {
+  return <div style={cardStyle}>Site settings coming soon...</div>;
+}
+
+function AuditTab() {
+  return <div style={cardStyle}>Audit logs coming soon...</div>;
+}
 
 export function AdminPage() {
-  const location = useLocation();
-  const activeTab = getTabFromPath(location.pathname);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
-  // Close dropdown on outside click
+  const [stats, setStats] = useState<any>({ totalOrders: 0, revenue: 0, totalUsers: 0, booksGenerated: 0 });
+  const [orders, setOrders] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setShowProfileMenu(false);
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      console.log('Redirecting to login: not authenticated');
+      navigate('/login');
+      return;
+    }
+    if (user && user.role !== 'ADMIN') {
+      console.warn('Redirecting to home: not admin', user.role);
+      navigate('/');
+      return;
+    }
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [statsRes, ordersRes, usersRes] = await Promise.all([
+          api.get('/admin/stats').then(res => res.data),
+          api.get('/admin/orders').then(res => res.data),
+          api.get('/admin/users').then(res => res.data),
+        ]);
+        // WAIT! Axios api client already has /api prefix? YES.
+        setStats(statsRes);
+        setOrders(ordersRes);
+        setUsers(usersRes);
+      } catch (e: any) {
+        console.error('Admin data fetch failed:', e);
+        if (e.response?.status === 403 || e.response?.status === 401) {
+          setError('Unauthorized: Admin access required');
+        } else {
+          setError('Failed to load dashboard data');
+        }
       }
+      setLoading(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+
+    fetchData();
+  }, [isAuthenticated, user, navigate, authLoading]);
+
+  if (authLoading || (loading && stats === null)) return <div style={{ padding: 40, textAlign: 'center' }}>Loading Admin Panel...</div>;
+
+  if (error) return (
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <h2 style={{ color: '#c47560' }}>{error}</h2>
+      <button style={btnPrimary} onClick={() => navigate('/')}>Back to Home</button>
+    </div>
+  );
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardTab />;
-      case 'orders': return <OrdersTab />;
+      case 'dashboard': return <DashboardTab stats={stats} />;
+      case 'orders': return <OrdersTab orders={orders} />;
       case 'pricing': return <PricingTab />;
       case 'coupons': return <CouponsTab />;
-      case 'users': return <UsersTab />;
+      case 'users': return <UsersTab users={users} />;
       case 'books': return <BooksTab />;
+      case 'api': return <APITab />;
       case 'payments': return <PaymentsTab />;
+      case 'notifications': return <NotificationsTab />;
+      case 'settings': return <SettingsTab />;
+      case 'audit': return <AuditTab />;
     }
   };
 
-  const info = tabTitles[activeTab];
-
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
-      {/* Responsive styles */}
-      <style>{`
-        .admin-layout { display: flex; min-height: 100vh; }
-        .admin-sidebar {
-          width: 230px; min-width: 230px; background: #1a1814; position: sticky; top: 0;
-          height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
-          padding: 24px 0;
-        }
-        .admin-main { flex: 1; overflow-y: auto; background: #f0ede8; }
-        .admin-topbar-mobile { display: none; }
-        @media (max-width: 900px) {
-          .admin-layout { flex-direction: column; }
-          .admin-sidebar {
-            width: 100%; min-width: 100%; height: auto; position: relative;
-            flex-direction: row; flex-wrap: wrap; padding: 12px 16px; gap: 4px;
-            align-items: center;
-          }
-          .admin-sidebar .nav-section-title { display: none; }
-          .admin-sidebar .sidebar-logo { margin-bottom: 0; margin-right: 16px; }
-          .admin-sidebar .sidebar-back { margin-top: 0; margin-left: auto; }
-          .admin-main { min-height: calc(100vh - 60px); }
-        }
-      `}</style>
-
-      <div className="admin-layout">
-        {/* Sidebar */}
-        <aside className="admin-sidebar">
-          <div className="sidebar-logo" style={{ padding: '0 20px', marginBottom: 32 }}>
-            <span style={{ fontFamily: '"Instrument Serif", serif', fontSize: 20, color: '#fff', fontWeight: 400 }}>
-              <span role="img" aria-label="gear">&#9881;&#65039;</span> Admin Panel
-            </span>
-          </div>
-
-          <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px' }}>
-            {navSections.map((section, si) => (
-              <div key={si}>
-                {section.title && (
-                  <div className="nav-section-title" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '1px', color: '#6b665c', padding: '16px 8px 6px', fontWeight: 600 }}>
-                    {section.title}
-                  </div>
-                )}
-                {section.items.map((item) => {
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => navigate(tabPaths[item.id])}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        width: '100%',
-                        padding: '9px 12px',
-                        border: 'none',
-                        borderRadius: 8,
-                        background: isActive ? '#c8a45c15' : 'transparent',
-                        color: isActive ? '#c8a45c' : '#a09a8e',
-                        fontSize: 13,
-                        fontFamily: 'Inter, sans-serif',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'background 0.15s, color 0.15s',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          (e.currentTarget as HTMLElement).style.background = '#ffffff08';
-                          (e.currentTarget as HTMLElement).style.color = '#d5d0c8';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          (e.currentTarget as HTMLElement).style.background = 'transparent';
-                          (e.currentTarget as HTMLElement).style.color = '#a09a8e';
-                        }
-                      }}
-                    >
-                      <span style={{ fontSize: 16 }}>{item.emoji}</span>
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
-
-          <div className="sidebar-back" style={{ padding: '0 12px', marginTop: 'auto' }}>
-            <button
-              onClick={() => navigate('/')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '10px 12px',
-                border: 'none',
-                borderRadius: 8,
-                background: 'transparent',
-                color: '#6b665c',
-                fontSize: 13,
-                fontFamily: 'Inter, sans-serif',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ fontSize: 14 }}>&larr;</span> Back to Site
-            </button>
-          </div>
-        </aside>
-
-        {/* Main */}
-        <main className="admin-main">
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '20px 32px',
-            background: '#fff',
-            borderBottom: '1px solid #e8e4de',
-          }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1a1814' }}>{info.title}</h1>
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: '#8a8578' }}>{info.subtitle}</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '4px 12px',
-                borderRadius: 20,
-                background: '#6e997310',
-                color: '#3a7048',
-                fontSize: 12,
-                fontWeight: 600,
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3a7048' }} />
-                Live
-              </span>
-              <div ref={profileRef} style={{ position: 'relative' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#faf9f7',
+      display: 'flex',
+      fontFamily: 'Inter, sans-serif',
+      color: '#1a1814',
+    }}>
+      <aside style={{
+        width: 240,
+        background: '#1a1814',
+        color: '#e8e4de',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '24px 0',
+        position: 'fixed',
+        height: '100vh',
+      }}>
+        <div style={{ padding: '0 24px', marginBottom: 32, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 24 }}>⚙️</span>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Admin Panel</h1>
+        </div>
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+          {navSections.map((section) => (
+            <div key={section.title} style={{ marginBottom: 24 }}>
+              {section.title && (
+                <div style={{ padding: '0 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', marginBottom: 8 }}>
+                  {section.title}
+                </div>
+              )}
+              {section.items.map((item) => (
                 <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: '50%',
-                    background: '#1a1814',
-                    color: '#fff',
+                    width: '100%',
+                    padding: '10px 12px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 14,
-                    fontWeight: 600,
+                    gap: 12,
+                    background: activeTab === item.id ? '#c8a45c20' : 'transparent',
                     border: 'none',
+                    borderRadius: 8,
                     cursor: 'pointer',
+                    color: activeTab === item.id ? '#c8a45c' : '#8a8578',
+                    textAlign: 'left',
                   }}
                 >
-                  {user?.firstName?.[0]?.toUpperCase() || 'A'}
+                  <span style={{ fontSize: 16 }}>{item.emoji}</span>
+                  <span style={{ fontSize: 13, fontWeight: activeTab === item.id ? 600 : 500 }}>{item.label}</span>
                 </button>
-                {showProfileMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 42,
-                    right: 0,
-                    width: 220,
-                    background: '#fff',
-                    borderRadius: 12,
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)',
-                    border: '1px solid #e8e4de',
-                    overflow: 'hidden',
-                    zIndex: 100,
-                  }}>
-                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f0ede8' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1814' }}>
-                        {user?.firstName} {user?.lastName}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#8a8578', marginTop: 2 }}>
-                        {user?.email}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        logout();
-                        navigate('/');
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: '#c47560',
-                        fontSize: 13,
-                        fontFamily: 'Inter, sans-serif',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#faf9f7'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                      </svg>
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
-          </div>
+          ))}
+        </nav>
+      </aside>
 
-          {/* Tab Content */}
-          <div style={{ padding: 32 }}>
-            {renderTab()}
+      <main style={{ flex: 1, padding: '40px 48px', marginLeft: 240 }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+          <div>
+            <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 4px' }}>{tabTitles[activeTab].title}</h2>
+            <p style={{ margin: 0, fontSize: 14, color: '#8a8578' }}>{tabTitles[activeTab].subtitle}</p>
           </div>
-        </main>
-      </div>
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: '#1a1814',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+          }}>{user?.firstName?.[0] || 'A'}</div>
+        </header>
+        {renderTab()}
+      </main>
     </div>
   );
 }

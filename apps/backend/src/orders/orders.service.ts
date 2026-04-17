@@ -16,6 +16,7 @@ export class OrdersService {
         illustrationStyle: dto.illustrationStyle || 'disney-character',
         customStoryPrompt: dto.customStoryPrompt,
         photoUrl: dto.photoUrl,
+        email: dto.email,
         status: 'CREATED',
         ...(userId ? { userId } : {}),
       },
@@ -58,6 +59,10 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) {
       throw new NotFoundException(`Order ${id} not found`);
+    }
+
+    if (order.status === newStatus) {
+      return order;
     }
 
     const allowed = STATUS_TRANSITIONS[order.status] || [];

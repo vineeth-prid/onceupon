@@ -51,7 +51,7 @@ Return ONLY valid JSON, nothing else.`;
       try {
         this.logger.log(`Generating preview page attempt ${attempt + 1} for theme: ${theme}`);
         const response = await this.client.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-flash-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: { responseMimeType: 'application/json' },
         });
@@ -98,7 +98,7 @@ Return ONLY valid JSON, nothing else.`;
         this.logger.log(`Generating story attempt ${attempt + 1} for theme: ${theme}`);
 
         const response = await this.client.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-flash-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: {
             responseMimeType: 'application/json',

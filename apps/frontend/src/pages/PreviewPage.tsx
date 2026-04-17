@@ -733,14 +733,6 @@ export function PreviewPage() {
                   gap: '0.5rem',
                   letterSpacing: '0.3px',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(255,215,0,0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,215,0,0.35)';
-                }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -749,29 +741,42 @@ export function PreviewPage() {
                 Unlock Full Book
               </button>
               <button
-                onClick={() => navigate('/create')}
+                disabled={downloading}
+                onClick={async () => {
+                  if (!orderId) return;
+                  setDownloading(true);
+                  try {
+                    const blob = await downloadPdf(orderId);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${childName || 'storybook'}_storybook.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    alert('Download failed. The book might still be processing.');
+                  }
+                  setDownloading(false);
+                }}
                 style={{
-                  padding: '0.6rem 1.6rem',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
+                  padding: '0.7rem 1.6rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
                   fontFamily: FONT_UI,
                   borderRadius: 50,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'rgba(255,255,255,0.6)',
+                  border: '1px solid #FFD700',
+                  background: 'rgba(255,215,0,0.1)',
+                  color: '#FFD700',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                  transition: 'all 0.25s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
                 }}
               >
-                Try Different Story
+                {downloading ? 'Preparing...' : 'Download PDF (Beta)'}
               </button>
             </div>
           </div>

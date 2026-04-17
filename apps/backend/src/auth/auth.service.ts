@@ -72,6 +72,7 @@ export class AuthService {
     return { token, user: this.sanitizeUser(user) };
   }
 
+
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');

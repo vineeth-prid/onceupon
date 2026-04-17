@@ -16,6 +16,7 @@ export class OrdersService {
         illustrationStyle: dto.illustrationStyle || 'disney-character',
         customStoryPrompt: dto.customStoryPrompt,
         photoUrl: dto.photoUrl,
+        email: dto.email,
         status: 'CREATED',
         ...(userId ? { userId } : {}),
       },

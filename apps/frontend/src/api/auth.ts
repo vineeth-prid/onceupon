@@ -58,3 +58,4 @@ export async function updateProfile(data: {
   const { data: res } = await api.patch('/auth/me', data);
   return res;
 }
+

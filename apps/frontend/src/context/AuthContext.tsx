@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthFromResponse(res);
   }, [setAuthFromResponse]);
 
+
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;

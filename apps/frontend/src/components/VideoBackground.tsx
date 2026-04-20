@@ -68,15 +68,6 @@ export function VideoBackground() {
         className="w-full h-full object-cover"
         style={{ opacity: 0 }}
       />
-      {/* Top gradient fade */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(to bottom, #FFFFFF 0%, transparent 40%)',
-          pointerEvents: 'none',
-        }}
-      />
     </div>
   );
 }

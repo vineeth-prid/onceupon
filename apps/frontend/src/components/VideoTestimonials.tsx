@@ -39,7 +39,7 @@ const TESTIMONIALS = [
   },
 ];
 
-// Arrow button
+// Glass arrow button
 function NavArrow({
   direction,
   onClick,
@@ -51,25 +51,14 @@ function NavArrow({
     <button
       onClick={onClick}
       aria-label={direction === "left" ? "Previous" : "Next"}
-      className="flex items-center justify-center cursor-pointer"
+      className="flex items-center justify-center cursor-pointer liquid-glass-strong"
       style={{
         width: 48,
         height: 48,
         borderRadius: "50%",
-        background: "rgba(255,255,255,0.9)",
         border: "none",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
         flexShrink: 0,
         transition: "all 0.2s",
-        backdropFilter: "blur(8px)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#fff";
-        e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "rgba(255,255,255,0.9)";
-        e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.1)";
       }}
     >
       <svg
@@ -98,7 +87,6 @@ export default function VideoTestimonials() {
   const [activeIdx, setActiveIdx] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  // Auto-play videos when they become visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -153,7 +141,7 @@ export default function VideoTestimonials() {
 
   return (
     <section
-      style={{ padding: "64px 0 56px", background: "#fff", overflow: "hidden" }}
+      style={{ padding: "64px 0 56px", overflow: "hidden" }}
     >
       <style>{`
         .video-testi-scroll::-webkit-scrollbar { display: none; }
@@ -161,11 +149,10 @@ export default function VideoTestimonials() {
           flex-shrink: 0;
           width: min(360px, 80vw);
           height: min(560px, 75vh);
-          border-radius: 16px;
+          border-radius: 20px;
           overflow: hidden;
           position: relative;
           scroll-snap-align: center;
-          background: #f0f0f0;
         }
         @media (min-width: 768px) {
           .video-testi-card {
@@ -267,7 +254,7 @@ export default function VideoTestimonials() {
           }}
         >
           {TESTIMONIALS.map((t, i) => (
-            <div key={t.id} className="video-testi-card">
+            <div key={t.id} className="video-testi-card liquid-glass-strong">
               <video
                 ref={(el) => {
                   videoRefs.current[i] = el;
@@ -283,6 +270,7 @@ export default function VideoTestimonials() {
                   height: "100%",
                   objectFit: "cover",
                   display: "block",
+                  borderRadius: 20,
                 }}
               />
 
@@ -293,10 +281,11 @@ export default function VideoTestimonials() {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: 120,
+                  height: 100,
                   background:
-                    "linear-gradient(to top, rgba(0,0,0,0.5), transparent)",
+                    "linear-gradient(to top, rgba(0,0,0,0.4), transparent)",
                   pointerEvents: "none",
+                  borderRadius: "0 0 20px 20px",
                 }}
               />
 

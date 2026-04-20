@@ -2,10 +2,7 @@ import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
-    <footer
-      className="w-full"
-      style={{ background: "#fafafa", borderTop: "1px solid #e5e5e5" }}
-    >
+    <footer className="w-full liquid-glass-strong" style={{ borderRadius: '24px 24px 0 0' }}>
       {/* Main footer content */}
       <div className="max-w-6xl mx-auto" style={{ padding: "3rem 2rem 2rem" }}>
         <div
@@ -67,33 +64,21 @@ export function Footer() {
               <Link
                 to="/templates"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Templates
               </Link>
               <Link
                 to="/create"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Create a Book
               </Link>
               <Link
                 to="/about"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 How It Works
               </Link>
@@ -123,44 +108,28 @@ export function Footer() {
               <Link
                 to="/templates"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Children's Books
               </Link>
               <Link
                 to="/templates"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Wedding & Love
               </Link>
               <Link
                 to="/templates"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Pregnancy
               </Link>
               <Link
                 to="/templates"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Life Milestones
               </Link>
@@ -190,44 +159,28 @@ export function Footer() {
               <Link
                 to="/faq"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 FAQ
               </Link>
               <Link
                 to="/contact"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Contact Us
               </Link>
               <a
                 href="#"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Privacy Policy
               </a>
               <a
                 href="#"
                 className="font-body no-underline"
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6F6F6F",
-                  transition: "color 0.2s",
-                }}
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Terms
               </a>
@@ -239,7 +192,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div
         style={{
-          borderTop: "1px solid #e5e5e5",
+          borderTop: "1px solid rgba(0,0,0,0.06)",
           padding: "1.2rem 2rem",
         }}
       >

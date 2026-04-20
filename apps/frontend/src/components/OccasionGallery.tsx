@@ -6,66 +6,58 @@ const occasions = [
     tag: 'Adventure',
     description: 'A brave child befriends a lonely dragon in this heartwarming tale of courage.',
     image: '/thumbnails/super-boy-and-the-dragon.webp',
-    gradient: 'linear-gradient(160deg, rgba(200,169,81,0.15), rgba(139,105,20,0.08))',
   },
   {
     title: 'Girl Saves the Arctic Kingdom',
     tag: 'Adventure',
     description: 'An icy adventure powered by care and courage to save the kingdom.',
     image: '/thumbnails/girl-saves-the-arctic-kingdom.webp',
-    gradient: 'linear-gradient(160deg, rgba(59,130,246,0.12), rgba(30,58,95,0.06))',
   },
   {
     title: 'Princess and the Glowing Flower',
     tag: 'Fantasy',
     description: 'A magical quest to find the legendary glowing flower in the enchanted garden.',
     image: '/thumbnails/princess-and-the-glowing-flower.webp',
-    gradient: 'linear-gradient(160deg, rgba(167,139,250,0.12), rgba(76,29,149,0.06))',
   },
   {
     title: 'Girl in Wonderland',
     tag: 'Fantasy',
     description: 'A whimsical journey through a world where anything is possible.',
     image: '/thumbnails/girl-in-wonderland.webp',
-    gradient: 'linear-gradient(160deg, rgba(248,113,113,0.12), rgba(190,18,60,0.06))',
   },
   {
     title: 'The Boy and the Christmas Express',
     tag: 'Holidays',
     description: 'A festive adventure aboard the most magical train of the season.',
     image: '/thumbnails/the-boy-and-the-christmas-express.webp',
-    gradient: 'linear-gradient(160deg, rgba(34,197,94,0.12), rgba(20,83,45,0.06))',
   },
   {
     title: 'Boy Explores the Zoo',
     tag: 'Animals',
     description: 'A fun-filled day discovering amazing animals at the zoo.',
     image: '/thumbnails/boy-explores-the-zoo.webp',
-    gradient: 'linear-gradient(160deg, rgba(52,211,153,0.12), rgba(6,95,70,0.06))',
   },
   {
     title: "The Portugal's New Legend",
     tag: 'Sports',
     description: 'For champions with red and green at heart — a legendary sports story.',
     image: '/thumbnails/the-portugals-new-legend.webp',
-    gradient: 'linear-gradient(160deg, rgba(245,158,11,0.12), rgba(146,64,14,0.06))',
   },
   {
     title: 'Happy Birthday Girl',
     tag: 'Birthday',
     description: 'The most special birthday celebration in a beautifully illustrated book.',
     image: '/thumbnails/happy-birthday-girl.webp',
-    gradient: 'linear-gradient(160deg, rgba(148,163,184,0.12), rgba(71,85,105,0.06))',
   },
 ];
 
 export default function OccasionGallery() {
   return (
-    <section style={{ padding: '80px 0', background: '#fff' }}>
+    <section style={{ padding: '80px 0' }}>
       <style>{`
         .occasion-scroll::-webkit-scrollbar { display: none; }
         .occasion-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .occasion-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important; }
+        .occasion-card:hover { transform: translateY(-4px); }
         .occasion-card img { transition: transform 0.5s ease; }
         .occasion-card:hover img { transform: scale(1.05); }
       `}</style>
@@ -118,14 +110,12 @@ export default function OccasionGallery() {
         {occasions.map((item) => (
           <div
             key={item.title}
-            className="occasion-card"
+            className="occasion-card liquid-glass"
             style={{
               flexShrink: 0,
               width: 300,
-              borderRadius: 16,
+              borderRadius: 20,
               overflow: 'hidden',
-              background: '#fff',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
             }}
           >
             {/* Image area */}
@@ -134,7 +124,6 @@ export default function OccasionGallery() {
                 height: 220,
                 overflow: 'hidden',
                 position: 'relative',
-                background: '#f5f5f5',
               }}
             >
               <img
@@ -148,13 +137,6 @@ export default function OccasionGallery() {
                   display: 'block',
                 }}
               />
-              {/* Subtle gradient overlay to soften image */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: item.gradient,
-                pointerEvents: 'none',
-              }} />
             </div>
 
             {/* Text area */}

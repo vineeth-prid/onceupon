@@ -317,29 +317,27 @@ export default function BookShowcase() {
 
   // Derive book visual phase from current page
   const bookPhase: 'closed-front' | 'open' | 'closed-back' = !useSpread
-    ? 'open' // portrait mode — always "open" (no blank page issue)
+    ? 'open'
     : currentPage === 0
     ? 'closed-front'
     : currentPage >= totalPages - 1
     ? 'closed-back'
     : 'open';
 
-  // Dynamic shadow based on book phase
+  // Dynamic shadow
   const bookShadow =
     bookPhase === 'closed-front'
-      ? '8px 10px 35px rgba(0,0,0,0.3), 2px 4px 10px rgba(0,0,0,0.15)'
+      ? '8px 10px 35px rgba(0,0,0,0.15), 2px 4px 10px rgba(0,0,0,0.08)'
       : bookPhase === 'closed-back'
-      ? '-8px 10px 35px rgba(0,0,0,0.3), -2px 4px 10px rgba(0,0,0,0.15)'
-      : '0 20px 60px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.08)';
+      ? '-8px 10px 35px rgba(0,0,0,0.15), -2px 4px 10px rgba(0,0,0,0.08)'
+      : '0 20px 60px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)';
 
-  // Responsive: spread on desktop, portrait on mobile
   useEffect(() => {
     const handler = () => setUseSpread(window.innerWidth >= 860);
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Scroll-to-flip when hovering over book area
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (!isHovering) return;
@@ -350,7 +348,6 @@ export default function BookShowcase() {
       const current = pageFlip.getCurrentPageIndex();
       const total = pageFlip.getPageCount();
 
-      // At boundaries — let the page scroll naturally
       if (e.deltaY > 0 && current >= total - 1) return;
       if (e.deltaY < 0 && current === 0) return;
 
@@ -378,36 +375,21 @@ export default function BookShowcase() {
     setCurrentPage(e.data);
   }, []);
 
-  // ─── Viewport dimensions for opening/closing effect ───
   const viewportWidth = useSpread
     ? bookPhase === 'open'
       ? SPREAD_W
       : PAGE_W
     : PAGE_W;
 
-  // When closed-front, shift book left so only cover (right half) is visible
   const bookShift = useSpread && bookPhase === 'closed-front' ? -PAGE_W : 0;
 
   return (
-    <section style={{ position: 'relative', background: '#FAFAFA' }}>
-      {/* Curved top edge */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -60,
-          left: 0,
-          right: 0,
-          height: 80,
-          background: '#FAFAFA',
-          borderRadius: '40px 40px 0 0',
-          zIndex: 1,
-        }}
-      />
+    <section className="liquid-glass-strong" style={{ position: 'relative', borderRadius: '40px 40px 0 0', marginTop: -40 }}>
 
-      {/* Book area with background text + ribbon overlay */}
+      {/* Book area */}
       <div
         ref={bookAreaRef}
-        style={{ position: 'relative', padding: '80px 24px 100px', overflow: 'hidden' }}
+        style={{ position: 'relative', padding: '80px 24px 60px', overflow: 'hidden' }}
       >
         {/* Wavy ribbon marquee */}
         <div style={{ position: 'relative', zIndex: 1, marginBottom: 48 }}>
@@ -423,7 +405,6 @@ export default function BookShowcase() {
           maxWidth: SPREAD_W + 60,
           margin: '0 auto',
         }}>
-          {/* Animated viewport — clips the book to create open/close effect */}
           <div
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
@@ -436,7 +417,6 @@ export default function BookShowcase() {
               position: 'relative',
             }}
           >
-            {/* Stacked page edge (visible when closed) */}
             {bookPhase === 'closed-front' && (
               <>
                 <div style={{
@@ -482,7 +462,6 @@ export default function BookShowcase() {
               </>
             )}
 
-            {/* Spine shadow (only when open) */}
             {bookPhase === 'open' && useSpread && (
               <div style={{
                 position: 'absolute',
@@ -491,13 +470,12 @@ export default function BookShowcase() {
                 bottom: 0,
                 width: 20,
                 transform: 'translateX(-50%)',
-                background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.08) 40%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.08) 60%, transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.06) 40%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.06) 60%, transparent)',
                 zIndex: 5,
                 pointerEvents: 'none',
               }} />
             )}
 
-            {/* Book container — shifts to show correct half when closed */}
             <div style={{
               width: useSpread ? SPREAD_W : PAGE_W,
               transform: `translateX(${bookShift}px)`,
@@ -532,12 +510,7 @@ export default function BookShowcase() {
                 clickEventForward={true}
                 onFlip={handleFlip}
               >
-                {/* Cover */}
-                <Page>
-                  <CoverContent />
-                </Page>
-
-                {/* Story pages */}
+                <Page><CoverContent /></Page>
                 <Page>
                   <StoryContent
                     chapterNum={1}
@@ -547,7 +520,6 @@ export default function BookShowcase() {
                     accentColor="#c9a96e"
                   />
                 </Page>
-
                 <Page>
                   <StoryContent
                     chapterNum={2}
@@ -557,7 +529,6 @@ export default function BookShowcase() {
                     accentColor="#d4534b"
                   />
                 </Page>
-
                 <Page>
                   <StoryContent
                     chapterNum={3}
@@ -567,7 +538,6 @@ export default function BookShowcase() {
                     accentColor="#2d7d46"
                   />
                 </Page>
-
                 <Page>
                   <StoryContent
                     chapterNum={4}
@@ -577,11 +547,7 @@ export default function BookShowcase() {
                     accentColor="#c9a96e"
                   />
                 </Page>
-
-                {/* Back cover */}
-                <Page>
-                  <BackCoverContent />
-                </Page>
+                <Page><BackCoverContent /></Page>
               </HTMLFlipBook>
             </div>
           </div>
@@ -589,7 +555,7 @@ export default function BookShowcase() {
       </div>
 
       {/* Page indicator dots */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 28 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingBottom: 48 }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
           {Array.from({ length: totalPages }).map((_, i) => (
             <div
@@ -613,7 +579,6 @@ export default function BookShowcase() {
           {isHovering ? 'Scroll to flip pages' : 'Hover over book & scroll to flip'}
         </p>
       </div>
-
     </section>
   );
 }

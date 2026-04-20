@@ -37,11 +37,10 @@ export function NavBar() {
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'liquid-glass-strong' : ''}`}
         style={{
-          backgroundColor: scrolled ? 'rgba(255,255,255,0.97)' : '#FFFFFF',
-          backdropFilter: scrolled ? 'blur(12px)' : 'none',
-          borderBottom: scrolled ? '1px solid #e5e5e5' : '1px solid transparent',
+          backgroundColor: scrolled ? undefined : 'transparent',
+          borderBottom: scrolled ? 'none' : '1px solid transparent',
           padding: scrolled ? '0.75rem 0' : '1.1rem 0',
         }}
       >
@@ -72,12 +71,11 @@ export function NavBar() {
               <div className="relative">
                 <button
                   onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                  className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
+                  className="flex items-center justify-center rounded-full transition-transform hover:scale-105 liquid-glass"
                   style={{
                     width: 36,
                     height: 36,
-                    backgroundColor: '#000',
-                    color: '#fff',
+                    color: '#000',
                     fontSize: '0.85rem',
                     fontWeight: 600,
                     border: 'none',
@@ -88,16 +86,14 @@ export function NavBar() {
                 </button>
                 {avatarMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 rounded-xl shadow-lg border"
+                    className="absolute right-0 mt-2 rounded-xl liquid-glass-strong"
                     style={{
-                      backgroundColor: '#fff',
-                      borderColor: '#e5e5e5',
                       minWidth: 180,
                       padding: '0.5rem 0',
                       zIndex: 100,
                     }}
                   >
-                    <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #f0f0f0' }}>
+                    <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                       <div className="font-body text-sm font-medium" style={{ color: '#000' }}>
                         {user?.firstName} {user?.lastName}
                       </div>
@@ -107,7 +103,7 @@ export function NavBar() {
                     </div>
                     <Link
                       to="/profile"
-                      className="block no-underline font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50"
+                      className="block no-underline font-body text-sm px-4 py-2 transition-colors"
                       style={{ color: '#000' }}
                       onClick={() => setAvatarMenuOpen(false)}
                     >
@@ -115,7 +111,7 @@ export function NavBar() {
                     </Link>
                     <Link
                       to="/profile?tab=books"
-                      className="block no-underline font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50"
+                      className="block no-underline font-body text-sm px-4 py-2 transition-colors"
                       style={{ color: '#000' }}
                       onClick={() => setAvatarMenuOpen(false)}
                     >
@@ -124,17 +120,17 @@ export function NavBar() {
                     {user?.role === 'ADMIN' && (
                       <Link
                         to="/admin"
-                        className="block no-underline font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50"
-                        style={{ color: '#000', borderTop: '1px solid #f0f0f0' }}
+                        className="block no-underline font-body text-sm px-4 py-2 transition-colors"
+                        style={{ color: '#000', borderTop: '1px solid rgba(0,0,0,0.06)' }}
                         onClick={() => setAvatarMenuOpen(false)}
                       >
-                        ⚙️ Admin Portal
+                        Admin Portal
                       </Link>
                     )}
                     <button
                       onClick={() => { logout(); setAvatarMenuOpen(false); }}
-                      className="block w-full text-left font-body text-sm px-4 py-2 transition-colors hover:bg-gray-50 border-none bg-transparent cursor-pointer"
-                      style={{ color: '#6F6F6F', borderTop: '1px solid #f0f0f0' }}
+                      className="block w-full text-left font-body text-sm px-4 py-2 transition-colors border-none bg-transparent cursor-pointer"
+                      style={{ color: '#6F6F6F', borderTop: '1px solid rgba(0,0,0,0.06)' }}
                     >
                       Sign Out
                     </button>
@@ -180,8 +176,7 @@ export function NavBar() {
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-[1000] flex flex-col items-center justify-center"
-          style={{ backgroundColor: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(20px)' }}
+          className="fixed inset-0 z-[1000] flex flex-col items-center justify-center liquid-glass-strong"
         >
           <button
             onClick={() => setMobileOpen(false)}
@@ -203,7 +198,7 @@ export function NavBar() {
                 {link.label}
               </Link>
             ))}
-            <div style={{ width: 40, height: 1, backgroundColor: '#e5e5e5', margin: '0.5rem 0' }} />
+            <div style={{ width: 40, height: 1, backgroundColor: 'rgba(0,0,0,0.1)', margin: '0.5rem 0' }} />
             {isAuthenticated ? (
               <>
                 <Link
@@ -242,7 +237,7 @@ export function NavBar() {
                 </Link>
               </>
             )}
-           
+
           </nav>
         </div>
       )}

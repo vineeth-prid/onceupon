@@ -11,8 +11,8 @@ export default function WavyRibbonMarquee() {
     const tp = textPathRef.current;
     if (!tp) return;
 
-    let offset = 50; // start at 50%
-    const speed = 0.06; // % per frame (~18s full cycle at 60fps)
+    let offset = 50;
+    const speed = 0.06;
 
     const tick = () => {
       offset -= speed;
@@ -25,7 +25,6 @@ export default function WavyRibbonMarquee() {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // Repeat text 4x to ensure it always fills the visible path
   const fullText = RIBBON_TEXT.repeat(4);
 
   return (
@@ -50,10 +49,10 @@ export default function WavyRibbonMarquee() {
           />
         </defs>
 
-        {/* Beige ribbon band */}
+        {/* Subtle glass ribbon band */}
         <use
           href="#ribbon-curve"
-          stroke="#FAE6B9"
+          stroke="rgba(0,0,0,0.04)"
           strokeWidth="70"
           fill="none"
         />

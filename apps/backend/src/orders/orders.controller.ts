@@ -220,9 +220,6 @@ export class OrdersController {
     }
     */
 
-    const pdfBuffer = await this.pdfService.generateStorybook(order as any);
-    const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;
-
     try {
       const pdfBuffer = await this.pdfService.generateStorybook(order as any);
       const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;

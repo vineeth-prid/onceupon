@@ -47,6 +47,7 @@ export class AuthController {
   }
 
   @Post('admin/reset-password')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   adminResetPassword(@Body() body: { email: string; newPassword: string }) {
     return this.authService.adminResetPassword(body);
   }

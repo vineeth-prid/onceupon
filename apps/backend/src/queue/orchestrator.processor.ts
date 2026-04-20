@@ -58,6 +58,10 @@ export class OrchestratorProcessor extends WorkerHost {
       });
 
       const previewPage = previewStory.pages[0];
+
+      // Delete any existing pages from prior attempts before creating new ones
+      await this.prisma.page.deleteMany({ where: { orderId } });
+
       await this.prisma.page.create({
         data: {
           orderId,
@@ -123,6 +127,28 @@ export class OrchestratorProcessor extends WorkerHost {
           page.layout,
           order.illustrationStyle,
         );
+
+        // Verify the page image was actually generated
+        const updatedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+        if (updatedPage?.status === 'FAILED') {
+          this.logger.warn(`Preview image failed for page ${page.pageNumber}, retrying once...`);
+          await this.processPageImage(
+            orderId,
+            order.photoUrl,
+            page,
+            undefined,
+            characterDescription,
+            order.childGender,
+            page.layout,
+            order.illustrationStyle,
+          );
+
+          const retriedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+          if (retriedPage?.status === 'FAILED') {
+            throw new Error(`Preview image generation failed after retry for page ${page.pageNumber}`);
+          }
+        }
+
         this.logger.log(`Preview image generated for page ${page.pageNumber}`);
       }
 

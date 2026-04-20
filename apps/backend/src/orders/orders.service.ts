@@ -6,7 +6,7 @@ import { CreateOrderInput, OrderStatus, STATUS_TRANSITIONS } from '@bookmagic/sh
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateOrderInput, userId?: string) {
+  async create(dto: CreateOrderInput & { email?: string }, userId?: string) {
     return this.prisma.order.create({
       data: {
         childName: dto.childName,

@@ -8,9 +8,15 @@ import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, ILLUSTRATION_STYLES } from '@bookmag
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
-function getStyleConfig(styleId?: string) {
+type StyleConfig = (typeof ILLUSTRATION_STYLES)[number] & {
+  replicateModel?: string;
+  replicateStyle?: string;
+  photoMakerStyleName?: string;
+};
+
+function getStyleConfig(styleId?: string): StyleConfig {
   const style = ILLUSTRATION_STYLES.find((s: any) => s.id === styleId);
-  return style || ILLUSTRATION_STYLES[0]; // fallback to disney
+  return (style || ILLUSTRATION_STYLES[0]) as StyleConfig;
 }
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon, getPricing } from '../api/orders';
+import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -52,21 +52,6 @@ export function CheckoutPage() {
 
   const [childName, setChildName] = useState('');
   const [paying, setPaying] = useState(false);
-
-  useEffect(() => {
-    // Load dynamic pricing from backend
-    getPricing().then((p) => {
-      setFORMATS([
-        { id: 'ebook', label: 'eBook Only', price: p.ebookPrice, desc: 'Instant download, PDF & ePub' },
-        { id: 'print', label: 'Print + eBook', price: p.physicalPrice, desc: 'Printed book + digital copy', badge: 'MOST POPULAR' },
-      ]);
-      setDELIVERY_OPTIONS([
-        { id: 'standard', label: 'Standard', time: '7-10 days', price: p.shippingPrice },
-        { id: 'express', label: 'Express', time: '3-5 days', price: Math.round(p.shippingPrice * 2) },
-        { id: 'priority', label: 'Priority', time: '1-2 days', price: Math.round(p.shippingPrice * 3.5) },
-      ]);
-    }).catch(() => { /* keep defaults on error */ });
-  }, []);
 
   useEffect(() => {
     if (orderId) {

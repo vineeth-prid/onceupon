@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { BOOK_TEMPLATES, CATEGORIES, ILLUSTRATION_STYLES } from '@bookmagic/shared';
 import { uploadPhoto, createOrder } from '../api/orders';
+import { useAuth } from '../context/AuthContext';
 
 export function PersonalizePage() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const fileRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const isCustom = bookId === 'custom';
   const customStoryPrompt = (location.state as any)?.customStoryPrompt || '';
@@ -20,6 +22,7 @@ export function PersonalizePage() {
   const [childAge, setChildAge] = useState(5);
   const [childGender, setChildGender] = useState<'boy' | 'girl' | 'other'>('boy');
   const [illustrationStyle, setIllustrationStyle] = useState('disney-character');
+  const [email, setEmail] = useState(user?.email || '');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -57,6 +60,7 @@ export function PersonalizePage() {
     e.preventDefault();
     if (!photo) { setError('Please upload a photo'); return; }
     if (!childName.trim()) { setError("Please enter your child's name"); return; }
+    if (!email.trim() || !email.includes('@')) { setError("Please enter a valid email address"); return; }
 
     setLoading(true);
     setError('');
@@ -70,6 +74,7 @@ export function PersonalizePage() {
         theme: bookId as any,
         illustrationStyle: illustrationStyle as any,
         photoUrl,
+        email: email.trim(),
       };
       if (isCustom && customStoryPrompt) {
         orderData.customStoryPrompt = customStoryPrompt;
@@ -272,6 +277,47 @@ export function PersonalizePage() {
                 onChange={(e) => setChildName(e.target.value)}
                 placeholder="e.g. Aarav, Maya, Leo..."
                 maxLength={50}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 12,
+                  border: '2px solid #eee',
+                  fontSize: '1rem',
+                  fontFamily: "'Nunito', sans-serif",
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = accent}
+                onBlur={(e) => e.currentTarget.style.borderColor = '#eee'}
+              />
+            </div>
+
+            {/* Email for Guest/Notification */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: 700,
+                fontFamily: "'Nunito', sans-serif",
+                color: '#2d1b69',
+                fontSize: '0.95rem',
+              }}>
+                Your Email
+              </label>
+              <p style={{
+                margin: '0 0 0.6rem',
+                fontFamily: "'Nunito', sans-serif",
+                color: '#999',
+                fontSize: '0.8rem',
+              }}>
+                We'll send the storybook to this address once it's ready
+              </p>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 style={{
                   width: '100%',
                   padding: '0.75rem 1rem',

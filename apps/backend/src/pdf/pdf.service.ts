@@ -264,8 +264,8 @@ export class PdfService {
       if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       return Buffer.from(await response.arrayBuffer());
     }
-    const filePath = imageUrl.startsWith('/uploads/')
-      ? join(process.cwd(), imageUrl)
+    const filePath = imageUrl.startsWith('/api/uploads/') || imageUrl.startsWith('/uploads/')
+      ? join(process.cwd(), 'uploads', imageUrl.replace(/^\/(?:api\/)?uploads\//, ''))
       : imageUrl;
     return readFile(filePath);
   }

@@ -8,6 +8,8 @@ uploads/
 *.log
 .DS_Store
 *.config.js
+!tailwind.config.js
+!postcss.config.js
 *.config.d.ts
 tsconfig.tsbuildinfo
 .env

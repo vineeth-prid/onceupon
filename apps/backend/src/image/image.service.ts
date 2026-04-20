@@ -8,9 +8,15 @@ import { NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, ILLUSTRATION_STYLES } from '@bookmag
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
-function getStyleConfig(styleId?: string) {
+type StyleConfig = (typeof ILLUSTRATION_STYLES)[number] & {
+  replicateModel?: string;
+  replicateStyle?: string;
+  photoMakerStyleName?: string;
+};
+
+function getStyleConfig(styleId?: string): StyleConfig {
   const style = ILLUSTRATION_STYLES.find((s: any) => s.id === styleId);
-  return style || ILLUSTRATION_STYLES[0]; // fallback to disney
+  return (style || ILLUSTRATION_STYLES[0]) as StyleConfig;
 }
 
 @Injectable()
@@ -37,7 +43,9 @@ export class ImageService {
   async describeCharacter(photoUrl: string, childName: string, childAge: number, childGender: string): Promise<string> {
     this.logger.log(`Describing character from photo for ${childName}`);
 
-    const filePath = photoUrl.startsWith('/') ? join(process.cwd(), photoUrl) : photoUrl;
+    const filePath = photoUrl.startsWith('/')
+      ? join(UPLOADS_DIR, photoUrl.replace(/^\/(?:api\/)?uploads\//, ''))
+      : photoUrl;
     const imageBytes = await readFile(filePath);
     const base64Image = imageBytes.toString('base64');
 
@@ -73,7 +81,7 @@ CRITICAL RULES:
 - The identity tag will be repeated in EVERY image prompt to ensure the character looks the same across all 16 pages`;
 
     const response = await this.genai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-flash-latest',
       contents: [{
         role: 'user',
         parts: [
@@ -102,7 +110,7 @@ CRITICAL RULES:
     const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt, style.photoMakerStyleName);
     const filename = `ref-${orderId}.png`;
     await this.downloadAndSave(imageUrl, filename);
-    return `/uploads/${filename}`;
+    return `/api/uploads/${filename}`;
   }
 
   async generatePageImage(
@@ -128,7 +136,7 @@ CRITICAL RULES:
       const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt, style.photoMakerStyleName);
       const filename = `${orderId}-page-${pageNumber}.png`;
       await this.downloadAndSave(imageUrl, filename);
-      return `/uploads/${filename}`;
+      return `/api/uploads/${filename}`;
     }
 
     // For pages WITH the child: use PhotoMaker with face embedding
@@ -156,26 +164,40 @@ CRITICAL RULES:
       }
     }
 
+    const imgKeyword = style.replicateModel ? '' : 'img ';
     let fullPrompt: string;
     if (identityTag) {
-      fullPrompt = `A img ${genderTag} child with ${identityTag}, in a scene: ${scenePrompt}, the child has ${fullDescription}`;
+      fullPrompt = `A ${imgKeyword}${genderTag} child with ${identityTag}, in a scene: ${scenePrompt}, the child has ${fullDescription}`;
     } else {
-      fullPrompt = `A img ${genderTag} child, in a scene: ${scenePrompt}`;
+      fullPrompt = `A ${imgKeyword}${genderTag} child, in a scene: ${scenePrompt}`;
     }
 
     if (imageComposition) {
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
 
-    fullPrompt = `${fullPrompt}, ${style.promptSuffix}`;
+    // Prioritize style by moving suffix to the beginning if it exists
+    if (style.promptSuffix) {
+      fullPrompt = `${style.promptSuffix}, ${fullPrompt}`;
+    }
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
     this.logger.log(`Generating image for order ${orderId}, page ${pageNumber} (style: ${style.id})`);
     this.logger.log(`Prompt: ${fullPrompt.substring(0, 200)}...`);
-    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, style.photoMakerStyleName);
+
+    let imageUrl: string;
+    
+    if (style.replicateModel?.includes('face-to-many')) {
+      imageUrl = await this.runFaceToMany(publicPhotoUrl, fullPrompt, style.replicateStyle || 'Clay', style.replicateModel);
+    } else if (style.replicateModel?.includes('flux-pulid')) {
+      imageUrl = await this.runFluxPuLID(publicPhotoUrl, fullPrompt, style.replicateModel);
+    } else {
+      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, style.photoMakerStyleName || '(No style)');
+    }
+
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
-    return `/uploads/${filename}`;
+    return `/api/uploads/${filename}`;
   }
 
   private async resolvePublicUrl(url: string): Promise<string> {
@@ -187,7 +209,7 @@ CRITICAL RULES:
       return this.cachedFileUrl;
     }
 
-    const filePath = join(process.cwd(), url);
+    const filePath = join(UPLOADS_DIR, url.replace(/^\/(?:api\/)?uploads\//, ''));
     this.logger.log(`Uploading local file to Replicate: ${url}`);
 
     const fileBuffer = await readFile(filePath);
@@ -261,6 +283,47 @@ CRITICAL RULES:
     if (typeof output === 'string') return output;
     if (Array.isArray(output) && output.length > 0) return String(output[0]);
     throw new Error('Unexpected output format from Replicate');
+  }
+
+  private async runFaceToMany(faceImageUrl: string, prompt: string, style: string, model: string): Promise<string> {
+    this.logger.log(`Running Face-to-Many using model "${model}" with style "${style}"`);
+    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
+      input: {
+        image: faceImageUrl,
+        prompt: prompt,
+        style: style,
+        instant_id_strength: 0.7,
+        num_steps: 30,
+        guidance_scale: 5,
+        negative_prompt: NEGATIVE_PROMPT,
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    throw new Error('Unexpected output format from face-to-many');
+  }
+
+  private async runFluxPuLID(faceImageUrl: string, prompt: string, model: string): Promise<string> {
+    this.logger.log(`Running Flux-PuLID using model "${model}"`);
+    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
+      input: {
+        main_face_image: faceImageUrl,
+        prompt: prompt,
+        negative_prompt: NEGATIVE_PROMPT,
+        num_steps: 20,
+        start_step: 1,
+        id_weight: 1.0,
+        guidance_scale: 4,
+        width: 1024,
+        height: 1024,
+        output_format: "png",
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    throw new Error('Unexpected output format from flux-pulid');
   }
 
   private async downloadAndSave(url: string, filename: string): Promise<void> {

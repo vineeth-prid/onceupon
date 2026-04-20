@@ -22,6 +22,6 @@ export class UploadService {
     await mkdir(UPLOADS_DIR, { recursive: true });
     await writeFile(join(UPLOADS_DIR, filename), file.buffer);
 
-    return `/uploads/${filename}`;
+    return `/api/uploads/${filename}`;
   }
 }

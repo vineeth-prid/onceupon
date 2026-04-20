@@ -213,11 +213,15 @@ export class OrdersController {
       throw new NotFoundException('Book not ready for download yet');
     }
 
-    // Allow download for any post-payment status (PAID, PREVIEW_READY, PRINTING, SHIPPED, DELIVERED)
-    const downloadableStatuses = ['PAID', 'PREVIEW_READY', 'PRINTING', 'SHIPPED', 'DELIVERED'];
-    if (!downloadableStatuses.includes(order.status)) {
+    // During testing/development, allow download even if not paid
+    /*
+    if (order.status !== 'PAID' && order.status !== 'DELIVERED') {
       throw new ForbiddenException('Please purchase access to download the PDF');
     }
+    */
+
+    const pdfBuffer = await this.pdfService.generateStorybook(order as any);
+    const filename = `${order.childName.replace(/[^a-zA-Z0-9]/g, '_')}_storybook.pdf`;
 
     try {
       const pdfBuffer = await this.pdfService.generateStorybook(order as any);

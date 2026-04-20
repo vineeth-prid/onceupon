@@ -2,18 +2,15 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import WavyRibbonMarquee from './WavyRibbonMarquee';
 
-// ─── Riya's Sparkling Christmas Wish — real book from database ───
-
-const BOOK_ID = '2b061b35-2f4e-48a7-ae4f-99f7aff70f0c';
-const U = `/uploads/${BOOK_ID}`;
+// ─── Riya's Sparkling Christmas Wish — showcase book (static assets) ───
 
 const IMAGES = {
-  cover: `${U}-page-2.png`,    // cover background
-  page1: `${U}-page-3.png`,
-  page2: `${U}-page-5.png`,
-  page3: `${U}-page-6.png`,
-  page4: `${U}-page-8.png`,
-  back: `${U}-page-11.png`,
+  cover: '/showcase/page-2.png',
+  page1: '/showcase/page-3.png',
+  page2: '/showcase/page-5.png',
+  page3: '/showcase/page-6.png',
+  page4: '/showcase/page-8.png',
+  back: '/showcase/page-11.png',
 };
 
 const PAGE_W = 400;

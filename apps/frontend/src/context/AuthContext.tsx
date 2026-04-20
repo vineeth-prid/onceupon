@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { api } from '../api/client';
-import { getMe, loginUser, registerUser, googleLogin as googleLoginUser, type User, type AuthResponse } from '../api/auth';
+import { getMe, loginUser, registerUser, googleLogin as googleLoginApi, type User, type AuthResponse } from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setAuthFromResponse]);
 
   const googleLogin = useCallback(async (credential: string) => {
-    const res = await googleLoginUser({ credential });
+    const res = await googleLoginApi({ credential });
     setAuthFromResponse(res);
   }, [setAuthFromResponse]);
 

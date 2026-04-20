@@ -53,7 +53,7 @@ Return ONLY valid JSON, nothing else.`;
         const currentModel = modelsToTry[attempt % modelsToTry.length];
         this.logger.log(`Generating preview page attempt ${attempt + 1} for theme: ${theme} using ${currentModel}`);
         const response = await this.client.models.generateContent({
-          model: currentModel,
+          model: 'gemini-flash-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: { responseMimeType: 'application/json' },
         });
@@ -81,17 +81,7 @@ Return ONLY valid JSON, nothing else.`;
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
-    this.logger.warn(`Preview page generation exhausted API limits due to ${lastError?.message}. Returning resilient fallback.`);
-    return {
-      title: `The Magical Journey of ${childName}`,
-      pages: [{
-        pageNumber: 1,
-        text: `Once upon a time in a wondrous land, ${childName} began an incredible journey. With courage and curiosity, an amazing adventure awaits.`,
-        imagePrompt: `A beautiful, magical landscape suitable for the opening of a children's book. Enchanting atmosphere, vibrant colors, NO characters.`,
-        sceneDescription: "An enchanting magical landscape inviting adventure.",
-        layout: "full-bleed-text-bottom"
-      }]
-    };
+    throw new Error(`Preview page generation failed after 5 attempts: ${lastError?.message}`);
   }
 
   async generateStory(
@@ -112,7 +102,7 @@ Return ONLY valid JSON, nothing else.`;
         this.logger.log(`Generating story attempt ${attempt + 1} for theme: ${theme} using ${currentModel}`);
 
         const response = await this.client.models.generateContent({
-          model: currentModel,
+          model: 'gemini-flash-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: {
             responseMimeType: 'application/json',
@@ -161,16 +151,6 @@ Return ONLY valid JSON, nothing else.`;
       }
     }
 
-    this.logger.warn(`Story generation exhausted API limits due to ${lastError?.message}. Returning resilient fallback.`);
-    return {
-      title: `The Magical Journey of ${childName}`,
-      pages: Array.from({ length: TOTAL_PAGES }, (_, i) => ({
-        pageNumber: i + 1,
-        text: `Page ${i + 1} of the grand adventure for ${childName}. The amazing journey continues through magical landscapes and unexpected surprises...`,
-        imagePrompt: `A lovely magical scenery for a children's book, scene ${i + 1}. Enchanting, beautiful colors, vibrant. NO characters.`,
-        sceneDescription: `Scene ${i + 1} of the magical journey`,
-        layout: "full-bleed-text-bottom"
-      }))
-    };
+    throw new Error(`Story generation failed after 5 attempts: ${lastError?.message}`);
   }
 }

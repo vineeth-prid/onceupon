@@ -22,6 +22,7 @@ export class AuthController {
     return this.authService.googleLogin(body);
   }
 
+
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   getMe(@Req() req: any) {

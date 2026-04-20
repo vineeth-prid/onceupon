@@ -136,40 +136,19 @@ export class PdfService {
             doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).fill('#2d1b69');
           }
 
-          // Dark gradient overlay at bottom for text readability
-          // Use layered large blocks instead of banded strips to avoid horizontal line artifacts
-          const gradientStart = A4_HEIGHT * 0.55;
-          const gradientHeight = A4_HEIGHT - gradientStart;
-
-          // Layer 1: subtle base wash from mid-page
-          doc.save();
-          doc.opacity(0.25);
-          doc.rect(0, gradientStart, A4_WIDTH, gradientHeight).fill('#0a0514');
-          doc.restore();
-
-          // Layer 2: stronger from 65% down
-          doc.save();
-          doc.opacity(0.35);
-          doc.rect(0, A4_HEIGHT * 0.65, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.65).fill('#0a0514');
-          doc.restore();
-
-          // Layer 3: dense from 75% down
-          doc.save();
-          doc.opacity(0.45);
-          doc.rect(0, A4_HEIGHT * 0.75, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.75).fill('#0a0514');
-          doc.restore();
-
-          // Layer 4: near-opaque at bottom strip
-          doc.save();
-          doc.opacity(0.60);
-          doc.rect(0, A4_HEIGHT * 0.83, A4_WIDTH, A4_HEIGHT - A4_HEIGHT * 0.83).fill('#0a0514');
-          doc.restore();
-
-          // Layer 5: fully opaque base block at very bottom (ensures legible text bg)
-          doc.save();
-          doc.opacity(0.70);
-          doc.rect(0, A4_HEIGHT - 210, A4_WIDTH, 210).fill('#0a0514');
-          doc.restore();
+          // Dark gradient overlay at bottom for text readability.
+          // ROOT CAUSE FIX: The previous approach used 5 stacked semi-transparent
+          // rectangles. PDFKit renders each as a separate compositing layer, creating
+          // visible horizontal seam artifacts at each rect's top edge.
+          // FIX: Use a single native PDFKit linearGradient — no discrete layer
+          // boundaries, so the PDF renders completely clean with no lines.
+          const gradOverlayStart = A4_HEIGHT * 0.50;
+          const grad = doc.linearGradient(0, gradOverlayStart, 0, A4_HEIGHT);
+          grad.stop(0, '#0a0514', 0);
+          grad.stop(0.35, '#0a0514', 0.45);
+          grad.stop(0.65, '#0a0514', 0.72);
+          grad.stop(1, '#0a0514', 0.88);
+          doc.rect(0, gradOverlayStart, A4_WIDTH, A4_HEIGHT - gradOverlayStart).fill(grad);
 
           // Story text overlaid at bottom
           const textY = A4_HEIGHT - 180;

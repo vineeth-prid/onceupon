@@ -297,8 +297,8 @@ function PricingTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getPricing()
-      .then((data) => { setPricing(data); setLoading(false); })
+    fetch('/api/pricing').then(r => r.json())
+      .then((data: any) => { setPricing(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -306,7 +306,7 @@ function PricingTab() {
     setSaving(true);
     setSaveMsg('');
     try {
-      await savePricing(pricing);
+      await fetch('/api/pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pricing) });
       setSaveMsg('Pricing saved successfully!');
     } catch {
       setSaveMsg('Failed to save pricing.');
@@ -376,9 +376,9 @@ function PricingTab() {
                 />
               </div>
             </div>
-          </div>
-        ))}
-        <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Shipping & Tax</button>
+            <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Shipping & Tax</button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -520,21 +520,15 @@ function CouponsTab() {
               <th style={thStyle}>Code</th>
               <th style={thStyle}>Type</th>
               <th style={thStyle}>Value</th>
+              <th style={thStyle}>Used</th>
+              <th style={thStyle}>Limit</th>
+              <th style={thStyle}>Expires</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {coupons.map((c) => (
-              <tr key={c.id}>
-                <td style={{ ...tdStyle, fontWeight: 600 }}>{c.code}</td>
-                <td style={tdStyle}>{c.type}</td>
-                <td style={tdStyle}>{c.type === 'percentage' ? `${c.value}%` : `₹${c.value/100}`}</td>
-                <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
-                <td style={tdStyle}><button style={{ ...btnOutline, color: '#c47560' }} onClick={() => handleDelete(c.id)}>Delete</button></td>
-              </tr>
-            ) : (
-              coupons.map((c) => (
                 <tr key={c.id}>
                   <td style={{ ...tdStyle, fontWeight: 600, fontFamily: 'monospace' }}>{c.code}</td>
                   <td style={tdStyle}>{c.type}</td>
@@ -545,7 +539,7 @@ function CouponsTab() {
                   <td style={tdStyle}><span style={badge(c.active ? 'Active' : 'Expired')}>{c.active ? 'Active' : 'Expired'}</span></td>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button 
+                      <button
                         style={{ ...btnOutline, color: '#c47560' }}
                         onClick={() => handleDelete(c.id)}
                       >
@@ -554,8 +548,7 @@ function CouponsTab() {
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>
@@ -573,21 +566,16 @@ function UsersTab({ users }: { users: any[] }) {
               <th style={thStyle}>ID</th>
               <th style={thStyle}>Name</th>
               <th style={thStyle}>Email</th>
-              <th style={thStyle}>Role</th>
+              <th style={thStyle}>Provider</th>
+              <th style={thStyle}>Orders</th>
+              <th style={thStyle}>Spent</th>
               <th style={thStyle}>Joined</th>
+              <th style={thStyle}>Role</th>
+              <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{u.id.slice(0, 8)}...</td>
-                <td style={tdStyle}>{u.firstName} {u.lastName}</td>
-                <td style={tdStyle}>{u.email}</td>
-                <td style={tdStyle}><span style={badge(u.role)}>{u.role}</span></td>
-                <td style={tdStyle}>{new Date(u.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ) : (
-              users.map((u) => {
+            {users.map((u) => {
                 const totalSpent = (u.orders || []).reduce((sum: number, o: any) => sum + (o.amountPaid || 0), 0);
                 return (
                   <tr key={u.id}>
@@ -607,8 +595,7 @@ function UsersTab({ users }: { users: any[] }) {
                     </td>
                   </tr>
                 );
-              })
-            )}
+              })}
           </tbody>
         </table>
       </div>

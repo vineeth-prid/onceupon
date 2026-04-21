@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getSuperDragonStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Baby Dragon`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Baby Dragon`,
+        imagePrompt: 'A decorative storybook title page with an enchanted forest border of glowing vines and sparkling leaves, a tiny emerald-green baby dragon curled up sleeping at the bottom center, wisps of golden smoke rising from its nostrils, crystal formations catching rainbow light in the corners, fireflies dotting the dark forest background, Disney Pixar style, warm magical glow',
+        sceneDescription: 'Title page with enchanted forest and baby dragon decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with enchanted forest vines and a small sleeping dragon',
+      },
+      {
+        pageNumber: 2,
+        text: `Deep in the heart of Whispering Woods, where ancient trees grew so tall their tops tickled the clouds, ${childName} discovered a hidden path made of glowing blue stones. Each step made the stones chime like tiny bells.`,
+        imagePrompt: 'A breathtaking enchanted forest path made of luminous blue stepping stones that glow softly, ancient enormous trees with twisted trunks covered in emerald moss, bioluminescent mushrooms lining the path in purple and teal, golden fireflies floating in the misty air, shafts of warm sunlight breaking through the dense canopy above, tiny blue flowers growing between the stones, Disney Pixar style, magical atmosphere, rich detail',
+        sceneDescription: 'The enchanted forest path of glowing blue stones',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main path and trees in upper two-thirds, softer mossy ground at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `The path led to a hollow beneath a great oak tree. Inside, curled up and trembling, was the tiniest dragon ${childName} had ever imagined. It was no bigger than a kitten, with shimmering green scales and frightened amber eyes.`,
+        imagePrompt: 'A cozy hollow beneath a massive ancient oak tree with gnarled roots forming a natural shelter, soft golden light filtering in, a tiny baby dragon the size of a kitten curled up on a bed of dried leaves, the dragon has shimmering emerald-green scales with golden belly, large frightened amber eyes with vertical pupils, tiny translucent wings folded against its body, wisps of smoke from its nostrils, moss and small white flowers growing on the roots, Disney Pixar style, intimate and warm',
+        sceneDescription: 'Discovering the tiny frightened baby dragon in the tree hollow',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place the tree hollow and dragon on the LEFT side, soft blurred forest background on right for text',
+      },
+      {
+        pageNumber: 4,
+        text: `"Don't be scared, little one," ${childName} whispered softly. ${Pronoun} held out ${possessive} hand very slowly. The baby dragon sniffed ${possessive} fingers, then let out a tiny sneeze that puffed a ring of golden smoke.`,
+        imagePrompt: 'A close-up view of a tiny emerald-green baby dragon with large amber eyes sneezing out a perfect ring of golden glowing smoke, the dragon sitting on mossy ground surrounded by small white wildflowers, sparkles and tiny embers floating in the warm air, soft dappled sunlight creating a warm glow, the tree hollow visible in the background, delicate translucent wings slightly spread, Disney Pixar style, adorable and heartwarming',
+        sceneDescription: 'The baby dragon sneezes a ring of golden smoke',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep dragon and smoke ring in lower two-thirds, soft canopy light at top for text',
+      },
+      {
+        pageNumber: 5,
+        text: `${childName} decided to call the dragon Spark. Together, they ventured deeper into the enchanted forest. Spark rode on ${possessive} shoulder, chirping happily and flicking ${possessive === 'his' ? 'his' : 'its'} tiny tail.`,
+        imagePrompt: 'A magical enchanted forest trail winding through towering ancient trees draped in glowing silver moss, bioluminescent flowers blooming along the path in shades of purple and blue, a tiny emerald dragon perched happily on a low branch chirping with its mouth open showing tiny teeth, golden fireflies swirling around, crystal-clear stream running alongside the path, warm sunlight creating god rays through the canopy, Disney Pixar style, adventurous atmosphere',
+        sceneDescription: 'Spark and the child begin their forest adventure together',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place forest details at edges and sides, keep center area softer for text readability',
+      },
+      {
+        pageNumber: 6,
+        text: `They came upon an opening in the hillside that sparkled like a thousand diamonds. "A crystal cave!" ${childName} gasped. Inside, massive crystals of every color grew from floor to ceiling, filling the cave with rainbow light.`,
+        imagePrompt: 'A magnificent crystal cave entrance in a mossy hillside opening into a vast cavern filled with enormous crystals of amethyst purple, sapphire blue, emerald green, and rose pink, rainbow light refracting through the crystal formations casting colorful patterns on the cave walls, stalactites dripping with crystal formations, a shallow pool of crystal-clear water reflecting the colors, tiny glowing particles floating in the air, Disney Pixar style, breathtaking and awe-inspiring',
+        sceneDescription: 'Discovering the magnificent crystal cave',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full dramatic view of the crystal cave interior with rainbow light refractions',
+      },
+      {
+        pageNumber: 7,
+        text: `Spark flew ahead excitedly, weaving between the crystal pillars. ${Pronoun} chirped and pointed deeper into the cave. "You want to show me something?" ${childName} asked. Spark nodded ${possessive === 'his' ? 'his' : 'its'} little head eagerly.`,
+        imagePrompt: 'Deep inside a crystal cave with towering amethyst and sapphire crystal pillars, a tiny green dragon flying between the crystals leaving a trail of golden sparkles behind it, the crystals casting purple and blue reflections everywhere, a narrow path winding between crystal formations, small pools of turquoise water on the cave floor reflecting the crystal light, mysterious deeper passage visible ahead glowing with warm amber light, Disney Pixar style, sense of wonder and mystery',
+        sceneDescription: 'Spark leads the way deeper into the crystal cave',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place cave and dragon on the RIGHT side, darker cave wall on left as backdrop for text',
+      },
+      {
+        pageNumber: 8,
+        text: `The cave opened into a meadow unlike any other. Giant mushrooms as tall as houses grew in circles, their caps glowing soft pink and lavender. Tiny bell-shaped flowers chimed in a breeze that smelled like honey and cinnamon.`,
+        imagePrompt: 'A fantastical underground mushroom meadow with enormous glowing mushrooms as tall as houses, their caps radiating soft pink and lavender bioluminescent light, smaller mushrooms in clusters of orange and teal, tiny bell-shaped flowers on thin stems swaying gently, pollen-like golden particles floating through the air, soft moss carpet on the ground, the cave ceiling high above dotted with glowing crystal formations like stars, a small stream winding through the mushroom grove, Disney Pixar style, dreamy and enchanting',
+        sceneDescription: 'The magical mushroom meadow inside the cave',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep giant mushrooms and glowing caps in upper two-thirds, soft mossy ground at bottom for text',
+      },
+      {
+        pageNumber: 9,
+        text: `But Spark suddenly froze, ${possessive === 'his' ? 'his' : 'its'} ears flat against ${possessive === 'his' ? 'his' : 'its'} head. A deep rumbling shook the ground. Dark storm clouds were rolling in through the cave opening above. "A storm is coming," ${childName} realized. "Your family! Are they safe?"`,
+        imagePrompt: 'Dark ominous storm clouds rolling in through a large opening in a cave ceiling above a mushroom meadow, lightning flashing purple and white through the clouds, the previously glowing mushrooms now dimming in the shadow, strong wind blowing flower petals and leaves sideways, the tiny green dragon hovering with ears flattened and amber eyes wide with fear, rain beginning to fall in heavy droplets, dramatic contrast between the warm glow below and the dark threatening sky above, Disney Pixar style, tense and dramatic',
+        sceneDescription: 'A dangerous storm rolls in threatening the dragon family',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep storm clouds and dramatic sky in lower portion, softer dark area at top for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Spark zoomed ahead through the wind and rain, leading ${childName} up a rocky path. ${Pronoun} climbed bravely even though the rocks were slippery. "I won't let anything happen to your family!" ${childName} promised.`,
+        imagePrompt: 'A steep rocky path going up a cliff face during a fierce rainstorm, rain streaming down the rock surface making it glisten, purple lightning illuminating the scene, small green dragon flying determinedly upward through the rain with wings beating hard, wind-blown leaves and debris swirling in the air, glowing mushrooms below providing faint light, handholds visible in the rock face, dramatic storm clouds overhead, Disney Pixar style, intense action scene with courage theme',
+        sceneDescription: 'Climbing through the storm to save the dragon eggs',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place rocky path and action at edges, keep center area with rain softer for text',
+      },
+      {
+        pageNumber: 11,
+        text: `At the top of the cliff was a nest made of woven silver branches and soft moss. Inside sat three glowing dragon eggs - one ruby red, one sapphire blue, one golden amber. The storm winds were pushing the nest toward the edge!`,
+        imagePrompt: 'A precarious cliff-top dragon nest made of woven silver-white branches and soft green moss, sitting dangerously close to the edge of a rocky cliff, three beautiful glowing dragon eggs inside - one brilliant ruby red, one deep sapphire blue, one warm golden amber, each pulsing with inner light, fierce storm winds blowing the nest sideways, rain pelting down, lightning illuminating the dramatic cliff edge and the vast dark valley below, Disney Pixar style, high stakes dramatic scene',
+        sceneDescription: 'The dragon egg nest in danger at the cliff edge',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full dramatic view of the glowing eggs in the nest at the cliff edge during the storm',
+      },
+      {
+        pageNumber: 12,
+        text: `${childName} didn't hesitate. ${Pronoun} grabbed the nest and pulled it back from the edge with all ${possessive} strength. Spark breathed a stream of warm golden fire around them, creating a shield against the rain and wind.`,
+        imagePrompt: 'A protective dome of warm golden dragon fire creating a glowing shield against a fierce rainstorm on a cliff top, rain streaming off the golden barrier, inside the shield is a nest of silver branches with three glowing eggs (ruby, sapphire, amber) safe and dry, the tiny green dragon hovering with mouth open breathing the golden protective flame, warm light radiating outward contrasting with the dark stormy sky beyond, Disney Pixar style, triumphant protective moment',
+        sceneDescription: 'Spark creates a fire shield to protect the eggs from the storm',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep golden fire dome and nest in upper two-thirds, darker ground area at bottom for text',
+      },
+      {
+        pageNumber: 13,
+        text: `Slowly, the storm passed. The clouds parted and moonlight poured down like liquid silver. The three eggs began to glow brighter and brighter. Tiny cracks appeared on their surfaces. "They're hatching!" ${childName} whispered excitedly.`,
+        imagePrompt: 'A moonlit cliff top after a storm with clouds parting to reveal a brilliant full moon pouring silver light down, three dragon eggs in a silver-branch nest cracking open with brilliant colored light streaming from the cracks - ruby red, sapphire blue, and golden amber light, the tiny green dragon watching excitedly with tail wagging, puddles on the rocky ground reflecting the moonlight and egg glow, stars beginning to appear in the clearing sky, magical sparkles rising from the eggs, Disney Pixar style, magical and wondrous',
+        sceneDescription: 'The dragon eggs begin to hatch under the moonlight',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place moonlit nest and hatching eggs on LEFT side, dark starry sky on right for text',
+      },
+      {
+        pageNumber: 14,
+        text: `Three tiny baby dragons tumbled out of their shells. A red one, a blue one, and a golden one. They chirped and squeaked, nuzzling against Spark and then against ${childName}'s hands. Spark's eyes shone with happiness and gratitude.`,
+        imagePrompt: 'Three newly hatched baby dragons of different colors tumbling playfully on soft moss next to broken eggshell fragments, one ruby-red dragon with tiny flame-shaped crest, one sapphire-blue dragon with ice-crystal wings, one golden-amber dragon with star-shaped freckles, all tiny and adorable with oversized eyes, the original green dragon nuzzling them happily, moonlight and starlight bathing the scene in silver-blue glow, scattered sparkles and tiny embers floating around, Disney Pixar style, joyful and heartwarming',
+        sceneDescription: 'The three baby dragons hatch and meet everyone',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep baby dragons in lower two-thirds, soft moonlit sky at top for text',
+      },
+      {
+        pageNumber: 15,
+        text: `${childName} realized something wonderful. By being brave and helping Spark, ${pronoun} had earned the trust of an entire dragon family. And Spark, who had once been so scared and alone, now had ${possessive === 'his' ? 'his' : 'its'} siblings back and a true friend.`,
+        imagePrompt: 'A beautiful enchanted forest clearing bathed in warm golden sunrise light, four baby dragons (green, red, blue, gold) playing together on a mossy log, chasing fireflies and puffing tiny colorful smoke rings, ancient trees framing the scene with golden leaves falling gently, wildflowers blooming in clusters of purple and white, a magical warm glow emanating from the center of the clearing, the crystal cave entrance visible in the background, Disney Pixar style, peaceful and heartwarming conclusion',
+        sceneDescription: 'The dragon siblings reunited in the enchanted forest',
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'soft vignette with dragons playing in center, darker edges fading for surrounding text',
+      },
+      {
+        pageNumber: 16,
+        text: `From that day on, whenever ${childName} visited Whispering Woods, four little dragons would swoop down to greet ${pronoun}. And ${childName} knew that the greatest magic of all wasn't fire or flight - it was the courage to help someone in need. The End.`,
+        imagePrompt: 'A panoramic view of an enchanted forest at golden hour with four tiny colorful dragons (green, red, blue, gold) silhouetted against a spectacular sunset sky of orange, pink, and purple, flying in playful formation above the treetops, the forest below glowing with bioluminescent mushrooms and fireflies beginning to appear, a winding path of glowing blue stones leading into the distance, clouds painted gold by the setting sun, Disney Pixar style, epic and uplifting finale',
+        sceneDescription: 'The dragons flying at sunset over the enchanted forest',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place dragons and sunset at top and trees at bottom, keep center softer for farewell text',
+      },
+    ],
+  };
+}

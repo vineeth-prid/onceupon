@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getLostFairyWingsStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Lost Fairy Wings`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Lost Fairy Wings`,
+        imagePrompt: 'A decorative storybook title page with a border of delicate silver vines and tiny glowing fairy lights, scattered translucent fairy wings like fallen leaves at the bottom, a crescent moon glowing softly at the top center, sparkles and stardust swirling around the edges, small magical flowers blooming in the corners with dewdrops catching light, Disney Pixar style, ethereal and magical',
+        sceneDescription: 'Title page with fairy realm decorations and fallen fairy wings',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with fairy lights, scattered wings, and moonlight',
+      },
+      {
+        pageNumber: 2,
+        text: `It began when ${childName} found a tiny door at the base of the oldest tree in the garden. It was no bigger than a book, painted periwinkle blue with a golden handle that sparkled in the twilight.`,
+        imagePrompt: 'A magical tiny periwinkle-blue door with an ornate golden handle set into the base of an enormous ancient tree trunk covered in thick moss and ivy, the door glowing faintly with golden light around its edges, twilight sky visible above with first stars appearing, fireflies gathering around the door, tiny mushrooms growing in a ring around the tree base, fallen autumn leaves in warm colors scattered on the ground, intricate carvings of flowers and moons on the door frame, Disney Pixar style, mysterious and inviting',
+        sceneDescription: 'The tiny fairy door at the base of the old tree',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep tree trunk and fairy door in upper two-thirds, soft ground area at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `${childName} touched the handle, and the world swirled around ${pronoun} like a kaleidoscope. When everything settled, ${pronoun} stood in a realm of impossible beauty - silver trees with crystal leaves, rivers that flowed with liquid starlight, and flowers that hummed soft melodies.`,
+        imagePrompt: 'A breathtaking fairy realm landscape with elegant silver-barked trees bearing translucent crystal leaves that catch and refract light into rainbow prisms, a winding river of liquid starlight glowing soft blue-white, luminescent flowers of all colors humming and swaying gently, the ground covered in soft silver-blue grass, floating orbs of warm light drifting lazily through the air, a distant castle of spun glass visible on a hilltop, twilight sky of deep purple and indigo with oversized stars, Disney Pixar style, otherworldly beauty',
+        sceneDescription: 'The breathtaking fairy realm appears',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full panoramic view of the fairy realm landscape in all its beauty',
+      },
+      {
+        pageNumber: 4,
+        text: `But something was wrong. Tiny creatures sat sadly on mushrooms and flower petals - fairies, but without their wings. Just small shimmering stubs remained on their backs. One fairy floated down on a dandelion seed and spoke: "A shadow spell stole our wings. Will you help us?"`,
+        imagePrompt: 'Several tiny sad fairies the size of butterflies sitting on large colorful mushroom caps and flower petals, their backs showing only small shimmering wing stubs where full wings once were, the fairies wearing tiny dresses made of flower petals in pastel colors, one fairy descending slowly on a large white dandelion seed puff, tears like tiny diamonds on their cheeks, the fairy realm background slightly dimmer and less vibrant, soft purple twilight, Disney Pixar style, emotional and sympathetic, the fairies are tiny pixie-like magical creatures not human',
+        sceneDescription: 'Meeting the wingless fairies who need help',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place mushrooms and sad fairies on LEFT side, soft blurred fairy realm background on right for text',
+      },
+      {
+        pageNumber: 5,
+        text: `"Of course I'll help!" ${childName} said without hesitation. The fairy smiled weakly. "You must gather four magical ingredients to break the spell: a moonlit dewdrop, a singing flower petal, starlight dust, and a crystal tear. Each one is hidden in a different corner of our realm."`,
+        imagePrompt: 'A glowing magical scroll unfurling in midair showing four illustrated ingredients: a luminous dewdrop reflecting moonlight, a pink flower petal with musical notes emanating from it, sparkling golden stardust in a swirl, and a diamond-shaped crystal teardrop, each illustration surrounded by ornate golden filigree, tiny fairy-light particles floating around the scroll, a large soft mushroom serving as a seat nearby, the fairy realm background with silver trees, Disney Pixar style, quest-beginning excitement',
+        sceneDescription: 'The four magical ingredients are revealed',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep scroll and ingredients in lower two-thirds, soft starlit sky at top for text',
+      },
+      {
+        pageNumber: 6,
+        text: `The first quest led ${childName} to the Moonpool - a perfectly still pond that reflected the moon even during the day. Lotus flowers floated on its surface, each holding a single perfect dewdrop that glowed silver-white.`,
+        imagePrompt: 'A serene circular pond with mirror-still water perfectly reflecting a large luminous crescent moon above even in the dusky light, elegant white and pink lotus flowers floating on the surface each cradling a single large dewdrop that glows brilliant silver-white, weeping willow-like silver trees surrounding the pond with drooping crystal-leaf branches touching the water, smooth dark stones lining the pond edge, mist hovering just above the water surface, fireflies reflected in the still water, Disney Pixar style, serene and mystical',
+        sceneDescription: 'The Moonpool with its glowing dewdrops',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place pond and lotuses at edges and bottom, keep center reflective area softer for text',
+      },
+      {
+        pageNumber: 7,
+        text: `${childName} reached out carefully and lifted a dewdrop from a lotus petal. It was cool and tingled in ${possessive} palm like holding a tiny piece of the moon itself. One ingredient found! The dewdrop floated gently into a small pouch that appeared at ${possessive} side.`,
+        imagePrompt: 'A close-up view of a large luminous silver-white dewdrop hovering above an open lotus flower, the dewdrop casting moon-like reflections on the surrounding water surface, ripples spreading gently outward, a small velvet pouch with golden drawstring appearing nearby surrounded by sparkles, the lotus petals white and iridescent with water droplets on them, the moonpool background softly blurred, magical energy swirling around the dewdrop, Disney Pixar style, moment of magical discovery',
+        sceneDescription: 'Collecting the moonlit dewdrop from the lotus',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place dewdrop and lotus on RIGHT side, darker pond reflection on left for text',
+      },
+      {
+        pageNumber: 8,
+        text: `Next, ${childName} followed a trail of musical notes through a garden where every flower sang a different tune. Roses hummed lullabies, daisies whistled cheerful melodies, and one special orchid sang the most beautiful song ${pronoun} had ever heard.`,
+        imagePrompt: 'A fantastical singing flower garden with oversized colorful flowers of all varieties, visible musical notes in gold and silver floating from each flower like bubbles, roses with open petals vibrating as they hum, daisies with tiny faces whistling, a large spectacular purple and pink orchid in the center glowing brightly and emitting a stream of golden musical notes, the path between flowers paved with smooth singing stones, soft colored light emanating from each flower group, small butterflies dancing to the music, Disney Pixar style, joyful and musical',
+        sceneDescription: 'The singing flower garden with its musical blooms',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep flowers and musical notes in upper two-thirds, soft garden floor at bottom for text',
+      },
+      {
+        pageNumber: 9,
+        text: `${childName} listened carefully to the orchid's song. When the last note faded, a single petal - glowing pink and vibrating with melody - drifted down gently. ${Pronoun} caught it mid-air. The petal continued to hum softly in ${possessive} hand. Two ingredients found!`,
+        imagePrompt: 'A single glowing pink orchid petal drifting downward leaving a trail of golden musical notes and sparkles behind it, the petal radiating soft pink light and visibly vibrating with musical energy, the spectacular purple orchid above with one petal missing, surrounding flowers all turned toward the scene as if watching, soft bokeh lights in the background of the garden, magical particles and tiny musical notes swirling around the falling petal, Disney Pixar style, delicate and musical moment',
+        sceneDescription: 'Catching the singing flower petal as it falls',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep orchid and falling petal in lower two-thirds, soft garden canopy at top for text',
+      },
+      {
+        pageNumber: 10,
+        text: `For the third ingredient, ${childName} had to climb the Starlight Staircase - steps made of solidified moonbeams that spiraled up into the night sky above the fairy realm. Higher and higher ${pronoun} climbed, until the stars were close enough to touch.`,
+        imagePrompt: 'A magnificent spiral staircase made of solidified translucent moonbeam steps glowing soft white-blue, spiraling up into a deep indigo night sky filled with enormous close bright stars, each step slightly transparent and shimmering, the fairy realm visible far below as a tapestry of tiny lights, wispy clouds at mid-level the staircase passes through, the stars above appearing massive and close with visible rays and sparkles, golden stardust particles drifting down like snow, no railing just open sky on all sides, Disney Pixar style, vertigo-inducing beauty',
+        sceneDescription: 'Climbing the moonbeam staircase toward the stars',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full dramatic vertical view of the spiral staircase reaching into the starry sky',
+      },
+      {
+        pageNumber: 11,
+        text: `At the very top, ${childName} reached out and gently brushed a star with ${possessive} fingertips. Golden dust cascaded down like warm snow, filling ${possessive} cupped hands. The starlight dust tickled and sparkled, and ${childName} laughed with pure joy. Three down, one to go!`,
+        imagePrompt: 'A view from the top of the moonbeam staircase at the edge of space, an enormous warm golden star very close with its surface swirling with solar patterns, cascading golden starlight dust falling like sparkling warm snow, the dust particles each individually glowing and twinkling, the deep purple-blue void of space filled with distant colorful nebulae and smaller stars in the background, the staircase top platform of solid moonlight, a small velvet pouch glowing with collected ingredients nearby, Disney Pixar style, awe-inspiring celestial beauty',
+        sceneDescription: 'Collecting starlight dust from a star at the top of the staircase',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place star and dust at edges, keep center area with falling dust softer for text',
+      },
+      {
+        pageNumber: 12,
+        text: `The final ingredient was the hardest. A crystal tear could only come from a moment of true compassion. ${childName} found a tiny fairy sitting alone by a frozen fountain, ${possessive === 'his' ? 'its' : 'its'} wing stubs shaking. "I miss flying more than anything," the fairy whispered.`,
+        imagePrompt: 'A small ornate fairy fountain frozen in crystalline ice, icicles hanging from its tiers catching and refracting faint light, a single tiny fairy creature sitting alone on the fountain edge looking downward sadly, the fairy no bigger than a thumb with a tattered petal dress and only tiny shimmering stubs where wings should be, the surrounding area slightly frost-covered and dim compared to the rest of the realm, fallen crystal leaves on the ground, a sense of loneliness and cold, Disney Pixar style, emotionally touching, the fairy is a tiny magical pixie creature not human',
+        sceneDescription: 'Finding the lonely fairy at the frozen fountain',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place frozen fountain and lonely fairy on LEFT side, darker frost background on right for text',
+      },
+      {
+        pageNumber: 13,
+        text: `${childName} sat down beside the fairy and said softly, "I promise I'll fix this. You'll fly again." ${Pronoun} meant it with all ${possessive} heart. A single tear rolled down ${childName}'s cheek - but instead of falling, it crystallized mid-air into a perfect diamond-shaped drop that chimed like a bell.`,
+        imagePrompt: 'A single perfect diamond-shaped crystal tear suspended in mid-air, glowing with inner rainbow light and emitting tiny musical chime waves visible as concentric rings, surrounded by sparkling particles, the frozen fountain in the background beginning to thaw with drops of water forming, warm golden light beginning to break through the frost, the tiny fairy looking up with hope in its eyes, the crystal tear casting prismatic rainbow reflections on all surrounding surfaces, Disney Pixar style, emotionally powerful moment of compassion',
+        sceneDescription: 'The crystal tear forms from true compassion',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep crystal tear and fountain in upper two-thirds, thawing ground at bottom for text',
+      },
+      {
+        pageNumber: 14,
+        text: `With all four ingredients collected, ${childName} rushed to the Great Fairy Circle - a ring of ancient silver stones in the heart of the realm. ${Pronoun} placed each ingredient on its matching stone: dewdrop, petal, stardust, and crystal tear. The stones began to glow!`,
+        imagePrompt: 'A circle of tall ancient silver standing stones in a moonlit clearing, four of the stones now glowing brilliantly with different colors - one with silver-white moonlight from a dewdrop, one with pink musical energy from a petal, one with golden sparkles from stardust, one with rainbow prismatic light from a crystal tear, energy beams connecting the four glowing stones forming a diamond pattern above, hundreds of tiny wingless fairies gathering around the circle edges watching with hope, the night sky swirling with magical aurora colors above, Disney Pixar style, epic magical ritual',
+        sceneDescription: 'Placing all four ingredients on the fairy circle stones',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep stone circle and light beams in lower two-thirds, swirling sky at top for text',
+      },
+      {
+        pageNumber: 15,
+        text: `A wave of brilliant light burst from the stones, sweeping across the entire fairy realm like a warm sunrise. Everywhere it touched, translucent rainbow wings sprouted from the fairies' backs. They gasped, they laughed, they leaped into the air! The realm blazed with color and joy once more.`,
+        imagePrompt: 'A spectacular explosion of brilliant warm golden light radiating outward from a stone circle, hundreds of tiny fairy creatures leaping joyfully into the air with brand new translucent rainbow-iridescent wings unfurling from their backs, the wings catching light and creating thousands of tiny rainbow reflections, the fairy realm fully restored to vibrant beauty with silver trees gleaming and flowers blooming brighter, streams of magical energy like aurora borealis swirling overhead, pure celebration and joy, Disney Pixar style, triumphant climax, fairies are tiny pixie creatures not human',
+        sceneDescription: 'The fairy wings are restored in a burst of magical light',
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'soft vignette with burst of light and flying fairies in center, darker edges for surrounding text',
+      },
+      {
+        pageNumber: 16,
+        text: `The fairies swirled around ${childName} in a tornado of gratitude and sparkles. "You showed true courage, kindness, and compassion," they chimed together. "You will always be welcome in our realm." And whenever ${childName} visited that old tree, the tiny door was always open, and a trail of fairy dust lit the way. The End.`,
+        imagePrompt: 'A magnificent twilight scene with hundreds of tiny winged fairies creating a swirling spiral of colorful light and sparkles rising into the starry sky above an enchanted silver forest, the tiny fairy door at the base of a great tree glowing warmly with golden light, a trail of sparkling fairy dust leading from the door into the realm, the full moon large and luminous above, the fairy realm vibrant and alive with every flower glowing, Disney Pixar style, magical and uplifting grand finale',
+        sceneDescription: 'The fairy realm restored and celebration under the stars',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place fairy spiral at top and tree door at bottom, keep center starlit area softer for farewell text',
+      },
+    ],
+  };
+}

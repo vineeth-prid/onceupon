@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 const occasions = [
   {
     title: 'Super Boy and the Dragon',
-    tag: 'Adventure',
+    tag: 'Fantasy',
     description: 'A brave child befriends a lonely dragon in this heartwarming tale of courage.',
     image: '/thumbnails/super-boy-and-the-dragon.webp',
   },
@@ -14,22 +14,22 @@ const occasions = [
     image: '/thumbnails/girl-saves-the-arctic-kingdom.webp',
   },
   {
-    title: 'Princess and the Glowing Flower',
+    title: 'Girl and the Lost Fairy Wings',
     tag: 'Fantasy',
-    description: 'A magical quest to find the legendary glowing flower in the enchanted garden.',
-    image: '/thumbnails/princess-and-the-glowing-flower.webp',
+    description: 'A magical quest to find the legendary fairy wings in an enchanted realm.',
+    image: '/thumbnails/girl-and-the-lost-fairy-wings.webp',
   },
   {
-    title: 'Girl in Wonderland',
-    tag: 'Fantasy',
-    description: 'A whimsical journey through a world where anything is possible.',
-    image: '/thumbnails/girl-in-wonderland.webp',
+    title: 'The Boy and the Cosmic Journey',
+    tag: 'Adventure',
+    description: 'Blast off through stars, planets, and galaxies on an epic space adventure.',
+    image: '/thumbnails/the-boy-and-the-cosmic-journey.webp',
   },
   {
-    title: 'The Boy and the Christmas Express',
-    tag: 'Holidays',
-    description: 'A festive adventure aboard the most magical train of the season.',
-    image: '/thumbnails/the-boy-and-the-christmas-express.webp',
+    title: 'Vroom Vroom, The Boy Wins the Race',
+    tag: 'Adventure',
+    description: "A child's magical race to believe, try, and win against all odds.",
+    image: '/thumbnails/vroom-vroom-the-boy-wins-the-race.webp',
   },
   {
     title: 'Boy Explores the Zoo',
@@ -44,10 +44,10 @@ const occasions = [
     image: '/thumbnails/the-portugals-new-legend.webp',
   },
   {
-    title: 'Happy Birthday Girl',
-    tag: 'Birthday',
-    description: 'The most special birthday celebration in a beautifully illustrated book.',
-    image: '/thumbnails/happy-birthday-girl.webp',
+    title: 'The Boy Who Could Talk to Animals',
+    tag: 'Animals',
+    description: 'A magical gift that lets a child hear what animals truly have to say.',
+    image: '/thumbnails/the-boy-who-could-talk-to-animals.webp',
   },
 ];
 

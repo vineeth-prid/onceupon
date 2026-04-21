@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getCosmicJourneyStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Cosmic Journey`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Cosmic Journey`,
+        imagePrompt: 'A decorative storybook title page with a border of swirling galaxies and colorful nebulae, a cute retro-style rocket ship at the center surrounded by orbiting planets, stars twinkling in every color, a crescent moon smiling in the corner, comet trails forming decorative swirls around the edges, small friendly alien creatures peeking from behind planets, Disney Pixar style, whimsical and cosmic',
+        sceneDescription: 'Title page with space-themed decorations and a cute rocket',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with galaxies, planets, and a central rocket ship',
+      },
+      {
+        pageNumber: 2,
+        text: `${childName} had always dreamed of touching the stars. One night, while gazing at the sky from ${possessive} bedroom window, ${pronoun} had the most wonderful idea. "What if I could build a rocket... from my imagination?"`,
+        imagePrompt: 'A cozy bedroom at night with a large window showing a spectacular starry sky with visible Milky Way, colorful constellation patterns glowing softly, a telescope pointed at the window, star charts and planet posters on the walls, glow-in-the-dark stars on the ceiling, a desk covered with crayon drawings of rockets and planets, warm lamplight creating a cozy atmosphere, the night sky outside absolutely stunning with shooting stars, Disney Pixar style, dreamy and aspirational',
+        sceneDescription: 'Gazing at stars from the bedroom window with rocket dreams',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep starry window and bedroom in upper two-thirds, soft dark floor area at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `${childName} closed ${possessive} eyes tight and imagined the most amazing rocket ship ever. When ${pronoun} opened them - there it was! A gleaming silver rocket with rainbow flames painted on its sides, right in the middle of the backyard, humming softly and ready for launch.`,
+        imagePrompt: 'A whimsical retro-futuristic silver rocket ship standing upright in a moonlit backyard, the rocket has a bulbous friendly shape with circular porthole windows glowing warm orange, rainbow flame decals painted on its sides, small stabilizer fins at the base, the rocket humming with visible energy waves, a gangway ladder extended, garden around it bathed in silver moonlight, fireflies attracted to the rocket glow, stars brilliantly visible above, the rocket casting a warm glow on the surrounding grass, Disney Pixar style, exciting and magical',
+        sceneDescription: 'The imagination rocket appears in the backyard',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place rocket ship on RIGHT side, moonlit garden and sky on left for text',
+      },
+      {
+        pageNumber: 4,
+        text: `${childName} climbed aboard and strapped in. The cockpit was filled with candy-colored buttons, a steering wheel shaped like a star, and a big shiny lever labeled "BLAST OFF!" ${Pronoun} grabbed the lever and pulled with all ${possessive} might.`,
+        imagePrompt: 'Interior of a whimsical rocket cockpit with a dashboard full of candy-colored oversized buttons in pink, blue, green, and yellow, each with fun symbols (stars, moons, comets), a steering wheel shaped like a five-pointed golden star, a large shiny red lever with a sign reading BLAST OFF in retro space font, a wide curved windshield showing the starry sky, the seat plush and purple, small screens showing friendly planet faces, gauges with smiley faces, warm orange cockpit lighting, Disney Pixar style, fun and inviting',
+        sceneDescription: 'The colorful rocket cockpit ready for launch',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep cockpit details in lower two-thirds, windshield starry view at top for text',
+      },
+      {
+        pageNumber: 5,
+        text: `WHOOOOOOSH! The rocket blasted off with a trail of rainbow sparks! Up through the clouds, past the moon - ${childName} waved at it - and into the vast, sparkling ocean of space. The stars stretched out in every direction like diamonds on black velvet.`,
+        imagePrompt: 'A silver retro rocket ship blasting upward through space leaving a spectacular trail of rainbow-colored sparks and flame behind it, the Earth visible below as a beautiful blue-green marble getting smaller, the Moon nearby large and detailed with craters visible, the vast expanse of space ahead filled with brilliant stars, distant galaxies, and colorful nebulae, the rocket trail creating a rainbow arc against the black void, small asteroids dotting the space around, Disney Pixar style, exhilarating launch sequence',
+        sceneDescription: 'The rocket blasts off into space past the moon',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place rocket and trail at edges, keep center starfield softer for text',
+      },
+      {
+        pageNumber: 6,
+        text: `The first wonder ${childName} discovered was the Candy Nebula - a massive cloud of cosmic dust in every flavor color imaginable. Swirls of strawberry pink, blueberry blue, lemon yellow, and grape purple danced and sparkled like the universe's biggest candy store.`,
+        imagePrompt: 'A spectacular cosmic nebula made entirely of candy-colored swirling gas clouds, vibrant strawberry pink pillars mixing with blueberry blue wisps, lemon yellow streaks shooting through grape purple clouds, the gas formations looking like cotton candy and lollipop swirls, tiny sparkles like sugar crystals scattered throughout, new baby stars being born inside the clouds glowing like candy gems, the silver rocket tiny in the distance for scale, the nebula stretching across the entire view, Disney Pixar style, candy-colored cosmic wonder',
+        sceneDescription: 'The magnificent Candy Nebula in all its colorful glory',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full dramatic panoramic view of the candy-colored nebula filling the frame',
+      },
+      {
+        pageNumber: 7,
+        text: `${childName} flew the rocket right through the middle of the Candy Nebula! The colorful dust swirled around the windows like a rainbow tornado. It made the whole rocket smell like cotton candy and stardust. ${Pronoun} giggled with delight.`,
+        imagePrompt: 'View from inside the rocket cockpit looking out through the wide curved windshield as colorful nebula gas swirls past outside, pink and blue cosmic dust streaming past the windows like being inside a rainbow tornado, sparkles and tiny stars visible within the gas clouds, the star-shaped steering wheel in the foreground, candy-colored buttons on the dashboard reflecting the colorful light from outside, the whole scene bathed in shifting pink-blue-purple light, streaks of golden stardust on the glass, Disney Pixar style, immersive and joyful',
+        sceneDescription: 'Flying through the Candy Nebula from inside the cockpit',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep cockpit view and nebula in upper two-thirds, darker dashboard at bottom for text',
+      },
+      {
+        pageNumber: 8,
+        text: `Beyond the nebula, ${childName} spotted a planet unlike any other. It was made entirely of glittering crystals - towering crystal mountains, crystal forests, and rivers of liquid diamond. ${Pronoun} landed the rocket on a flat crystal plateau.`,
+        imagePrompt: 'A breathtaking alien planet made entirely of enormous colorful crystals, towering crystal mountain formations in blue, purple, and clear quartz rising dramatically, forests of crystal tree formations with geometric branch patterns, rivers of flowing liquid diamond catching and refracting light into rainbows everywhere, the ground a flat crystal plateau with geometric patterns, the sky a deep teal with two small moons visible, the silver rocket landed on the crystal surface reflecting in it, prismatic light bouncing everywhere, Disney Pixar style, dazzling crystalline world',
+        sceneDescription: 'Landing on the crystal planet',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep crystal landscape in lower two-thirds, teal alien sky at top for text',
+      },
+      {
+        pageNumber: 9,
+        text: `As ${childName} stepped out to explore, a small creature peeked out from behind a crystal pillar. It had big purple eyes, soft teal fur, two tiny antennae, and it glowed softly from within. It made a sound like a wind chime: "Tink-tink-ting!"`,
+        imagePrompt: 'A small adorable alien creature the size of a cat peeking out from behind a large amethyst crystal pillar, the creature has oversized purple eyes with star-shaped pupils, soft fluffy teal fur that glows softly from within with bioluminescence, two small golden antennae on its head with tiny orbs at the tips, small rounded body with stubby legs, its expression curious and shy, the crystal environment refracting colorful light around it, small crystal formations growing from the ground nearby, Disney Pixar style, irresistibly cute alien design',
+        sceneDescription: 'Meeting the small glowing alien creature on the crystal planet',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place crystal pillar and alien creature on LEFT side, crystal landscape blurred on right for text',
+      },
+      {
+        pageNumber: 10,
+        text: `${childName} knelt down slowly. "Hello there, little one!" The creature tilted its head, then bounced over happily. It nuzzled against ${possessive} hand, its fur warm and tingly. ${childName} named it Twinkle, and Twinkle seemed to love it, bouncing in circles excitedly.`,
+        imagePrompt: 'The small teal-furred alien creature bouncing joyfully in a circle on the crystal ground, leaving tiny glowing pawprints behind it, its antennae bouncing happily, purple eyes squeezed shut with joy, small sparkles and light particles emitting from its fur as it bounces, the crystal landscape reflecting its warm glow, crystal formations in the background catching and multiplying the bioluminescent light into beautiful patterns, liquid diamond river visible in the background, Disney Pixar style, pure joy and friendship',
+        sceneDescription: 'Twinkle bounces happily after being named',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place alien and crystals at edges, keep center crystal floor area softer for text',
+      },
+      {
+        pageNumber: 11,
+        text: `Twinkle hopped into the rocket and perched on the dashboard as ${childName} took off again. But ahead lay the Asteroid Belt - thousands of spinning space rocks in every direction! ${childName} gripped the star wheel tight. "Here we go!"`,
+        imagePrompt: 'A dense asteroid field stretching across space with thousands of rocky asteroids of all sizes spinning and tumbling, some asteroids glowing with mineral deposits of orange and blue, the silver rocket approaching the asteroid field from below, the asteroids creating dramatic shadows and light patterns, distant stars visible between the gaps in the asteroids, some asteroids covered in ice crystals that sparkle, a sense of danger and excitement, space dust creating streaks between the rocks, Disney Pixar style, thrilling and adventurous',
+        sceneDescription: 'Approaching the dangerous asteroid belt',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep asteroids and rocket in upper two-thirds, dark space at bottom for text',
+      },
+      {
+        pageNumber: 12,
+        text: `Left! Right! Up! Down! ${childName} weaved the rocket through the spinning asteroids like a champion pilot. Twinkle's antennae glowed to warn of rocks coming from behind. Together, they were an unstoppable team!`,
+        imagePrompt: 'A dynamic action scene of the silver rocket banking sharply between enormous spinning asteroids, rainbow engine trail curving in a zigzag pattern showing the path through, asteroids zooming past very close on all sides creating a sense of speed, motion blur on the passing rocks, the rocket slightly tilted in a sharp turn, sparks flying where small rocks ping off the hull, golden glow visible in the cockpit window from Twinkle, space dust and debris streaming past, dramatic lighting from a distant sun, Disney Pixar style, high-speed action and excitement',
+        sceneDescription: 'Dodging through asteroids in an exciting flight sequence',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full dynamic action view of the rocket weaving through asteroids with motion and speed',
+      },
+      {
+        pageNumber: 13,
+        text: `They burst through the other side of the asteroid belt and ${childName} cheered! But then ${pronoun} noticed something ahead that made ${pronoun} catch ${possessive} breath. There, floating in the dark of space, was the most beautiful sight ${pronoun} had ever seen.`,
+        imagePrompt: 'The silver rocket emerging from the far edge of the asteroid belt into open clear space, the last few asteroids tumbling away behind, ahead in the distance a stunning view beginning to appear - a hint of brilliant blue light ahead in the otherwise dark space, the rocket trailing rainbow sparks as it clears the last rocks, a sense of open freedom after the tight asteroid field, stars brilliant and clear in the void ahead, anticipation of something beautiful just out of full view, Disney Pixar style, moment of wonder and anticipation',
+        sceneDescription: 'Emerging from the asteroids to see something beautiful ahead',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place rocket and asteroids on RIGHT side, dark open space on left for text',
+      },
+      {
+        pageNumber: 14,
+        text: `It was Earth. ${childName}'s home, seen from millions of miles away. A perfect blue marble swirled with white clouds, glowing like a precious jewel against the black velvet of space. "That's the most beautiful star of all," ${childName} whispered. "That's home."`,
+        imagePrompt: 'Planet Earth seen from deep space, a perfect luminous blue sphere with white cloud swirls and green-brown continents visible, the planet glowing with an ethereal thin blue atmosphere line at its edge, the Moon visible nearby as a smaller grey sphere, the Sun illuminating Earth from the side creating a dramatic crescent shadow, the vast blackness of space filled with distant stars behind it, the planet appearing like a precious blue jewel, small and fragile and incredibly beautiful against the infinite void, Disney Pixar style, awe-inspiring and emotional homecoming view',
+        sceneDescription: 'Seeing Earth from space - the most beautiful star',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep Earth in lower two-thirds of frame, dark starfield at top for emotional text',
+      },
+      {
+        pageNumber: 15,
+        text: `${childName} turned the rocket toward home. Twinkle pressed its little paws against the window, watching the blue planet grow bigger and bigger. ${childName} smiled at ${possessive} new friend. "You can visit me anytime, Twinkle. Just follow the brightest blue star."`,
+        imagePrompt: 'View from inside the rocket cockpit approaching Earth which fills most of the windshield growing larger, the blue planet gorgeous and inviting with city lights visible on the night side, the small teal alien creature with purple eyes pressed against the side window with its tiny paws on the glass looking at Earth in wonder, antennae perked up with curiosity, the dashboard candy-colored buttons reflecting the blue Earth-light, the star steering wheel in the foreground, warm interior lighting mixing with the blue glow from outside, Disney Pixar style, bittersweet and hopeful',
+        sceneDescription: 'Heading home with Twinkle looking at Earth through the window',
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'soft vignette with Earth view and Twinkle in center, darker cockpit edges for surrounding text',
+      },
+      {
+        pageNumber: 16,
+        text: `${childName} landed softly back in the backyard just as the sun began to rise. The rocket shimmered and faded back into imagination - but the adventure was real. And sometimes at night, ${childName} sees a tiny teal glow zooming between the stars and knows that Twinkle is saying hello. The End.`,
+        imagePrompt: 'A beautiful sunrise over a backyard garden, the sky painted in soft oranges and pinks with the last stars still faintly visible, a faint shimmering outline of where the rocket once stood fading like a ghost, dew drops on the grass catching the golden morning light, a single tiny teal glowing streak visible high in the fading starry portion of sky like a shooting star, the old telescope visible through a bedroom window, flowers in the garden opening to greet the dawn, a sense of wonder and peaceful conclusion, Disney Pixar style, warm and hopeful finale',
+        sceneDescription: 'Dawn in the backyard with the rocket gone and a teal streak in the sky',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place sunrise and garden at top and bottom edges, keep center dawn sky softer for farewell text',
+      },
+    ],
+  };
+}

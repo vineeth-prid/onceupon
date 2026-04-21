@@ -38,109 +38,54 @@ export function TemplatesPage() {
 
   return (
     <div style={{ background: '#fff', minHeight: '100vh' }}>
-      {/* ─── Hero Banner ──────────────────────────────────────── */}
-      <section
-        className="books-hero"
-        style={{
-          position: 'relative',
-          background: 'linear-gradient(135deg, #f5f0ff 0%, #ede5ff 40%, #e8dff5 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
+      {/* ─── Header ──────────────────────────────────────── */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 0' }}>
+        <nav
+          className="font-body"
+          style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}
+        >
+          <Link to="/" style={{ color: '#9ca3af', textDecoration: 'none' }}>
+            Home
+          </Link>
+          <span style={{ margin: '0 6px' }}>/</span>
+          <span style={{ color: '#111', fontWeight: 600 }}>Books</span>
+        </nav>
+
+        <h1
+          className="font-display"
           style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            minHeight: 340,
+            color: '#111',
+            fontSize: 44,
+            fontWeight: 700,
+            margin: '0 0 8px',
+            lineHeight: 1.15,
           }}
         >
-          {/* Left — Text */}
-          <div
-            className="books-hero-text"
-            style={{
-              flex: '0 0 50%',
-              padding: '60px 24px 60px 40px',
-              position: 'relative',
-              zIndex: 2,
-            }}
-          >
-            <nav
-              className="font-body"
-              style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}
-            >
-              <Link to="/" style={{ color: '#9ca3af', textDecoration: 'none' }}>
-                Home
-              </Link>
-              <span style={{ margin: '0 6px' }}>/</span>
-              <span style={{ color: '#6b21a8', fontWeight: 600 }}>Books</span>
-            </nav>
-
-            <h1
-              className="font-display"
-              style={{
-                color: '#6b21a8',
-                fontSize: 44,
-                fontWeight: 700,
-                margin: '0 0 16px',
-                lineHeight: 1.15,
-              }}
-            >
-              Personalised<br />
-              Storybooks for Kids
-            </h1>
-            <p
-              className="font-body"
-              style={{
-                color: '#4b5563',
-                fontSize: 17,
-                maxWidth: 420,
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              Crafted to spark imagination and lasting memories.
-            </p>
-          </div>
-
-          {/* Right — Image */}
-          <div
-            className="books-hero-img"
-            style={{
-              flex: '0 0 50%',
-              position: 'relative',
-              height: '100%',
-              minHeight: 340,
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src="/banner-reading.png"
-              alt="Parent and child reading a personalized storybook"
-              style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center top',
-              }}
-            />
-          </div>
-        </div>
+          Personalised Storybooks
+        </h1>
+        <p
+          className="font-body"
+          style={{
+            color: '#6F6F6F',
+            fontSize: 17,
+            maxWidth: 420,
+            lineHeight: 1.6,
+            margin: '0 0 32px',
+          }}
+        >
+          Crafted to spark imagination and lasting memories.
+        </p>
       </section>
 
       {/* ─── Filter / Search Bar ──────────────────────────────── */}
       <section
+        className="liquid-glass"
         style={{
-          background: '#FAFAFA',
-          borderBottom: '1px solid #eee',
-          padding: '16px 24px',
+          padding: '14px 24px',
           position: 'sticky',
           top: 0,
           zIndex: 20,
+          borderRadius: 0,
         }}
       >
         <div
@@ -185,11 +130,11 @@ export function TemplatesPage() {
               style={{
                 width: '100%',
                 padding: '10px 14px 10px 36px',
-                border: '1px solid #ddd',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: 10,
                 fontSize: 14,
                 outline: 'none',
-                background: '#fff',
+                background: 'rgba(255,255,255,0.6)',
               }}
             />
           </div>
@@ -201,10 +146,10 @@ export function TemplatesPage() {
             className="font-body"
             style={{
               padding: '10px 14px',
-              border: '1px solid #ddd',
+              border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: 10,
               fontSize: 14,
-              background: '#fff',
+              background: 'rgba(255,255,255,0.6)',
               cursor: 'pointer',
               color: '#333',
             }}
@@ -223,10 +168,10 @@ export function TemplatesPage() {
             className="font-body"
             style={{
               padding: '10px 14px',
-              border: '1px solid #ddd',
+              border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: 10,
               fontSize: 14,
-              background: '#fff',
+              background: 'rgba(255,255,255,0.6)',
               cursor: 'pointer',
               color: '#333',
             }}
@@ -284,17 +229,17 @@ export function TemplatesPage() {
 
         {/* ─── CTA Banner ─────────────────────────────────────── */}
         <div
+          className="liquid-glass-strong"
           style={{
             marginTop: 64,
             textAlign: 'center',
             padding: '48px 32px',
-            background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 50%, #e0e7ff 100%)',
             borderRadius: 20,
           }}
         >
           <h3
             className="font-display"
-            style={{ fontSize: 26, margin: '0 0 8px', color: '#1e1b4b' }}
+            style={{ fontSize: 26, margin: '0 0 8px', color: '#111' }}
           >
             Don't see the perfect story?
           </h3>
@@ -311,20 +256,18 @@ export function TemplatesPage() {
               display: 'inline-block',
               padding: '14px 36px',
               borderRadius: 999,
-              background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+              background: '#111',
               color: '#fff',
               fontSize: 15,
               fontWeight: 600,
               textDecoration: 'none',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              transition: 'transform 0.2s',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(124,58,237,0.3)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             Create a Custom Story
@@ -349,28 +292,6 @@ export function TemplatesPage() {
             gap: 20px !important;
           }
         }
-        @media (max-width: 768px) {
-          .books-hero > div {
-            flex-direction: column !important;
-            min-height: auto !important;
-          }
-          .books-hero-text {
-            flex: 1 1 auto !important;
-            padding: 40px 24px 32px !important;
-            text-align: center;
-          }
-          .books-hero-text h1 {
-            font-size: 32px !important;
-          }
-          .books-hero-text p {
-            margin: 0 auto !important;
-          }
-          .books-hero-img {
-            flex: 1 1 auto !important;
-            min-height: 220px !important;
-            width: 100%;
-          }
-        }
       `}</style>
     </div>
   );
@@ -386,11 +307,6 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
     Adventure: '#f97316',
     Fantasy: '#a855f7',
     Animals: '#22c55e',
-    Education: '#3b82f6',
-    Fiction: '#ec4899',
-    Nurture: '#f59e0b',
-    Holidays: '#ef4444',
-    Birthday: '#f472b6',
     Sports: '#14b8a6',
   };
 
@@ -401,16 +317,13 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="liquid-glass"
       style={{
         cursor: 'pointer',
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
-        background: '#fff',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+        transition: 'transform 0.25s ease',
         transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: hovered
-          ? '0 20px 40px rgba(0,0,0,0.12)'
-          : '0 2px 8px rgba(0,0,0,0.06)',
       }}
     >
       {/* Thumbnail */}
@@ -419,7 +332,6 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
           position: 'relative',
           aspectRatio: '1 / 1',
           overflow: 'hidden',
-          background: '#f3f4f6',
         }}
       >
         {!imgLoaded && (
@@ -430,7 +342,7 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#f3f4f6',
+              background: 'rgba(0,0,0,0.03)',
             }}
           >
             <div
@@ -438,7 +350,7 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
                 width: 32,
                 height: 32,
                 border: '3px solid #e5e7eb',
-                borderTopColor: '#a855f7',
+                borderTopColor: '#999',
                 borderRadius: '50%',
                 animation: 'spin 0.8s linear infinite',
               }}
@@ -494,7 +406,7 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
             justifyContent: 'space-between',
           }}
         >
-          <span className="font-body" style={{ fontSize: 16, fontWeight: 700, color }}>
+          <span className="font-body" style={{ fontSize: 16, fontWeight: 700, color: '#111' }}>
             From {book.priceFormatted}
           </span>
           <span

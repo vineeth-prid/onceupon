@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getPortugalsLegendStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Golden Goal!`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Golden Goal!`,
+        imagePrompt: 'A decorative storybook title page with a golden soccer ball glowing in the center surrounded by ornate Portuguese tile patterns in blue and white, green grass at the bottom, a majestic stadium silhouette in the background with warm golden spotlights, confetti and golden stars scattered as border decorations, magical sparkles emanating from the ball',
+        sceneDescription: 'Title page with soccer and Portugal-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with soccer ball and Portuguese tile elements',
+      },
+      {
+        pageNumber: 2,
+        text: `${childName} loved soccer more than anything in the world. Every day after school, ${pronoun} practiced dribbling and shooting in the park until the sun went down. One evening, a golden glow appeared at the center of the field.`,
+        imagePrompt: 'A beautiful park at golden hour with lush green grass and a well-worn soccer field, a mysterious golden orb of light hovering just above the center circle, long warm shadows stretching across the grass, ancient oak trees lining the park edges, a worn leather soccer ball resting nearby on the grass, magical golden particles swirling around the glowing light, purple and orange sunset sky',
+        sceneDescription: `${childName} discovers a magical golden light on the soccer field`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `${childName} touched the golden light and — WHOOSH! — ${pronoun} was swept through a tunnel of swirling stars and soccer balls. When ${pronoun} landed, ${pronoun} stood in the most magnificent stadium ${pronoun} had ever seen. Its walls shimmered like liquid gold!`,
+        imagePrompt: 'A breathtaking magical soccer stadium with towering golden walls that shimmer and glow with inner light, perfectly manicured emerald green pitch, ornate Portuguese-style arched architecture with intricate blue and white tile mosaics, floating golden lanterns illuminating the field, a starry night sky visible through the open roof, magical golden mist hovering above the pitch, the stadium seats carved from crystal',
+        sceneDescription: `${childName} is transported to a magical golden stadium`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 4,
+        text: `A gentle voice echoed through the stadium: "Welcome, young one. This is the Estadio dos Sonhos — the Stadium of Dreams. Only those with true passion for the beautiful game can find their way here."`,
+        imagePrompt: 'The interior of the magical golden stadium viewed from the center of the pitch looking up at towering golden-crystal stands, ethereal blue and white light emanating from the ornate arched corridors, a ghostly translucent golden eagle soaring overhead leaving a trail of sparkles, the pitch lines glowing with soft blue light, Portuguese azulejo tiles decorating every surface with intricate patterns, warm magical atmosphere',
+        sceneDescription: `${childName} hears a mysterious voice welcoming them to the Stadium of Dreams`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background for text',
+      },
+      {
+        pageNumber: 5,
+        text: `Ghostly figures began to appear on the field — legendary players from long ago, their forms shimmering silver and gold. They juggled a glowing ball between them with impossible grace. ${childName}'s eyes went wide with wonder.`,
+        imagePrompt: 'A magical soccer pitch at night with five ethereal translucent ghostly soccer players made of silver and golden light, performing incredible juggling tricks with a glowing white soccer ball, trails of light following their movements, the players wearing old-fashioned kits that shimmer, sparkles and star-dust falling from their ghostly forms, the emerald pitch glowing softly beneath them, no solid humans, only magical ghost figures',
+        sceneDescription: `${childName} watches ghostly legendary players appear on the field`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 6,
+        text: `The ghostly captain floated forward and placed a pair of shimmering golden boots at ${childName}'s feet. "These are the Chuteiras de Ouro — the Golden Boots. They will help you learn, but the magic comes from your heart, not your feet."`,
+        imagePrompt: 'A close-up scene on the magical pitch showing a pair of magnificent golden soccer boots glowing with inner magical light, intricate engravings of stars and suns on the leather, golden laces that seem to float, sparkles and magical dust swirling around the boots, the emerald green grass beneath them, soft blue stadium lights in the blurred background, ethereal golden mist rising from the boots',
+        sceneDescription: `${childName} receives magical Golden Boots from the ghostly captain`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 7,
+        text: `${childName} put on the Golden Boots and felt a warm tingle run through ${possessive} whole body. ${Pronoun} kicked the ball and it soared through the air like a comet, trailing golden sparks! The ghosts cheered and clapped their translucent hands.`,
+        imagePrompt: 'A dynamic action scene on the magical pitch showing a glowing soccer ball soaring through the night sky like a golden comet, leaving a spectacular trail of golden sparks and stardust behind it, the ball curving beautifully through the air, ghostly translucent figures in the background cheering with raised arms, the stadium lights creating dramatic beams through magical mist, pure energy and motion captured in the scene',
+        sceneDescription: `${childName} kicks the ball with magical power from the Golden Boots`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, the golden ball trail as the main subject, no humans',
+      },
+      {
+        pageNumber: 8,
+        text: `For hours, the ghosts taught ${childName} their secrets — the spinning free kick, the no-look pass, the impossible dribble. Each move left trails of golden light across the pitch. ${childName} practiced until ${pronoun} could feel the rhythm of the game in ${possessive} bones.`,
+        imagePrompt: 'A magical training montage scene on the golden stadium pitch showing multiple trails of golden light forming beautiful curved patterns across the emerald green grass, like light painting of soccer moves — curves, spirals, and zigzags all glowing gold, the stadium bathed in warm amber light, ghostly silver figures visible in the periphery demonstrating moves, magical sparkles floating in the air, dynamic and energetic atmosphere',
+        sceneDescription: `${childName} trains with the ghostly legends, learning secret techniques`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 9,
+        text: `Suddenly, dark storm clouds rolled over the stadium. A booming voice shook the ground: "You think you can play here? I am the Shadow Keeper, and no one scores in MY stadium!" A massive goalkeeper made of swirling black smoke appeared in the goal.`,
+        imagePrompt: 'A dramatic and ominous scene of the magical stadium with dark purple-black storm clouds swirling overhead, a massive terrifying goalkeeper figure made entirely of dark swirling smoke and shadow standing in a glowing goal, red eyes glowing through the smoke, lightning crackling in the clouds above, the pitch darkening with long shadows, the golden stadium walls dimming, an intimidating and powerful villain presence, no humans',
+        sceneDescription: 'The Shadow Keeper appears as a dark villain blocking the goal',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, Shadow Keeper dominating the frame, no humans',
+      },
+      {
+        pageNumber: 10,
+        text: `The Shadow Keeper grew larger and larger, filling the entire goal with darkness. ${childName}'s Golden Boots flickered and dimmed. "Your magic boots can't help you now!" the shadow laughed. The ghostly players faded in fear.`,
+        imagePrompt: 'A dark and tense scene showing the golden soccer boots on the emerald pitch with their glow flickering and fading, dark tendrils of shadow creeping across the grass toward them, the stadium almost entirely dark with only faint golden glimmers remaining, the ghostly players becoming transparent and fading away in the background, an oppressive dark atmosphere with swirling black smoke filling the upper portion of the scene',
+        sceneDescription: `The Shadow Keeper drains the magic from ${childName}'s boots and the ghosts fade`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 11,
+        text: `${childName} felt scared but then remembered what the ghostly captain said: "The magic comes from your heart." ${Pronoun} closed ${possessive} eyes, took a deep breath, and thought about why ${pronoun} loved soccer — the joy, the freedom, the feeling of flying.`,
+        imagePrompt: 'A powerful emotional scene on the dark pitch showing a single warm golden light beginning to glow from the center of the field, small at first but growing, pushing back the surrounding darkness, the emerald grass around the glow becoming vibrant again, stars beginning to peek through the storm clouds above, a feeling of hope and courage returning, warm versus cold color contrast, intimate and emotional atmosphere',
+        sceneDescription: `${childName} finds courage by remembering the pure joy of playing soccer`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'central warm glow with dark vignette edges, emotional and intimate framing',
+      },
+      {
+        pageNumber: 12,
+        text: `${childName}'s heart blazed with golden light! The boots didn't just glow again — ${childName}'s whole body radiated warmth and courage. ${Pronoun} opened ${possessive} eyes, placed the ball on the pitch, and stared down the Shadow Keeper.`,
+        imagePrompt: 'A triumphant scene on the pitch showing a glowing golden soccer ball placed on a spot of brilliant emerald grass, radiating intense warm golden light in all directions, pushing the darkness back dramatically, the stadium walls beginning to glow gold again, cracks of golden light breaking through the dark storm clouds above, the Shadow Keeper in the distant goal recoiling from the brightness, an epic comeback moment',
+        sceneDescription: `${childName} powers up with heart-fueled magic and faces the Shadow Keeper`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 13,
+        text: `${childName} ran forward and kicked the ball with all ${possessive} heart. It blazed through the air like a golden shooting star, spinning with trails of light. The Shadow Keeper lunged — but the ball curved impossibly around ${possessive === 'his' ? 'him' : 'it'} and slammed into the net! GOOOOOAL!`,
+        imagePrompt: 'An epic dynamic action scene showing a blazing golden soccer ball rocketing through the air like a shooting star with an enormous trail of golden sparks and light, curving dramatically past reaching tendrils of dark smoke, slamming into a glowing white net that explodes with golden light upon impact, the darkness shattering into fragments, spectacular golden fireworks erupting from the goal, maximum energy and triumph',
+        sceneDescription: `${childName} scores an impossible goal past the Shadow Keeper`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 14,
+        text: `The Shadow Keeper dissolved into harmless wisps of smoke that floated away on the breeze. The storm clouds parted, revealing a sky full of golden stars. The ghostly legends reappeared, cheering and celebrating around the pitch!`,
+        imagePrompt: 'A jubilant celebration scene in the restored golden stadium under a magnificent starry sky, confetti and golden sparkles raining down everywhere, the ghostly silver and gold players cheering with arms raised in celebration, the goal net still glowing from the impact, the stadium fully illuminated with warm golden light, streamers and magical fireworks in gold and blue filling the sky, pure joy and victory atmosphere, no solid humans',
+        sceneDescription: 'The Shadow Keeper is defeated and the stadium celebrates',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 15,
+        text: `The ghostly captain placed a small golden ball in ${childName}'s hands. "This is the Bola de Coragem — the Ball of Courage. You earned it not with magic boots, but with the bravery in your heart. You are a true legend now."`,
+        imagePrompt: 'A tender emotional scene showing a small ornate golden soccer ball the size of a tennis ball resting on the emerald pitch, glowing with soft warm inner light, tiny engravings of stars and hearts visible on its surface, the ghostly captain as a translucent silver figure with a warm smile in the background, soft golden stadium lights creating a halo effect, magical sparkles gently floating in the air, a precious treasure moment',
+        sceneDescription: `${childName} receives the Ball of Courage as a reward for bravery`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 16,
+        text: `In a flash of golden light, ${childName} was back in the park, standing on the familiar field. The Golden Boots were gone, but the small golden ball was still warm in ${possessive} hands. ${Pronoun} smiled and whispered, "I'll never stop playing with all my heart." And from that day on, ${childName} always played like a true legend.`,
+        imagePrompt: 'A peaceful park soccer field at beautiful twilight with warm purple and orange sky, a small golden ball glowing softly with magical warmth, fireflies dancing over the dewy grass, the park trees silhouetted against the colorful sunset, a worn soccer ball resting on the field nearby, stars beginning to appear in the darkening sky, a magical and peaceful ending atmosphere, warm nostalgic feeling',
+        sceneDescription: `${childName} returns home with the golden ball, forever changed by the adventure`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

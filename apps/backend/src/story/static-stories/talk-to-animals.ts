@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getTalkToAnimalsStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Language of Animals`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Language of Animals`,
+        imagePrompt: 'A decorative storybook title page with an ancient golden amulet with a glowing emerald center as the focal point, surrounded by a border of intertwining vines and woodland creatures in silhouette including an owl a squirrel a deer and a fox, soft golden and green magical light emanating from the amulet, forest leaves and acorns as decorative elements around the edges, warm enchanting atmosphere',
+        sceneDescription: 'Title page with magical amulet and animal silhouettes',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with amulet centerpiece and animal silhouettes',
+      },
+      {
+        pageNumber: 2,
+        text: `One lazy afternoon, ${childName} was exploring the far corner of ${possessive} garden where the wildflowers grew tallest. Between the roots of an old apple tree, something glinted in the soil. ${Pronoun} knelt down and brushed away the dirt to reveal a beautiful golden amulet with a glowing green stone.`,
+        imagePrompt: 'A lush overgrown garden corner with tall colorful wildflowers in purple yellow and white, thick gnarled roots of an old apple tree with red apples visible above, a glowing golden amulet partially buried in rich dark soil between the roots, the emerald green stone in its center emitting a soft magical glow, warm afternoon sunlight filtering through apple tree leaves, butterflies and bees among the wildflowers, cozy and mysterious atmosphere',
+        sceneDescription: `${childName} discovers the magical amulet in the garden`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `The moment ${childName} picked up the amulet, the green stone pulsed with warm light. Suddenly, the garden came alive with sound! But not just any sound — ${pronoun} could understand every chirp, buzz, and rustle. A robin on the fence was singing about the best worm spots!`,
+        imagePrompt: 'A vibrant garden bursting with life, visible sound waves of soft green and gold light radiating outward from a central glowing point, a robin perched on a wooden garden fence with its beak open singing with tiny musical note symbols in green light around it, bees buzzing near flowers with tiny speech-like green sparkles, butterflies with trailing light, the entire garden seeming to hum with magical green energy, warm golden afternoon light',
+        sceneDescription: `${childName} activates the amulet and hears animals speaking`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 4,
+        text: `"Well, well," said a deep, calm voice from above. ${childName} looked up to see a great horned owl perched in the apple tree, its golden eyes blinking wisely. "It has been many years since a young one found the Amulet of Understanding. You have been chosen."`,
+        imagePrompt: 'A majestic great horned owl with large piercing golden eyes perched on a thick mossy branch of an apple tree, looking down with a wise knowing expression, soft green magical light particles drifting in the air around it, detailed feather texture in browns and tans with distinctive ear tufts, red apples and green leaves framing the owl, warm dappled sunlight, regal and mystical atmosphere, the owl seeming ancient and all-knowing',
+        sceneDescription: `${childName} meets the wise old owl`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 5,
+        text: `"Chosen for what?" ${childName} asked. The owl ruffled its feathers. "The Ancient Tree of the forest is sick. Only one who can hear all creatures can learn the cure. But you must hurry — the gift fades at sunset."`,
+        imagePrompt: 'A close view of the great horned owl with intense golden eyes, behind it a vision appears in soft green magical mist showing a massive ancient tree that looks withered and sick with drooping brown leaves, the sun visible in the sky showing it is afternoon with hours still remaining, green magical energy swirling between the owl and the vision, apple tree branches framing the scene, urgent yet mystical atmosphere',
+        sceneDescription: 'The owl explains the quest to save the Ancient Tree',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 6,
+        text: `Before ${childName} could ask more, a chatty red squirrel bounded down the tree trunk. "Oh oh oh! You can understand us! Follow me follow me! I know the way to the forest council! Quick quick quick!" Its bushy tail twitched with excitement.`,
+        imagePrompt: 'An energetic red squirrel with a big bushy tail clinging to a tree trunk head-down with bright excited black eyes, tiny green speech sparkles around its chattering mouth, its tail twitching with energy, acorns scattered on the ground below, a faint forest path visible in the background through garden bushes, warm sunlight on the red fur making it glow copper, lively and animated atmosphere, the squirrel bursting with urgency and excitement',
+        sceneDescription: 'A chatty squirrel offers to guide to the forest council',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background',
+      },
+      {
+        pageNumber: 7,
+        text: `${childName} followed the squirrel through a gap in the garden hedge and into the ancient forest beyond. The trees grew taller and older here, their trunks covered in soft moss. The squirrel chattered the whole way: "Almost there! The council waits! Big news big news!"`,
+        imagePrompt: 'A magical ancient forest path with towering old-growth trees covered in thick soft green moss, shafts of golden sunlight breaking through the dense canopy, ferns and wildflowers lining the winding dirt path, a small red squirrel bounding ahead on the path with its bushy tail streaming behind it, green magical particles floating in the air like fireflies, the forest feeling ancient and sacred, dappled light creating a cathedral-like atmosphere',
+        sceneDescription: `${childName} follows the squirrel into the ancient forest`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 8,
+        text: `They arrived at a vast clearing where dozens of animals sat in a circle around the most enormous tree ${childName} had ever seen. But the Ancient Tree looked terrible — its bark was grey and cracked, its leaves brown and falling. The animals turned to look at ${childName} with hopeful eyes.`,
+        imagePrompt: 'A vast forest clearing with a colossal ancient tree in the center that is clearly sick with grey cracked bark and wilting brown leaves falling slowly, dozens of woodland animals arranged in a circle around it including deer foxes rabbits badgers birds and hedgehogs all looking toward one direction with hopeful expressions, soft sad light filtering through the dying canopy, fallen brown leaves on the ground, solemn yet hopeful atmosphere, the tree dwarfing everything in the scene',
+        sceneDescription: `${childName} arrives at the forest council around the sick Ancient Tree`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, the massive sick tree and animal circle as the main subject, no humans',
+      },
+      {
+        pageNumber: 9,
+        text: `A silver fox stepped forward, its voice smooth and kind. "The Ancient Tree gives life to our entire forest. Its roots feed every plant, its canopy shelters every creature. But a sickness has taken hold deep in its roots, and we cannot reach it. We need your help to listen to each of us — together our knowledge holds the answer."`,
+        imagePrompt: 'An elegant silver fox with piercing blue eyes standing in the center of the animal circle, its fur shimmering in soft light, the massive sick ancient tree behind it with grey bark and drooping branches, other animals visible in the circle watching attentively, soft green magical light connecting the animals in a faint web, moss-covered ground with fallen leaves, dignified and important atmosphere, the fox looking noble and serious',
+        sceneDescription: 'The silver fox explains why they need help',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `First, a family of badgers spoke. "We dig deep," they said. "The roots are tangled with a dark, thorny vine that does not belong. It is strangling the tree from below." ${childName} nodded and listened carefully, remembering every detail.`,
+        imagePrompt: 'Three sturdy badgers with distinctive black and white striped faces standing together near the base of the ancient tree, pawing at the ground where dark thorny vine roots are visible tangling with the tree roots below the soil level in a cross-section view, dark purple-black thorny vines visible wrapping around golden tree roots underground, rich brown earth tones, warm light on the badgers, informative and serious atmosphere',
+        sceneDescription: 'The badgers share what they know about the problem underground',
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background',
+      },
+      {
+        pageNumber: 11,
+        text: `Next, a chorus of songbirds called out from the branches. "We fly far and have seen this vine before! It withers in sunlight — it can only grow in darkness!" A wise old crow added, "The tree's roots grow near the underground stream. If light could reach them..."`,
+        imagePrompt: 'A collection of colorful songbirds perched on branches of the ancient tree including blue jays cardinals goldfinches and a large wise black crow, all with beaks open as if speaking, tiny green magical speech symbols around them, sunlight streaming through gaps in the canopy illuminating the birds, below them a faint blue glow suggesting an underground stream, vibrant bird colors contrasting with the grey sick tree bark, animated and urgent atmosphere',
+        sceneDescription: 'The birds share their knowledge about sunlight killing the vine',
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 12,
+        text: `Then a family of fireflies rose from the grass, their tiny voices chiming like bells. "We can glow! If someone guides us down to the roots through the stream tunnel, we can light up the darkness and destroy the thorny vine!" ${childName} smiled — ${pronoun} had the answer!`,
+        imagePrompt: 'Hundreds of glowing fireflies rising from tall grass like a cloud of golden-green stars, their combined light brilliant and warm, a small dark tunnel entrance visible at the base of the ancient tree leading underground with the blue shimmer of water inside, the fireflies clustering near the entrance ready to descend, magical atmosphere with golden bokeh lights everywhere, the clearing illuminated by the collective firefly glow, hopeful and exciting mood',
+        sceneDescription: 'The fireflies offer to light the underground darkness',
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 13,
+        text: `${childName} knelt by the stream tunnel at the tree's base. "Fireflies, follow me!" ${Pronoun} guided them down into the dark passage, the amulet glowing bright green to light the way. Hundreds of fireflies streamed behind like a river of golden stars flowing underground.`,
+        imagePrompt: 'A dark underground tunnel with a shallow crystal stream flowing through it, hundreds of glowing golden-green fireflies streaming through the tunnel illuminating the rocky walls, a bright green magical glow from an amulet lighting the path ahead, dark thorny vines visible wrapped around massive golden tree roots, the firefly light causing the dark vines to shrink and wither where it touches them, dramatic underground lighting with warm gold against cool darkness, adventurous and triumphant atmosphere',
+        sceneDescription: `${childName} leads the fireflies underground to save the tree`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic composition, underground tunnel with firefly river as the main subject, no humans',
+      },
+      {
+        pageNumber: 14,
+        text: `As the fireflies spread their light through the root chamber, the dark thorny vines hissed and shriveled, crumbling to dust! The golden roots of the Ancient Tree pulsed with renewed life, glowing brighter and brighter. Above ground, the animals cheered as fresh green leaves burst from every branch!`,
+        imagePrompt: 'A massive underground root chamber filled with brilliant golden-green firefly light, dark thorny vines crumbling to grey dust and dissolving, enormous golden tree roots pulsing with renewed vibrant life energy in waves of amber and green light, the roots seeming to breathe and expand, golden particles rising upward through the earth, above-ground visible through gaps showing fresh green leaves bursting from branches against blue sky, triumphant and magical atmosphere, rebirth and renewal',
+        sceneDescription: 'The firefly light destroys the vine and heals the tree',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 15,
+        text: `${childName} emerged from the tunnel to thunderous celebration. The Ancient Tree was magnificent again — its canopy full and green, golden light flowing through its bark. As the sun touched the horizon, ${pronoun} felt the amulet grow cool. The voices of the animals faded to normal chirps and rustles. The gift was fading.`,
+        imagePrompt: 'The massive Ancient Tree fully restored with a magnificent lush green canopy, golden light flowing through intricate patterns in its healthy dark bark, woodland animals celebrating around its base with deer leaping and birds circling joyfully, a beautiful orange and pink sunset on the horizon, the amulet on the ground with its green glow dimming, falling golden leaves of celebration drifting through the air, bittersweet yet triumphant atmosphere, the tree glowing with vitality',
+        sceneDescription: 'The tree is healed and the amulet begins to fade at sunset',
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background',
+      },
+      {
+        pageNumber: 16,
+        text: `${childName} walked home through the garden as twilight settled in. ${Pronoun} could no longer understand the animals' words, but something had changed. When the robin sang on the fence, ${pronoun} felt its joy. When a moth fluttered past, ${pronoun} sensed its wonder. The amulet's magic had faded, but it left ${childName} with the greatest gift of all — the ability to listen with ${possessive} heart.`,
+        imagePrompt: 'A peaceful garden at twilight with deep purple and orange sky, a robin singing on a wooden fence silhouetted against the sunset, a moth with delicate wings fluttering near glowing garden lanterns, the old apple tree healthy and full in the background, fireflies beginning to appear in the dusk, the golden amulet resting among wildflower roots where it was found now with only the faintest green shimmer, warm nostalgic peaceful ending atmosphere, everything bathed in soft golden twilight',
+        sceneDescription: `${childName} returns home changed, able to feel what animals feel`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'soft vignette edges with warm center glow, text-friendly composition',
+      },
+    ],
+  };
+}

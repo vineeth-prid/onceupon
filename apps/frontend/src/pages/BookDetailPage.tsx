@@ -3,17 +3,37 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { BOOK_CATALOG } from '../data/bookCatalog';
 import { useAuth } from '../context/AuthContext';
 
-/* ─── Static demo data (will become dynamic per-book later) ──────────── */
+/* ─── Per-book descriptions ──────────────────────────────────────────── */
 
-const DEMO_DESCRIPTION =
-  "When a dragon flies into a peaceful village, everyone is scared and hides. But one brave child notices that something is different. The dragon wasn't weird or dangerous, he was just lonely. By listening, helping, and being kind, fear turns into smiles, games, and a new, precious friendship. This personalised story shows children that being a hero doesn't always mean fighting. It can mean understanding, caring, and doing the right thing.";
+const BOOK_DESCRIPTIONS: Record<string, string> = {
+  'portugals-new-legend':
+    "Step onto the pitch and become a legend! In this personalised adventure, your child discovers a magical football that glows with golden light. Guided by the spirits of legendary players, they train in an enchanted stadium, learn the power of teamwork, and score the winning goal in a tournament that will be remembered forever.",
+  'girl-saves-arctic':
+    "When the Arctic Kingdom freezes over in an eternal blizzard, only one brave child can save it. Your little one befriends a wise snow fox, crosses glittering ice bridges, and discovers the warmth that lies within the Northern Lights. A story about courage, kindness, and the magic of believing in yourself.",
+  'vroom-vroom-boy':
+    "Rev those engines! Your child builds a magical race car from pure imagination and enters the most extraordinary race ever — through candy canyons, across cloud highways, and under the sea. But the real lesson? Winning isn't about being fastest; it's about being the cleverest and kindest racer on the track.",
+  'super-boy-dragon':
+    "Deep in an enchanted forest, your child discovers a tiny baby dragon who's lost and afraid. Together, they explore crystal caves, mushroom meadows, and a hidden cloud castle. When a storm threatens the dragon's egg siblings, your little hero must find the courage to save them all.",
+  'girl-lost-fairy-wings':
+    "The fairy realm is in trouble — a mysterious spell has stolen every fairy's wings! Your child embarks on a magical quest to collect four enchanted ingredients: a moonlit dewdrop, a singing flower petal, starlight dust, and a crystal tear. Can they break the spell and restore the magic?",
+  'boy-cosmic-journey':
+    "3, 2, 1... Blast off! Your child builds a rocket from pure imagination and soars into the cosmos. They explore candy-coloured nebulae, befriend a tiny alien on a crystal planet, and navigate asteroid fields. The most beautiful discovery? Earth, shining like a blue jewel when seen from the stars.",
+  'boy-explores-zoo':
+    "Welcome to the most magical zoo on Earth! Your child discovers that every animal glows with a colourful aura that shows their feelings. From a lonely elephant with a blue glow to playful monkeys sparkling gold, this heartwarming story teaches empathy, kindness, and the joy of helping others.",
+  'girl-explores-zoo':
+    "Welcome to the most magical zoo on Earth! Your child discovers that every animal glows with a colourful aura that shows their feelings. From a lonely elephant with a blue glow to playful dolphins sparkling turquoise, this heartwarming story teaches empathy, kindness, and the joy of helping others.",
+  'boy-talk-to-animals':
+    "When your child finds a mysterious ancient amulet in the garden, they discover an incredible gift — they can understand every animal's language! A wise old owl, a chatty squirrel, and a council of forest creatures all need help. Their ancient tree is sick, and only by listening to every animal can the cure be found.",
+};
 
-const DEMO_FEATURES = [
-  { icon: 'smile', text: 'Perfect for kids ages **6 to 12** years old' },
-  { icon: 'lightbulb', text: 'Teaches **courage** & **friendship**' },
-  { icon: 'book', text: '**30** Beautifully illustrated pages' },
-  { icon: 'eye', text: '**Preview** available before ordering' },
-];
+const BOOK_FEATURES: Record<string, { icon: string; text: string }[]> = {
+  default: [
+    { icon: 'smile', text: 'Perfect for kids ages **3 to 8** years old' },
+    { icon: 'lightbulb', text: 'Teaches **courage** & **friendship**' },
+    { icon: 'book', text: '**16** Beautifully illustrated pages' },
+    { icon: 'eye', text: '**Preview** available before ordering' },
+  ],
+};
 
 const GALLERY_ITEMS = [
   { type: 'video' as const, src: '/preview_video/00-super-boy-video.mp4', thumb: '/preview_video/01-video-thumbnail.webp' },
@@ -36,7 +56,6 @@ export function BookDetailPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Reset state when slug changes
   useEffect(() => {
     setActiveIndex(0);
     setIsPlaying(true);
@@ -46,13 +65,15 @@ export function BookDetailPage() {
     return (
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
         <h2 className="font-display" style={{ fontSize: 28, color: '#111' }}>Book not found</h2>
-        <Link to="/templates" className="font-body" style={{ color: '#7c3aed', fontSize: 15 }}>
+        <Link to="/templates" className="font-body" style={{ color: '#111', fontSize: 15 }}>
           Browse all books
         </Link>
       </div>
     );
   }
 
+  const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['super-boy-dragon']!;
+  const features = BOOK_FEATURES.default;
   const activeItem = GALLERY_ITEMS[activeIndex];
   const isVideo = activeItem.type === 'video';
 
@@ -100,7 +121,7 @@ export function BookDetailPage() {
           <span style={{ margin: '0 6px' }}>/</span>
           <Link to="/templates" style={{ color: '#9ca3af', textDecoration: 'none' }}>Books</Link>
           <span style={{ margin: '0 6px' }}>/</span>
-          <span style={{ color: '#6b21a8', fontWeight: 600 }}>{book.title}</span>
+          <span style={{ color: '#111', fontWeight: 600 }}>{book.title}</span>
         </nav>
       </div>
 
@@ -135,15 +156,15 @@ export function BookDetailPage() {
               <button
                 key={i}
                 onClick={() => { setActiveIndex(i); setIsPlaying(false); }}
+                className="liquid-glass"
                 style={{
                   width: 80,
                   height: 80,
-                  borderRadius: 10,
+                  borderRadius: 12,
                   overflow: 'hidden',
-                  border: activeIndex === i ? '3px solid #7c3aed' : '2px solid #e5e7eb',
+                  border: activeIndex === i ? '3px solid #111' : '2px solid transparent',
                   padding: 0,
                   cursor: 'pointer',
-                  background: '#f3f4f6',
                   position: 'relative',
                   transition: 'border-color 0.2s',
                 }}
@@ -175,11 +196,11 @@ export function BookDetailPage() {
 
           {/* Main preview */}
           <div
+            className="liquid-glass"
             style={{
               flex: 1,
-              borderRadius: 16,
+              borderRadius: 20,
               overflow: 'hidden',
-              background: '#f3f4f6',
               position: 'relative',
               aspectRatio: '1 / 1',
             }}
@@ -215,7 +236,7 @@ export function BookDetailPage() {
                 justifyContent: 'center',
                 gap: 16,
                 padding: '16px 0 20px',
-                background: 'linear-gradient(transparent, rgba(0,0,0,0.35))',
+                background: 'linear-gradient(transparent, rgba(0,0,0,0.3))',
               }}
             >
               <button onClick={handlePrev} style={navBtnStyle} aria-label="Previous">
@@ -263,7 +284,10 @@ export function BookDetailPage() {
         </div>
 
         {/* ─── Right: Details ─────────────────────────────────── */}
-        <div className="book-detail-info" style={{ flex: 1, minWidth: 0 }}>
+        <div
+          className="book-detail-info liquid-glass-strong"
+          style={{ flex: 1, minWidth: 0, borderRadius: 24, padding: '32px 28px' }}
+        >
           <h1
             style={{
               fontFamily: '"Parkinsans", sans-serif',
@@ -302,12 +326,12 @@ export function BookDetailPage() {
               margin: '0 0 28px',
             }}
           >
-            {DEMO_DESCRIPTION}
+            {description}
           </p>
 
           {/* Feature bullets */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-            {DEMO_FEATURES.map((feat, i) => (
+            {features.map((feat, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ width: 28, display: 'flex', justifyContent: 'center' }}>
                   <FeatureIcon name={feat.icon} />
@@ -320,12 +344,12 @@ export function BookDetailPage() {
           </div>
 
           {/* Divider */}
-          <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '0 0 24px' }} />
+          <hr style={{ border: 'none', borderTop: '1px solid rgba(0,0,0,0.06)', margin: '0 0 24px' }} />
 
           {/* Price */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 24 }}>
             <span className="font-body" style={{ fontSize: 16, color: '#6b7280' }}>From</span>
-            <span className="font-body" style={{ fontSize: 28, fontWeight: 700, color: '#7c3aed' }}>
+            <span className="font-body" style={{ fontSize: 28, fontWeight: 700, color: '#111' }}>
               {book.priceFormatted}
             </span>
           </div>
@@ -340,20 +364,18 @@ export function BookDetailPage() {
               fontSize: 17,
               fontWeight: 700,
               color: '#fff',
-              background: '#C4A0F0',
+              background: '#111',
               border: 'none',
               borderRadius: 14,
               cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              transition: 'transform 0.2s',
               letterSpacing: 0.3,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 32px rgba(196,160,240,0.4)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             Personalise my book
@@ -390,7 +412,7 @@ export function BookDetailPage() {
   );
 }
 
-/* ─── Feature Icons (SVG, matching WonderWraps style) ─────────────────── */
+/* ─── Feature Icons ─────────────────────────────────────────────────── */
 
 function FeatureIcon({ name }: { name: string }) {
   const props = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: '#6b7280', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };

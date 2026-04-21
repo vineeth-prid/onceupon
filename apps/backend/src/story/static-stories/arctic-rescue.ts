@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getArcticRescueStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Frozen Kingdom!`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Frozen Kingdom!`,
+        imagePrompt: 'A decorative storybook title page with an ornate ice crystal border, a magnificent ice castle in the center background glowing with soft blue and purple light, aurora borealis ribbons weaving through the border decorations, tiny snowflakes and frost crystals as decorative elements, a friendly polar bear silhouette at the bottom, soft magical winter atmosphere',
+        sceneDescription: 'Title page with arctic and ice kingdom themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with ice crystals and arctic elements',
+      },
+      {
+        pageNumber: 2,
+        text: `It was a snowy winter evening when ${childName} found a strange shimmering icicle in the garden. Unlike normal ice, it was warm to the touch and glowed with a soft blue light. The moment ${pronoun} picked it up, everything began to sparkle.`,
+        imagePrompt: 'A cozy winter garden at twilight covered in fresh white snow, a single magical icicle stuck in the ground glowing with brilliant blue-white inner light, frost patterns radiating outward from its base on the snow, bare tree branches coated in glittering ice, soft snowflakes falling gently, warm orange light from a nearby window contrasting with the cool blue glow, magical and inviting winter atmosphere',
+        sceneDescription: `${childName} finds a magical warm icicle in the snowy garden`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `A swirl of snowflakes surrounded ${childName} and lifted ${pronoun} gently into the sky! ${Pronoun} flew over frozen seas, past icebergs glowing turquoise, until ${pronoun} landed softly in a vast, sparkling Arctic kingdom unlike anything ${pronoun} had ever imagined.`,
+        imagePrompt: 'A breathtaking aerial view of a vast Arctic landscape with enormous turquoise and blue icebergs floating in a dark arctic ocean, the northern lights dancing in brilliant green and purple above, a distant magnificent ice city glowing on the horizon, swirling magical snowflakes creating a spiral pattern in the air, crystal clear starry sky, the scene viewed from above as if flying, spectacular and awe-inspiring scale',
+        sceneDescription: `${childName} is magically transported to the Arctic kingdom`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 4,
+        text: `Before ${childName} stood an incredible castle made entirely of ice — its towers spiraled into the sky like frozen flames, and its walls sparkled with thousands of trapped snowflakes. But something was wrong. The castle's glow was fading, and cracks ran through its walls.`,
+        imagePrompt: 'A magnificent ice castle with tall spiraling towers and intricate crystalline architecture, made entirely of translucent blue and white ice, but showing visible cracks running through the walls, the blue glow flickering and dimming in sections, frost crumbling from the turrets, a grand arched entrance with fading light, the aurora borealis above growing dim, a sense of fading magic and urgency, still beautiful but clearly in trouble',
+        sceneDescription: `${childName} sees the ice castle is cracking and losing its magic`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 5,
+        text: `A small Arctic fox with fur as white as fresh snow and eyes like glowing sapphires appeared from behind an ice pillar. It spoke in a gentle, tinkling voice: "I am Frost. Our kingdom is freezing too deeply — even for us. The Warmth Crystal has been trapped. Will you help?"`,
+        imagePrompt: 'A beautiful small Arctic fox with pristine white fluffy fur and stunning sapphire blue glowing eyes, sitting gracefully on a smooth ice surface beside an ornate ice pillar, tiny ice crystals sparkling in its fur like diamonds, a gentle blue aura surrounding the fox, the cracked ice castle interior visible in the background with fading blue light, the fox looking intelligent and gentle, magical winter creature',
+        sceneDescription: `${childName} meets Frost the Arctic fox who asks for help`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 6,
+        text: `Frost led ${childName} through the kingdom's frozen streets. Everywhere ${pronoun} looked, magical creatures were trapped in thick ice — snow rabbits, crystal birds, and tiny ice sprites, all frozen mid-motion with expressions of surprise. "${childName}, they were caught when the deep freeze began," Frost explained sadly.`,
+        imagePrompt: 'A frozen kingdom street with smooth ice pathways between crystal ice buildings, several magical creatures trapped in clear thick ice blocks — a small snow rabbit with blue-tipped ears frozen mid-hop, a crystalline bird with spread wings encased in ice, tiny glowing ice sprites frozen in mid-flight, the ice unnaturally thick and dark compared to the lighter architecture, sad and urgent atmosphere, beautiful but tragic frozen scene',
+        sceneDescription: `${childName} sees frozen creatures trapped throughout the kingdom`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background for text',
+      },
+      {
+        pageNumber: 7,
+        text: `They reached a frozen lake where a massive polar bear with silver-tipped fur waited patiently. "This is Avalanche," said Frost. "He'll carry us to the Ice Caverns where the Warmth Crystal is trapped." Avalanche rumbled a friendly greeting and lowered his great head.`,
+        imagePrompt: 'A vast frozen Arctic lake with perfectly smooth ice reflecting the aurora borealis above, a magnificent large polar bear with beautiful silver-tipped fur sitting regally on the ice, the bear appearing friendly with warm brown eyes, the aurora borealis in vivid green purple and pink dancing across the dark sky above, distant snow-covered mountains, the small white Arctic fox standing nearby, the ice castle visible far in the background, majestic and peaceful winter scene',
+        sceneDescription: `${childName} meets Avalanche the friendly polar bear`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 8,
+        text: `${childName} climbed onto Avalanche's warm, fluffy back and held on tight. They galloped across the frozen landscape, past towering ice pillars and through valleys of blue snow. Above them, the aurora borealis flickered weakly — even the sky was losing its magic.`,
+        imagePrompt: 'A dynamic scene of a large silver-tipped polar bear running powerfully across a vast snowy Arctic landscape, passing towering natural ice pillars and blue-tinted snow valleys, a weak and flickering aurora borealis in green and purple barely visible in the dark sky above, the small white Arctic fox running alongside, motion blur suggesting speed, dramatic landscape with snow spraying from the bear paws, urgent adventure atmosphere',
+        sceneDescription: `${childName} rides Avalanche across the Arctic landscape toward the Ice Caverns`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, polar bear running as main subject, no humans',
+      },
+      {
+        pageNumber: 9,
+        text: `They arrived at the entrance to the Ice Caverns — a yawning mouth in a glacier, rimmed with jagged icicles like frozen teeth. Cold wind howled from within. ${childName} felt nervous, but Frost nuzzled ${possessive} hand encouragingly. "We believe in you," the fox whispered.`,
+        imagePrompt: 'A massive glacier face with a dark foreboding cave entrance shaped like a gaping mouth, enormous jagged icicles hanging from the top like teeth, blue-white ice walls with deep cracks, cold mist and snow blowing outward from the cave, the surrounding landscape of snow and ice, the cave interior dark and mysterious with faint blue glow deep within, intimidating but awe-inspiring natural ice formation',
+        sceneDescription: `${childName} arrives at the frightening entrance to the Ice Caverns`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Inside the cavern, ${childName} gasped. The walls were made of crystal-clear ice, and trapped within them were frozen memories — images of the kingdom in its warm, glowing days, when creatures danced and the aurora blazed bright. "This is what we're fighting for," ${pronoun} said firmly.`,
+        imagePrompt: 'A stunning ice cavern interior with walls of perfectly clear crystal ice, and within the ice walls visible frozen images like photographs — scenes of magical creatures dancing, bright auroras, a glowing warm kingdom, happy ice sprites flying — all preserved like memories in amber but in ice, soft blue bioluminescent light from deep within the ice, dramatic stalactites and stalagmites of pure crystal, breathtaking and emotional scene',
+        sceneDescription: `${childName} sees frozen memories of the kingdom's warm past in the cavern walls`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'central magical glow with ice vignette edges, emotional and intimate framing',
+      },
+      {
+        pageNumber: 11,
+        text: `Deeper and deeper they went until they found it — the Warmth Crystal, a gorgeous golden-orange gem pulsing with faint light, trapped inside a massive block of dark, unnatural ice. Frost said, "Normal warmth can't melt this ice. It was frozen by the Endless Winter spell."`,
+        imagePrompt: 'A deep ice cavern chamber with a large block of dark blue-black unnatural ice in the center, and trapped within it a beautiful golden-orange crystal gem pulsing with faint warm light like a dying ember, the surrounding cave walls reflecting the faint orange glow, dark ice tendrils spreading from the block across the floor, the warm crystal fighting against the darkness, dramatic contrast between warm golden light and cold dark ice, urgent and important scene',
+        sceneDescription: `${childName} finds the Warmth Crystal trapped in dark magical ice`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 12,
+        text: `${childName} remembered the magical icicle in ${possessive} pocket — the one from the garden! ${Pronoun} pulled it out and it pulsed brightly, resonating with the Warmth Crystal. Of course! The icicle was a piece of the crystal, calling ${childName} here all along!`,
+        imagePrompt: 'A dramatic scene in the ice cavern showing a small glowing blue-white icicle held up, pulsing with brilliant light, sending a beam of energy toward the trapped golden-orange Warmth Crystal in the dark ice block, both objects resonating with visible waves of light connecting them, the dark ice beginning to crack where the beam touches it, magical connection energy visible in the air, a moment of revelation and hope',
+        sceneDescription: `${childName} realizes the magical icicle is connected to the Warmth Crystal`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 13,
+        text: `${childName} pressed the icicle against the dark ice and thought of warm things — sunshine, cozy blankets, hot cocoa, and hugs. The icicle blazed with golden warmth! Cracks spread through the dark ice with loud snapping sounds until — CRASH! — the dark ice shattered into a million pieces!`,
+        imagePrompt: 'A spectacular explosion scene of dark ice shattering into thousands of fragments flying outward in all directions, a brilliant burst of golden-orange warm light erupting from the center where the Warmth Crystal is being freed, the entire cavern flooding with warm golden radiance, ice shards catching the light like diamonds, energy waves rippling outward, dark ice fragments disintegrating into harmless snowflakes, maximum dramatic impact and triumph',
+        sceneDescription: `${childName} breaks the spell and frees the Warmth Crystal`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, the explosion of light as main subject, no humans',
+      },
+      {
+        pageNumber: 14,
+        text: `Golden warmth flooded through the kingdom in a wave! Outside, the dark ice melted away from every trapped creature. Snow rabbits hopped free, crystal birds took flight, and ice sprites twirled with joy. The castle's glow returned brighter than ever, and the aurora blazed across the sky in magnificent colors!`,
+        imagePrompt: 'A joyous wide shot of the restored Arctic kingdom with the ice castle now glowing brilliantly with blue and gold light, freed magical creatures everywhere — snow rabbits hopping on the ice, crystalline birds soaring through the air with sparkling wings, tiny glowing ice sprites dancing and twirling, a spectacular vivid aurora borealis in green purple pink and gold filling the entire sky, the landscape sparkling with renewed magic, pure celebration and life',
+        sceneDescription: 'The kingdom is restored and all frozen creatures are freed',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 15,
+        text: `Frost and Avalanche nuzzled ${childName} gratefully. "You saved our kingdom," Frost said, ${possessive === 'his' ? 'his' : 'her'} sapphire eyes sparkling. A single perfect snowflake, glowing with soft golden warmth, drifted into ${childName}'s palm. "A piece of our gratitude, forever yours."`,
+        imagePrompt: 'A tender emotional scene on the restored ice near the glowing castle, the beautiful white Arctic fox with glowing sapphire eyes sitting gracefully, the large silver-tipped polar bear beside it looking gentle and grateful, a single perfect hexagonal snowflake glowing with soft golden-white light floating in the air between them, the brilliant aurora borealis painting the sky above, the restored ice castle gleaming in the background, warm and grateful atmosphere despite the winter setting',
+        sceneDescription: `Frost and Avalanche thank ${childName} and give a magical snowflake as a gift`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 16,
+        text: `A swirl of warm snowflakes carried ${childName} home through the starry sky. ${Pronoun} landed softly in the garden, the magical snowflake still glowing in ${possessive} hand. It never melted — not even in summer. And whenever ${childName} held it close, ${pronoun} could hear Frost whisper, "Thank you, brave one." ${Pronoun} smiled, knowing the Frozen Kingdom was safe and warm again.`,
+        imagePrompt: 'A cozy winter garden at night with fresh snow gently falling, a single magical golden-glowing snowflake hovering in the air emitting soft warm light, the garden peaceful and serene under starlight, warm orange light from a nearby house window, the night sky full of stars with a faint hint of green aurora on the horizon, a feeling of warmth and safety and completed adventure, magical and peaceful ending atmosphere',
+        sceneDescription: `${childName} returns home with the magical snowflake, knowing the kingdom is saved`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

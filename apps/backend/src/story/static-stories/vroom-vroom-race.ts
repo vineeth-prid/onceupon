@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getVroomVroomRaceStory(childName: string, childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Magical Race!`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Magical Race!`,
+        imagePrompt: 'A decorative storybook title page with a colorful race track border spiraling inward, whimsical enchanted race cars in bright candy colors parked at the edges, checkered flag decorations, fluffy clouds and rainbow road elements as border accents, a golden trophy glowing in the center background, confetti and speed lines as decorative elements, fun and exciting atmosphere',
+        sceneDescription: 'Title page with magical racing themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with race cars and track elements',
+      },
+      {
+        pageNumber: 2,
+        text: `${childName} was doodling race cars in ${possessive} sketchbook when something incredible happened — the car ${pronoun} just drew started to glow! Golden light poured from the page, and a tiny voice squeaked, "Draw me bigger! I want to RACE!"`,
+        imagePrompt: 'A cozy room with an open sketchbook on a wooden desk, a child drawing of a race car on the page glowing with brilliant golden light, golden sparks and magical energy rising from the paper, colored pencils and crayons scattered around, the drawing coming to life with 3D light emerging from the 2D sketch, warm afternoon sunlight through a window, magical transformation beginning, whimsical and exciting atmosphere',
+        sceneDescription: `${childName}'s drawing of a race car magically comes to life`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `${childName} grabbed ${possessive} biggest piece of paper and drew with all ${possessive} imagination — a car with rocket boosters, rainbow headlights, and wings that could fold out! In a flash of sparkles, the car popped right out of the paper, full-sized and purring happily. "I'll call you Sparky!" ${childName} cheered.`,
+        imagePrompt: 'A magnificent whimsical race car that looks like it was designed by a creative child — bright turquoise body with orange and purple accents, small rocket boosters on the back with gentle blue flames, rainbow-colored headlights, foldable silver wings tucked at the sides, oversized friendly-looking round headlights like eyes, the car hovering slightly above the ground with sparkles beneath it, magical golden energy still dissipating around it, the car appearing alive and happy, vibrant colors',
+        sceneDescription: `${childName} creates Sparky, a magical imagination-powered race car`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background for text',
+      },
+      {
+        pageNumber: 4,
+        text: `Sparky's dashboard lit up with a glowing message: "THE GRAND IMAGINATION RACE — Starting in 10 minutes! Racers report to the Candy Canyon starting line!" ${childName}'s heart raced with excitement. A real magical race! ${Pronoun} hopped in and Sparky zoomed through a rainbow portal in the bedroom wall.`,
+        imagePrompt: 'A swirling rainbow portal opening in a bedroom wall, brilliant bands of red orange yellow green blue purple light spiraling into a tunnel, sparkles and stars within the portal, the whimsical turquoise race car driving toward the portal with its headlights glowing rainbow, motion lines suggesting speed, the bedroom partially visible on one side and a fantastical world glimpsed through the other side, magical transportation scene, dynamic and exciting',
+        sceneDescription: `${childName} and Sparky drive through a portal to the race`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 5,
+        text: `They arrived at the starting line in Candy Canyon — a spectacular valley made entirely of sweets! Peppermint pillars, chocolate mountains, and a road paved with colorful gumdrops. Five other magical vehicles were already lined up: a cloud car, a bubble racer, a lightning bolt bike, a leaf-powered glider, and a rocket sled.`,
+        imagePrompt: 'A spectacular Candy Canyon racing starting line with a wide gummy road paved with colorful gumdrops, tall peppermint stick pillars lining the track, chocolate brown mountains with white icing peaks in the background, cotton candy clouds, five whimsical magical vehicles at a starting line — a fluffy white cloud car, a transparent bubble racer, a crackling yellow lightning bolt motorcycle, a green leaf-powered glider, and a silver rocket sled — all lined up under a candy cane arch starting gate, vibrant and delicious looking landscape',
+        sceneDescription: `${childName} arrives at the Candy Canyon starting line with other magical racers`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, the candy canyon and vehicles as main subjects, no humans',
+      },
+      {
+        pageNumber: 6,
+        text: `A giant gummy bear referee waved a licorice flag: "Racers ready? The Grand Imagination Race has THREE stages: Candy Canyon, Cloud Highway, and the Underwater Tunnel! First to cross the Crystal Finish Line wins the Imagination Trophy! On your marks... get set... VROOM!"`,
+        imagePrompt: 'A large cheerful translucent red gummy bear character standing on a peppermint platform acting as a referee, waving a black licorice flag enthusiastically, the candy canyon road stretching into the distance behind it, all the magical vehicles revving with colorful exhaust — sparks, bubbles, leaves, lightning, and cloud puffs, a starting light made of lollipops changing from red to green, exciting pre-race energy, fun and whimsical atmosphere',
+        sceneDescription: 'The gummy bear referee starts the Grand Imagination Race',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 7,
+        text: `They were off! Sparky zoomed through Candy Canyon, dodging gummy bear boulders and jumping over rivers of flowing caramel. The lightning bolt bike zapped ahead fast, but ${childName} noticed a shortcut — a tunnel through a giant hollow candy cane! "Through there, Sparky!" ${pronoun} called.`,
+        imagePrompt: 'A dynamic racing scene through Candy Canyon with a whimsical turquoise race car mid-jump over a flowing golden caramel river, giant colorful gummy bears as boulders on the track sides, a massive hollow red and white candy cane forming a tunnel shortcut visible ahead, the yellow lightning bolt motorcycle ahead on the main road, colorful gumdrop road surface, sugar crystal dust spraying from the wheels, motion blur and speed lines, high energy racing action, no humans visible',
+        sceneDescription: `${childName} races through Candy Canyon and spots a shortcut`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 8,
+        text: `The candy cane shortcut worked! ${childName} burst out ahead of everyone as they reached the end of Candy Canyon. But the road suddenly went straight up into the sky! "Stage two," Sparky beeped excitedly. "Cloud Highway!" ${childName} hit the wing button and Sparky's wings unfolded with a satisfying click.`,
+        imagePrompt: 'A spectacular scene where a gumdrop-paved road curves dramatically upward into the sky, transitioning from colorful candy landscape below to fluffy white clouds above, the turquoise race car with its silver wings now unfolded and glowing, ascending the vertical road toward a highway made of solid puffy clouds, other racers visible in the distance below still on the candy road, the sky brilliant blue with golden sunlight, a magical transition between worlds, thrilling vertical ascent',
+        sceneDescription: `${childName} and Sparky take flight toward the Cloud Highway`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 9,
+        text: `Cloud Highway was amazing! A road made of solid fluffy clouds stretched across the sky, with rainbow guardrails and floating islands of cotton candy. Sparky flew beautifully, but the cloud car was in its element here — it merged with the road and surged ahead!`,
+        imagePrompt: 'A breathtaking highway made of solid white fluffy clouds stretching across a brilliant blue sky, rainbow-colored transparent guardrails on either side, floating islands of pink and blue cotton candy dotting the landscape, the turquoise winged race car flying along the cloud road, a white cloud car ahead blending partially with the road surface as it speeds forward, golden sunlight creating dramatic rays through scattered clouds, distant mountain peaks poking through the cloud layer below, magical sky-high racing',
+        sceneDescription: `${childName} races on the Cloud Highway as the cloud car takes the lead`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `${childName} had an idea! Instead of trying to go faster, ${pronoun} drew a picture in the air with ${possessive} finger — a giant fan! It appeared in golden light and blew the cloud car sideways off course. "Imagination powers, Sparky!" ${childName} laughed. Cleverness beats speed!`,
+        imagePrompt: 'A creative scene on the cloud highway showing a large magical golden glowing fan materializing from golden light trails in the air, creating visible wind swirls that are blowing a white cloud car sideways off the road in a comical way, clouds dispersing and swirling from the wind, the turquoise race car zooming past on the cloud road, golden sparkles and imagination energy trails in the air, clever and playful atmosphere, humorous and triumphant moment',
+        sceneDescription: `${childName} uses imagination powers to outsmart the cloud car`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, simpler background at top for text',
+      },
+      {
+        pageNumber: 11,
+        text: `The Cloud Highway ended at a massive waterfall that plunged down into the ocean below. "Stage three — Underwater Tunnel!" A sign read: "HOLD YOUR BREATH (just kidding, the cars are waterproof)." Sparky retracted ${possessive === 'his' ? 'his' : 'its'} wings and dove straight down!`,
+        imagePrompt: 'A spectacular massive waterfall at the edge of the cloud highway plunging down into a deep blue ocean far below, the turquoise race car with wings retracting diving nose-first down the waterfall surrounded by rushing water and mist, a comical wooden sign nearby reading text, rainbow refracting in the waterfall mist, the ocean below showing a glowing tunnel entrance visible beneath the surface, dramatic vertical drop with spray and motion, thrilling dive scene',
+        sceneDescription: `${childName} and Sparky dive off the Cloud Highway into the ocean`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, the waterfall dive as main subject, no humans',
+      },
+      {
+        pageNumber: 12,
+        text: `Under the ocean, a magical glass tunnel wound through an incredible underwater world. Neon jellyfish floated past, friendly dolphins raced alongside, and the tunnel curved through a coral castle. The bubble racer was way ahead here, zooming through the water-filled sections effortlessly.`,
+        imagePrompt: 'A stunning underwater glass tunnel winding through a vibrant ocean scene, colorful neon-glowing jellyfish in pink purple and blue floating outside the glass, playful dolphins swimming alongside the tunnel, magnificent coral formations in orange red and yellow, a coral structure shaped like a castle in the background, bioluminescent fish providing ambient light, a transparent bubble-shaped racer visible ahead in the tunnel, the turquoise car racing through the tube, deep blue ocean beyond, magical underwater racing atmosphere',
+        sceneDescription: `${childName} races through the underwater tunnel while the bubble racer leads`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+      {
+        pageNumber: 13,
+        text: `The tunnel reached a blocked section — a giant sleeping sea turtle had parked right on the path! Other racers honked angrily, but ${childName} had a better idea. ${Pronoun} drew a trail of glowing starfish leading away from the tunnel. The turtle yawned, saw the pretty starfish, and happily followed them aside. Everyone could pass!`,
+        imagePrompt: 'An underwater tunnel scene with a massive friendly sleeping green sea turtle completely blocking the glass tube path, its shell covered in barnacles and small coral, a trail of beautiful golden-glowing magical starfish leading off to the side away from the tunnel, the turtle now awake and interested following the glowing trail, several magical vehicles waiting in the tunnel including the turquoise car, the bubble racer and lightning bike, bioluminescent blue water outside, creative problem-solving scene',
+        sceneDescription: `${childName} cleverly moves a blocking sea turtle by drawing glowing starfish`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subject on the RIGHT side, leave left side as soft background for text',
+      },
+      {
+        pageNumber: 14,
+        text: `The finish line appeared ahead — a shimmering crystal arch at the end of the tunnel, glowing with rainbow light! The bubble racer and lightning bike were neck and neck with Sparky. ${childName} didn't try to go faster. Instead, ${pronoun} drew a giant springboard and launched Sparky into the air just as the tunnel opened to the sky — BOING! — soaring over everyone and through the Crystal Finish Line first!`,
+        imagePrompt: 'A triumphant spectacular scene of the turquoise race car launching high into the air from a golden glowing springboard, soaring over a transparent bubble car and yellow lightning motorcycle below, heading toward a magnificent crystal arch finish line that glows with all rainbow colors, confetti and sparkles exploding everywhere, golden light streaming through the crystal arch, the ocean below and blue sky above, ultimate victory moment with maximum celebration energy, dynamic and joyful',
+        sceneDescription: `${childName} launches over the competition and wins the race`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, simpler background at bottom for text',
+      },
+      {
+        pageNumber: 15,
+        text: `The gummy bear referee placed a beautiful golden trophy in ${childName}'s hands — the Imagination Trophy! It was shaped like a lightbulb with tiny wings. "You won not because you were the fastest," the referee announced, "but because you were the cleverest! Imagination always finds a way!"`,
+        imagePrompt: 'A celebration podium scene with a beautiful golden trophy shaped like a winged lightbulb glowing with warm inner light, sitting on a colorful podium made of stacked gumdrops, confetti in every color raining down, the other magical vehicles gathered around cheerfully — the cloud car, bubble racer, lightning bike, leaf glider and rocket sled — all looking happy and congratulatory, the candy canyon landscape in the background, festive and joyful victory celebration atmosphere, no humans visible',
+        sceneDescription: `${childName} receives the Imagination Trophy for clever racing`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'central trophy glow with festive vignette edges, emotional and celebratory framing',
+      },
+      {
+        pageNumber: 16,
+        text: `A rainbow portal swirled open, and Sparky drove ${childName} back home. The car shrank back down to fit on the sketchbook page with a happy little beep. But the Imagination Trophy was still real, sitting on ${childName}'s desk, glowing softly. ${Pronoun} picked up ${possessive} pencils and smiled. "Ready for our next adventure, Sparky?" And on the page, the little car drawing blinked its headlights: yes!`,
+        imagePrompt: 'A cozy bedroom at warm golden evening light with a sketchbook open on a wooden desk, a small glowing golden trophy shaped like a winged lightbulb sitting next to it emitting soft warm light, colored pencils arranged nearby, on the sketchbook page a cute drawing of the turquoise race car with tiny headlights that appear to glow faintly, warm lamp light, a peaceful and magical ending atmosphere, the feeling of infinite adventures waiting to be drawn, creative and heartwarming scene',
+        sceneDescription: `${childName} returns home with the trophy while Sparky waits in the sketchbook for the next adventure`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place subjects at edges/sides, keep center softer for text readability',
+      },
+    ],
+  };
+}

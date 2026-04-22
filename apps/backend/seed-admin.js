@@ -9,29 +9,16 @@ const prisma = new PrismaClient();
 
 async function main() {
   const adminEmail = 'saravananmk45@gmail.com';
-  const adminPassword = '12345678';
+  const adminPassword = 'Admin@2026';
 
-  console.log('🔍 Checking for existing admin user...');
-
-  const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
-
-  if (existing) {
-    if (existing.role !== 'ADMIN') {
-      await prisma.user.update({
-        where: { email: adminEmail },
-        data: { role: 'ADMIN' },
-      });
-      console.log(`✅ Existing user promoted to ADMIN: ${adminEmail}`);
-    } else {
-      console.log(`ℹ️  Admin user already exists with role ADMIN: ${adminEmail}`);
-    }
-    return;
-  }
+  console.log('🔍 Upserting admin user...');
 
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
-  await prisma.user.create({
-    data: {
+  const user = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: { passwordHash, role: 'ADMIN' },
+    create: {
       firstName: 'Saravanan',
       lastName: 'MK',
       email: adminEmail,
@@ -42,7 +29,7 @@ async function main() {
     },
   });
 
-  console.log(`✅ Admin user created: ${adminEmail}`);
+  console.log(`✅ Admin ready: ${user.email} (password reset)`);
 }
 
 main()

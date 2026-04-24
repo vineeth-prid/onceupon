@@ -164,7 +164,8 @@ CRITICAL RULES:
       }
     }
 
-    const imgKeyword = style.replicateModel ? '' : 'img ';
+    const isPhotoMaker = !style.replicateModel || style.replicateModel.includes('photomaker');
+    const imgKeyword = isPhotoMaker ? 'img ' : '';
     let fullPrompt: string;
     if (identityTag) {
       fullPrompt = `A ${imgKeyword}${genderTag} child with ${identityTag}, in a scene: ${scenePrompt}, the child has ${fullDescription}`;

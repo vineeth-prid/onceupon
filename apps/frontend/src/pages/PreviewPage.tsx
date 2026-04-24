@@ -716,23 +716,7 @@ export function PreviewPage() {
             }}>
               <button
                 onClick={() => navigate(`/checkout/${orderId}`)}
-                style={{
-                  padding: '0.7rem 2.2rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  fontFamily: FONT_UI,
-                  borderRadius: 50,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                  color: '#1a0533',
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                  boxShadow: '0 4px 20px rgba(255,215,0,0.35)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  letterSpacing: '0.3px',
-                }}
+                className="btn-gold"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -760,21 +744,8 @@ export function PreviewPage() {
                   }
                   setDownloading(false);
                 }}
-                style={{
-                  padding: '0.7rem 1.6rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  fontFamily: FONT_UI,
-                  borderRadius: 50,
-                  border: '1px solid #FFD700',
-                  background: 'rgba(255,215,0,0.1)',
-                  color: '#FFD700',
-                  cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
+                className="btn-outline-white"
+                style={{ padding: '0.7rem 1.6rem', border: '1px solid #FFD700', color: '#FFD700' }}
               >
                 {downloading ? 'Preparing...' : 'Download PDF (Beta)'}
               </button>
@@ -815,24 +786,7 @@ export function PreviewPage() {
                 setDownloading(false);
               }}
               disabled={downloading}
-              style={{
-                padding: '0.65rem 2rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                fontFamily: FONT_UI,
-                borderRadius: 50,
-                border: 'none',
-                background: downloading
-                  ? 'rgba(255,215,0,0.3)'
-                  : 'linear-gradient(135deg, #FFD700, #FFA500)',
-                color: '#1a0533',
-                cursor: downloading ? 'wait' : 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: downloading ? 'none' : '0 4px 20px rgba(255,215,0,0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
+              className="btn-gold"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -853,18 +807,8 @@ export function PreviewPage() {
                     alert('Failed to retry. Please contact support.');
                   }
                 }}
-                style={{
-                  padding: '0.65rem 1.8rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  fontFamily: FONT_UI,
-                  borderRadius: 50,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #FF6B6B, #EE5253)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(238, 82, 83, 0.4)',
-                }}
+                className="btn-primary"
+                style={{ background: 'linear-gradient(135deg, #FF6B6B, #EE5253)', boxShadow: '0 4px 15px rgba(238, 82, 83, 0.4)' }}
               >
                 Retry Generation
               </button>
@@ -874,58 +818,14 @@ export function PreviewPage() {
               <button
                 onClick={handlePayment}
                 disabled={paying}
-                style={{
-                  padding: '0.65rem 2.2rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  fontFamily: FONT_UI,
-                  borderRadius: 50,
-                  border: 'none',
-                  background: paying
-                    ? 'rgba(255,215,0,0.5)'
-                    : 'linear-gradient(135deg, #FFD700, #FFA500)',
-                  color: '#1a0533',
-                  cursor: paying ? 'wait' : 'pointer',
-                  transition: 'all 0.25s ease',
-                  boxShadow: '0 4px 20px rgba(255,215,0,0.35)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
+                className="btn-gold"
               >
                 {paying ? 'Initiating...' : 'Unlock eBook ₹499'}
               </button>
             )}
             <button
               onClick={() => navigate(`/checkout/${orderId}`)}
-              style={{
-                padding: '0.65rem 2rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                fontFamily: FONT_UI,
-                borderRadius: 50,
-                border: '2px solid rgba(255,255,255,0.5)',
-                background: 'rgba(255,255,255,0.08)',
-                color: '#fff',
-                cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.25s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                e.currentTarget.style.borderColor = '#FFD700';
-                e.currentTarget.style.color = '#FFD700';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                e.currentTarget.style.color = '#fff';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className="btn-outline-white"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />

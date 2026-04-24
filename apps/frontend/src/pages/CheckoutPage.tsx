@@ -111,6 +111,18 @@ export function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (!orderId) return;
+
+    // Validate shipping if print is selected
+    if (isPrint) {
+      const required = ['firstName', 'lastName', 'address1', 'city', 'state', 'postcode', 'phone'];
+      const missing = required.filter(f => !shipping[f as keyof typeof shipping]?.trim());
+      
+      if (missing.length > 0) {
+        alert('Please fill in all mandatory shipping fields: ' + missing.join(', '));
+        return;
+      }
+    }
+
     setPaying(true);
     
     try {
@@ -283,7 +295,7 @@ export function CheckoutPage() {
               <h2 style={sectionTitle}>Shipping Address</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
-                  <label style={label}>First Name</label>
+                  <label style={label}>First Name *</label>
                   <input
                     style={input}
                     value={shipping.firstName}
@@ -291,7 +303,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label style={label}>Last Name</label>
+                  <label style={label}>Last Name *</label>
                   <input
                     style={input}
                     value={shipping.lastName}
@@ -299,7 +311,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={label}>Address Line 1</label>
+                  <label style={label}>Address Line 1 *</label>
                   <input
                     style={input}
                     value={shipping.address1}
@@ -315,7 +327,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label style={label}>City</label>
+                  <label style={label}>City *</label>
                   <input
                     style={input}
                     value={shipping.city}
@@ -323,7 +335,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label style={label}>State / Province</label>
+                  <label style={label}>State / Province *</label>
                   <input
                     style={input}
                     value={shipping.state}
@@ -331,7 +343,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label style={label}>Postcode</label>
+                  <label style={label}>Postcode *</label>
                   <input
                     style={input}
                     value={shipping.postcode}
@@ -339,7 +351,7 @@ export function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label style={label}>Country</label>
+                  <label style={label}>Country *</label>
                   <select
                     style={{ ...input, appearance: 'none' }}
                     value={shipping.country}
@@ -353,7 +365,7 @@ export function CheckoutPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={label}>Phone</label>
+                  <label style={label}>Phone *</label>
                   <input
                     style={input}
                     value={shipping.phone}
@@ -410,11 +422,8 @@ export function CheckoutPage() {
               />
               <button
                 onClick={applyPromo}
-                style={{
-                  padding: '10px 24px', background: '#000', color: '#FFF',
-                  border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 500,
-                  cursor: 'pointer', fontFamily: '"Inter", sans-serif',
-                }}
+                className="btn-secondary"
+                style={{ padding: '10px 24px', borderRadius: 10 }}
               >
                 Apply
               </button>
@@ -457,13 +466,8 @@ export function CheckoutPage() {
           <button
             onClick={handlePlaceOrder}
             disabled={paying}
-            style={{
-              width: '100%', padding: '16px 0',
-              background: paying ? '#666' : '#000', color: '#FFF',
-              border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600,
-              cursor: paying ? 'wait' : 'pointer', fontFamily: '"Inter", sans-serif',
-              letterSpacing: 0.3,
-            }}
+            className="btn-primary"
+            style={{ width: '100%', padding: '16px 0' }}
           >
             {paying ? 'Processing...' : `Pay & Place Order — ${formatPrice(breakdown.total)}`}
           </button>

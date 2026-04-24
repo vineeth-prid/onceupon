@@ -61,6 +61,18 @@ export class OrdersController {
       }
     }
     
+    // Validate shipping if it's a print order (amount >= 1000 INR)
+    if (amount >= 1000) {
+      if (!shipping) {
+        throw new BadRequestException('Shipping address is required for print orders');
+      }
+      const required = ['firstName', 'lastName', 'address1', 'city', 'state', 'postcode', 'phone'];
+      const missing = required.filter(f => !shipping[f]?.trim());
+      if (missing.length > 0) {
+        throw new BadRequestException(`Missing required shipping fields: ${missing.join(', ')}`);
+      }
+    }
+    
     // Update shipping and coupon details if provided
     const updateData: any = {};
     if (shipping) {

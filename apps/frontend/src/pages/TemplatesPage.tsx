@@ -251,24 +251,8 @@ export function TemplatesPage() {
           </p>
           <Link
             to="/create"
-            className="font-body"
-            style={{
-              display: 'inline-block',
-              padding: '14px 36px',
-              borderRadius: 999,
-              background: '#111',
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 600,
-              textDecoration: 'none',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            className="btn-primary inline-flex"
+            style={{ padding: '14px 36px', textDecoration: 'none' }}
           >
             Create a Custom Story
           </Link>

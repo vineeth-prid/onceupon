@@ -36,8 +36,7 @@ export function LandingPage() {
         {/* CTA Button */}
         <button
           onClick={() => navigate('/create')}
-          className="liquid-glass-strong rounded-full px-14 py-5 text-base mt-6 font-body animate-fade-rise-delay-2 transition-transform hover:scale-[1.03] cursor-pointer"
-          style={{ color: '#000000', border: 'none' }}
+          className="btn-secondary animate-fade-rise-delay-2 px-14 py-5"
         >
           Create a Book
         </button>

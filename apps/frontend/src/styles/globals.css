@@ -38,4 +38,71 @@ html, body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea 
     position: relative;
     overflow: hidden;
   }
+
+  /* ─── Global Button Styles ─── */
+  .btn-primary {
+    @apply rounded-full px-8 py-4 font-body font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2;
+    background: linear-gradient(135deg, #1a0533 0%, #2d1b69 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(26, 5, 51, 0.2);
+    border: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(26, 5, 51, 0.3);
+    filter: brightness(1.1);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    @apply rounded-full px-8 py-4 font-body font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #111111;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  .btn-secondary:active {
+    transform: translateY(0);
+  }
+
+  .btn-gold {
+    @apply rounded-full px-8 py-4 font-body font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #1a0533;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.35);
+    border: none;
+    letter-spacing: 0.3px;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+    filter: brightness(1.05);
+  }
+
+  .btn-outline-white {
+    @apply rounded-full px-8 py-4 font-body font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: #FFFFFF;
+  }
+  .btn-outline-white:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #FFD700;
+    color: #FFD700;
+    transform: translateY(-2px);
+  }
+  .btn-outline-white:active {
+    transform: translateY(0);
+  }
 }

@@ -96,12 +96,55 @@ export function PersonalizePage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FFF9F0',
+      background: '#fff',
       display: 'flex',
-      justifyContent: 'center',
+      flexDirection: 'column',
+      alignItems: 'center',
       padding: '2rem 1rem',
     }}>
-      <div style={{ width: '100%', maxWidth: 520 }}>
+      {/* How It Works Progress */}
+      <section style={{ padding: '1rem 2rem 3rem', maxWidth: 900, margin: '0 auto', width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+          {[
+            { step: '1', icon: '\u270F\uFE0F', title: 'Describe Your Story', active: false },
+            { step: '2', icon: '\uD83D\uDCF7', title: 'Upload a Photo', active: true },
+            { step: '3', icon: '\u2728', title: 'AI Creates Magic', active: false },
+            { step: '4', icon: '\uD83D\uDCD6', title: 'Read & Enjoy', active: false },
+          ].map((item) => (
+            <div key={item.step} style={{
+              textAlign: 'center',
+              flex: '1 1 140px',
+              maxWidth: 160,
+              opacity: item.active ? 1 : 0.4,
+            }}>
+              <div style={{
+                width: 54,
+                height: 54,
+                borderRadius: '50%',
+                background: item.active ? 'linear-gradient(135deg, #D5F5E3, #D5E8F5)' : '#f5f5f5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 0.6rem',
+                fontSize: '1.4rem',
+                boxShadow: item.active ? '0 4px 15px rgba(0, 0, 0, 0.06)' : 'none',
+                border: item.active ? '2px solid #43A047' : 'none',
+              }}>
+                {item.icon}
+              </div>
+              <h3 style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                color: item.active ? '#000' : '#888',
+                margin: 0,
+              }}>{item.title}</h3>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div style={{ width: '100%', maxWidth: 580 }}>
         {/* Back button */}
         <button
           onClick={() => navigate('/create')}
@@ -109,57 +152,39 @@ export function PersonalizePage() {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            fontFamily: "'Nunito', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontSize: '0.9rem',
-            color: '#888',
+            color: '#999',
             marginBottom: '1rem',
             display: 'flex',
             alignItems: 'center',
             gap: '0.4rem',
           }}
         >
-          &#8592; Back to categories
+          &#8592; Back to story idea
         </button>
 
-        {/* Book header card */}
-        <div style={{
-          background: `linear-gradient(135deg, ${accent}25 0%, ${accent}10 100%)`,
-          borderRadius: 20,
-          padding: '1.8rem',
-          marginBottom: '1.5rem',
-          textAlign: 'center',
-          border: `2px solid ${accent}30`,
-        }}>
-          <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>{isCustom ? '\u2728' : category!.icon}</div>
-          <p style={{
-            fontFamily: "'Nunito', sans-serif",
-            color: accent,
-            margin: '0 0 0.2rem',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-          }}>
-            {isCustom ? 'Custom Story' : category!.name}
-          </p>
+        {/* Page Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 style={{
-            fontFamily: "'Baloo 2', cursive",
-            fontSize: '1.6rem',
-            fontWeight: 800,
-            color: '#2d1b69',
-            margin: '0 0 0.3rem',
+            fontFamily: "'Instrument Serif', serif",
+            fontSize: '2.4rem',
+            fontWeight: 400,
+            color: '#000',
+            margin: '0 0 0.5rem',
           }}>
-            {isCustom ? 'Your Custom Story' : book!.name}
+            Personalize Your Story
           </h1>
           <p style={{
-            fontFamily: "'Nunito', sans-serif",
-            color: '#666',
+            fontFamily: "'Inter', sans-serif",
+            color: '#6F6F6F',
             margin: 0,
-            fontSize: '0.95rem',
+            fontSize: '1.05rem',
+            lineHeight: 1.5,
           }}>
-            {isCustom
-              ? (customStoryPrompt.length > 100 ? customStoryPrompt.slice(0, 100) + '...' : customStoryPrompt)
-              : book!.description}
+            {isCustom 
+              ? `Creating illustrations for: "${customStoryPrompt.length > 60 ? customStoryPrompt.slice(0, 60) + '...' : customStoryPrompt}"`
+              : `Personalizing: ${book?.name}`}
           </p>
         </div>
 
@@ -177,8 +202,8 @@ export function PersonalizePage() {
                 display: 'block',
                 marginBottom: '0.6rem',
                 fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Upload Your Child's Photo
@@ -214,7 +239,7 @@ export function PersonalizePage() {
                       borderRadius: 10,
                       padding: '0.4rem 1rem',
                       cursor: 'pointer',
-                      fontFamily: "'Nunito', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       fontWeight: 600,
                       fontSize: '0.85rem',
                     }}
@@ -241,7 +266,7 @@ export function PersonalizePage() {
                   <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>&#128247;</div>
                   <p style={{
                     margin: 0,
-                    fontFamily: "'Nunito', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     color: '#999',
                     fontSize: '0.9rem',
                   }}>
@@ -249,7 +274,7 @@ export function PersonalizePage() {
                   </p>
                   <p style={{
                     margin: '0.3rem 0 0',
-                    fontFamily: "'Nunito', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     color: '#ccc',
                     fontSize: '0.75rem',
                   }}>
@@ -264,9 +289,9 @@ export function PersonalizePage() {
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Child's Name
@@ -283,7 +308,7 @@ export function PersonalizePage() {
                   borderRadius: 12,
                   border: '2px solid #eee',
                   fontSize: '1rem',
-                  fontFamily: "'Nunito', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   outline: 'none',
                   transition: 'border-color 0.2s',
                   boxSizing: 'border-box',
@@ -298,16 +323,16 @@ export function PersonalizePage() {
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Your Email
               </label>
               <p style={{
                 margin: '0 0 0.6rem',
-                fontFamily: "'Nunito', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 color: '#999',
                 fontSize: '0.8rem',
               }}>
@@ -324,7 +349,7 @@ export function PersonalizePage() {
                   borderRadius: 12,
                   border: '2px solid #eee',
                   fontSize: '1rem',
-                  fontFamily: "'Nunito', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   outline: 'none',
                   transition: 'border-color 0.2s',
                   boxSizing: 'border-box',
@@ -339,9 +364,9 @@ export function PersonalizePage() {
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Age
@@ -359,7 +384,7 @@ export function PersonalizePage() {
                       border: childAge === age ? `2px solid ${accent}` : '2px solid #eee',
                       background: childAge === age ? `${accent}15` : '#fff',
                       color: childAge === age ? accent : '#666',
-                      fontFamily: "'Nunito', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       fontWeight: childAge === age ? 700 : 600,
                       fontSize: '0.95rem',
                       cursor: 'pointer',
@@ -377,9 +402,9 @@ export function PersonalizePage() {
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Gender
@@ -401,7 +426,7 @@ export function PersonalizePage() {
                       border: childGender === g.value ? `2px solid ${accent}` : '2px solid #eee',
                       background: childGender === g.value ? `${accent}15` : '#fff',
                       cursor: 'pointer',
-                      fontFamily: "'Nunito', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       fontWeight: 600,
                       color: childGender === g.value ? accent : '#666',
                       transition: 'all 0.2s',
@@ -423,16 +448,16 @@ export function PersonalizePage() {
               <label style={{
                 display: 'block',
                 marginBottom: '0.5rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                color: '#2d1b69',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                color: '#000',
                 fontSize: '0.95rem',
               }}>
                 Illustration Style
               </label>
               <p style={{
                 margin: '0 0 0.6rem',
-                fontFamily: "'Nunito', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 color: '#999',
                 fontSize: '0.8rem',
               }}>
@@ -456,7 +481,7 @@ export function PersonalizePage() {
                         border: isSelected ? `2px solid ${accent}` : '2px solid #eee',
                         background: isSelected ? `${accent}12` : '#fff',
                         cursor: 'pointer',
-                        fontFamily: "'Nunito', sans-serif",
+                        fontFamily: "'Inter', sans-serif",
                         transition: 'all 0.2s',
                         display: 'flex',
                         flexDirection: 'column',
@@ -487,7 +512,7 @@ export function PersonalizePage() {
                 padding: '0.7rem 1rem',
                 background: '#FFEBEE',
                 borderRadius: 12,
-                fontFamily: "'Nunito', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: '0.9rem',
                 fontWeight: 600,
               }}>
@@ -502,9 +527,11 @@ export function PersonalizePage() {
                 width: '100%',
                 padding: '0.9rem',
                 fontSize: '1.05rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                background: loading ? '#ccc' : `linear-gradient(135deg, ${accent}, ${accent}CC)`,
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                background: loading 
+                  ? '#ccc' 
+                  : `linear-gradient(135deg, ${accent}, ${accent}CC)`,
                 border: 'none',
                 borderRadius: 14,
                 cursor: loading ? 'not-allowed' : 'pointer',
@@ -521,7 +548,7 @@ export function PersonalizePage() {
                   <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
                 </span>
               ) : (
-                'Preview Book \u2728'
+                <>Preview Book &#8594;</>
               )}
             </button>
           </form>

@@ -798,13 +798,19 @@ export function PreviewPage() {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `${childName || 'storybook'}_storybook.pdf`;
+                  a.download = `${childName.replace(/[^a-zA-Z0-9]/g, '_') || 'storybook'}_storybook.pdf`;
                   document.body.appendChild(a);
                   a.click();
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
-                } catch {
-                  alert('Failed to download PDF. Please try again.');
+                } catch (err: any) {
+                  console.error('Download error:', err);
+                  const status = err.response?.status;
+                  if (status === 404) {
+                    alert('Book not ready yet. Please wait for images to finish generating.');
+                  } else {
+                    alert('Download failed. The system is still preparing your high-quality PDF. Please try again in a minute.');
+                  }
                 }
                 setDownloading(false);
               }}
@@ -826,16 +832,6 @@ export function PreviewPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-              }}
-              onMouseEnter={(e) => {
-                if (!downloading) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(255,215,0,0.5)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                if (!downloading) e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,215,0,0.35)';
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

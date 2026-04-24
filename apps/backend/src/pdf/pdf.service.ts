@@ -223,9 +223,7 @@ export class PdfService {
    * Register custom fonts on each new PDFDocument instance.
    */
   private async registerFonts(doc: PDFKit.PDFDocument): Promise<void> {
-    const fontsDir = join(process.cwd(), 'assets', 'fonts');
     this.availableFonts.clear();
-
     const fontFiles: Record<string, string> = {
       'CrimsonText-Regular': 'CrimsonText-Regular.ttf',
       'CrimsonText-Italic': 'CrimsonText-Italic.ttf',
@@ -234,14 +232,29 @@ export class PdfService {
       'DancingScript-Regular': 'DancingScript-Regular.ttf',
     };
 
+    // Try multiple possible locations for fonts
+    const possibleDirs = [
+      join(process.cwd(), 'assets', 'fonts'),
+      join(process.cwd(), 'apps', 'backend', 'assets', 'fonts'),
+      join(__dirname, '..', '..', 'assets', 'fonts'),
+    ];
+
     for (const [name, file] of Object.entries(fontFiles)) {
-      const fontPath = join(fontsDir, file);
-      try {
-        await access(fontPath);
-        doc.registerFont(name, fontPath);
-        this.availableFonts.add(name);
-      } catch {
-        this.logger.warn(`Font not available: ${name} (${fontPath})`);
+      let found = false;
+      for (const dir of possibleDirs) {
+        const fontPath = join(dir, file);
+        try {
+          await access(fontPath);
+          doc.registerFont(name, fontPath);
+          this.availableFonts.add(name);
+          found = true;
+          break; // Found this font, move to next file
+        } catch {
+          continue;
+        }
+      }
+      if (!found) {
+        this.logger.warn(`Font not found: ${name}. Tried: ${possibleDirs.map(d => join(d, file)).join(', ')}`);
       }
     }
   }
@@ -264,10 +277,28 @@ export class PdfService {
       if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       return Buffer.from(await response.arrayBuffer());
     }
-    const filePath = imageUrl.startsWith('/api/uploads/') || imageUrl.startsWith('/uploads/')
-      ? join(process.cwd(), 'uploads', imageUrl.replace(/^\/(?:api\/)?uploads\//, ''))
-      : imageUrl;
-    return readFile(filePath);
+
+    const filename = imageUrl.replace(/^\/(?:api\/)?uploads\//, '');
+    
+    // Try multiple possible locations for the uploads folder
+    const possiblePaths = [
+      join(process.cwd(), 'uploads', filename),
+      join(process.cwd(), 'apps', 'backend', 'uploads', filename),
+      // Also try relative to this file if process.cwd() is unreliable
+      join(__dirname, '..', '..', 'uploads', filename), 
+    ];
+
+    for (const filePath of possiblePaths) {
+      try {
+        await access(filePath);
+        return await readFile(filePath);
+      } catch {
+        continue;
+      }
+    }
+
+    this.logger.error(`Could not find image: ${imageUrl}. Tried: ${possiblePaths.join(', ')}`);
+    throw new Error(`Local image not found: ${imageUrl}`);
   }
 
   /**

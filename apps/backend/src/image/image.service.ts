@@ -187,17 +187,62 @@ CRITICAL RULES:
 
     let imageUrl: string;
     
-    if (style.replicateModel?.includes('face-to-many')) {
-      imageUrl = await this.runFaceToMany(publicPhotoUrl, fullPrompt, style.replicateStyle || 'Clay', style.replicateModel);
-    } else if (style.replicateModel?.includes('flux-pulid')) {
-      imageUrl = await this.runFluxPuLID(publicPhotoUrl, fullPrompt, style.replicateModel);
+    const styleObj = style as any;
+    if (styleObj.replicateModel?.includes('photomaker')) {
+      this.logger.log(`Routing to PhotoMaker with style: ${styleObj.photoMakerStyleName || '(No style)'}`);
+      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, styleObj.photoMakerStyleName || '(No style)');
+    } else if (styleObj.replicateModel?.includes('gouache-folk-style')) {
+      this.logger.log(`Routing to Gouache Folk Style with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runImageToImage(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('claymation')) {
+      this.logger.log(`Routing to Claymation with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runImageToImage(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('stickergp')) {
+      this.logger.log(`Routing to StickerGP with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runFluxDev(fullPrompt, styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('flux-watercolor')) {
+      this.logger.log(`Routing to FluxWatercolor`);
+      imageUrl = await this.runFluxWatercolor(publicPhotoUrl, fullPrompt);
+    } else if (styleObj.replicateModel?.includes('flux-dev')) {
+      this.logger.log(`Routing to FluxDev with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runFluxDev(fullPrompt, styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('face-to-many')) {
+      this.logger.log(`Routing to FaceToMany with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runFaceToMany(publicPhotoUrl, fullPrompt, styleObj.replicateStyle || 'Clay', styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('flux-pulid')) {
+      this.logger.log(`Routing to FluxPuLID with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runFluxPuLID(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
     } else {
-      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, style.photoMakerStyleName || '(No style)');
+      // Fallback to default PhotoMaker
+      this.logger.log(`Fallback to PhotoMaker default style: ${styleObj.photoMakerStyleName || '(No style)'}`);
+      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, styleObj.photoMakerStyleName || '(No style)');
     }
 
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/api/uploads/${filename}`;
+  }
+
+  private async runFluxWatercolor(faceImageUrl: string, prompt: string): Promise<string> {
+    return this.runImageToImage(faceImageUrl, prompt, "lucataco/flux-watercolor:ec079237c95a092c25390c50ca601b69f6fd7d5e4a83a152d192c7336e1cda6d");
+  }
+
+  private async runImageToImage(faceImageUrl: string, prompt: string, model: string): Promise<string> {
+    this.logger.log(`Running Image-to-Image with model: ${model}`);
+    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
+      input: {
+        image: faceImageUrl,
+        prompt: prompt,
+        prompt_strength: 0.7,
+        num_inference_steps: 28,
+        guidance_scale: 3.5,
+        output_format: "png",
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    throw new Error(`Unexpected output format from model ${model}`);
   }
 
   private async resolvePublicUrl(url: string): Promise<string> {
@@ -283,6 +328,24 @@ CRITICAL RULES:
     if (typeof output === 'string') return output;
     if (Array.isArray(output) && output.length > 0) return String(output[0]);
     throw new Error('Unexpected output format from Replicate');
+  }
+
+  private async runFluxDev(prompt: string, model: string): Promise<string> {
+    this.logger.log(`Running FLUX-Dev using model "${model}" with high guidance`);
+    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
+      input: {
+        prompt: prompt,
+        guidance: 5.0, // Increased guidance for stronger style adherence
+        num_inference_steps: 30,
+        aspect_ratio: "1:1",
+        output_format: "png",
+        output_quality: 90,
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    throw new Error('Unexpected output format from flux-dev');
   }
 
   private async runFaceToMany(faceImageUrl: string, prompt: string, style: string, model: string): Promise<string> {

@@ -114,12 +114,19 @@ export function CheckoutPage() {
     setPaying(true);
     
     try {
+      const subtotal = breakdown.bookPrice + breakdown.deliveryPrice + breakdown.addonTotal;
       const rzpOrder = await createRazorpayOrder(
         orderId, 
-        breakdown.total, 
+        subtotal, 
         isPrint ? shipping : null,
         appliedCoupon?.code
       );
+
+      // Bypass Razorpay if amount is 0 (100% coupon)
+      if (rzpOrder.amount === 0) {
+        navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
+        return;
+      }
       
       const options = {
         key: RZP_KEY_ID,
@@ -161,8 +168,8 @@ export function CheckoutPage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-    } catch (err) {
-      alert('Failed to initiate payment. Please try again.');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
       setPaying(false);
     }
   };
@@ -407,17 +414,38 @@ export function CheckoutPage() {
                 placeholder="Enter code"
                 value={promo}
                 onChange={e => { setPromo(e.target.value); setPromoApplied(null); }}
+                disabled={appliedCoupon !== null}
               />
-              <button
-                onClick={applyPromo}
-                style={{
-                  padding: '10px 24px', background: '#000', color: '#FFF',
-                  border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 500,
-                  cursor: 'pointer', fontFamily: '"Inter", sans-serif',
-                }}
-              >
-                Apply
-              </button>
+              {!appliedCoupon ? (
+                <button
+                  onClick={applyPromo}
+                  style={{
+                    padding: '10px 24px', background: '#000', color: '#FFF',
+                    border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 500,
+                    cursor: 'pointer', fontFamily: '"Inter", sans-serif',
+                  }}
+                >
+                  Apply
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setAppliedCoupon(null);
+                    setPromo('');
+                    setPromoApplied(null);
+                    setPromoMessage('');
+                    setDiscountAmount(0);
+                    setDiscountPct(0);
+                  }}
+                  style={{
+                    padding: '10px 24px', background: '#C62828', color: '#FFF',
+                    border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 500,
+                    cursor: 'pointer', fontFamily: '"Inter", sans-serif',
+                  }}
+                >
+                  Remove
+                </button>
+              )}
             </div>
             {promoApplied === 'success' && (
               <p style={{ fontSize: 13, color: '#2E7D32', marginTop: 8 }}>{promoMessage}</p>
@@ -511,7 +539,7 @@ export function CheckoutPage() {
 
               {breakdown.discount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2E7D32' }}>
-                  <span>Discount ({discountPct}%)</span>
+                  <span>Discount {discountPct > 0 ? `(${discountPct}%)` : ''}</span>
                   <span>-{formatPrice(breakdown.discount)}</span>
                 </div>
               )}

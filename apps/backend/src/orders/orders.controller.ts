@@ -43,14 +43,17 @@ export class OrdersController {
     @Body('couponCode') couponCode?: string,
   ) {
     const order = await this.ordersService.findById(id);
-    // Use amount from client (converted to INR) or fallback to 499
+    // Use strictly the subtotal from client, but ensure it never drops below the base eBook price.
     let amount = amountFromClient || 499; 
+    if (amount < 499) {
+      throw new BadRequestException('Invalid total amount. Order minimum is 499 INR.');
+    }
     let discountAmount = 0;
     let couponId: string | null = null;
 
     if (couponCode) {
       try {
-        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100);
+        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100, order.userId);
         discountAmount = validation.discountAmount; // in paise
         amount = Math.max(0, amount - (discountAmount / 100)); // amount is in INR
         couponId = validation.coupon.id;
@@ -83,6 +86,29 @@ export class OrdersController {
       await this.ordersService.updateOrder(id, updateData);
     }
 
+    // Handle 100% discount / free orders without calling Razorpay
+    if (amount === 0) {
+      if (order.status === 'PAID') {
+        return { id: 'free_order', amount: 0, currency: 'INR' };
+      }
+
+      await this.ordersService.updateOrder(id, {
+        paymentId: 'FREE_100_PCT_' + Math.random().toString(36).substring(7),
+        paymentProvider: 'free',
+        status: 'PAID',
+        amountPaid: 0,
+        currency: 'INR',
+      });
+      
+      if (couponId) {
+        await this.couponsService.incrementUsage(couponId);
+      }
+      
+      await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+      
+      return { id: 'free_order', amount: 0, currency: 'INR' };
+    }
+
     const razorpayOrder = await this.razorpayService.createOrder(id, amount);
     
     await this.ordersService.updateOrder(id, {
@@ -113,11 +139,22 @@ export class OrdersController {
       throw new BadRequestException('Invalid payment signature');
     }
 
+    const order = await this.ordersService.findById(body.orderId);
+
+    if (order.status === 'PAID') {
+      return { success: true, message: 'Payment already processed' };
+    }
+
     await this.ordersService.updateOrder(body.orderId, {
       paymentId: body.razorpayPaymentId,
       paymentProvider: 'razorpay',
       status: 'PAID',
     });
+
+    // Increment coupon usage if a coupon was applied
+    if ((order as any).couponId) {
+      await this.couponsService.incrementUsage((order as any).couponId);
+    }
 
     // Automatically trigger full book generation upon payment verification
     await this.queue.add(JobName.COMPLETE_ORDER, { orderId: body.orderId });

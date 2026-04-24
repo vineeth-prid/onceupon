@@ -21,6 +21,7 @@ import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
+import { Toaster } from 'react-hot-toast';
 
 function ConditionalNavBar() {
   const location = useLocation();
@@ -50,6 +51,17 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              style: {
+                background: '#000',
+                color: '#fff',
+                fontFamily: '"Inter", sans-serif',
+                borderRadius: '8px',
+              },
+            }}
+          />
           <ConditionalNavBar />
           <main>
             <Routes>

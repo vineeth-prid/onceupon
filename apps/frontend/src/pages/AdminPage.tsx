@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
+import { toast } from 'react-hot-toast';
 
 type Tab =
   | 'dashboard'
@@ -415,7 +416,7 @@ function CouponsTab() {
 
   const handleCreate = async () => {
     if (!newCoupon.code || !newCoupon.value) {
-      alert('Please provide at least a code and a value');
+      toast.error('Please provide at least a code and a value');
       return;
     }
 
@@ -437,7 +438,7 @@ function CouponsTab() {
       });
 
       if (res.ok) {
-        alert('Coupon created successfully!');
+        toast.success('Coupon created successfully!');
         setNewCoupon({
           code: '',
           type: 'percentage',
@@ -450,11 +451,11 @@ function CouponsTab() {
         fetchCoupons();
       } else {
         const err = await res.json();
-        alert(`Error: ${err.message || 'Failed to create coupon'}`);
+        toast.error(`Error: ${err.message || 'Failed to create coupon'}`);
       }
     } catch (e) {
       console.error(e);
-      alert('Failed to connect to backend');
+      toast.error('Failed to connect to backend');
     }
     setLoading(false);
   };

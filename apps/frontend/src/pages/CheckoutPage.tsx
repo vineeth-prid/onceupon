@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
 
 type Format = 'ebook' | 'print';
@@ -67,8 +68,7 @@ export function CheckoutPage() {
     if (appliedCoupon) {
       applyPromo();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [format, delivery, addons]);
+  }, [format, delivery, addons, appliedCoupon]);
 
   const [card, setCard] = useState({
     number: '', expiry: '', cvv: '', name: '',
@@ -159,7 +159,7 @@ export function CheckoutPage() {
             navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
           } catch (err) {
             console.error('Payment verification failed:', err);
-            alert('Payment verification failed. Please contact support.');
+            toast.error('Payment verification failed. Please contact support.');
             setPaying(false);
           }
         },
@@ -179,7 +179,7 @@ export function CheckoutPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
       setPaying(false);
     }
   };

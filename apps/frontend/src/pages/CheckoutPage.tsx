@@ -61,6 +61,15 @@ export function CheckoutPage() {
     }
   }, [orderId]);
 
+  useEffect(() => {
+    // If a coupon is active but the user changes their cart items/format,
+    // re-validate to update the discountAmount dynamically.
+    if (appliedCoupon) {
+      applyPromo();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [format, delivery, addons]);
+
   const [card, setCard] = useState({
     number: '', expiry: '', cvv: '', name: '',
   });
@@ -71,7 +80,8 @@ export function CheckoutPage() {
     setAddons(prev => ({ ...prev, [id]: !prev[id] }));
 
   const applyPromo = async () => {
-    if (!promo.trim()) return;
+    const codeToApply = promo.trim() || appliedCoupon?.code;
+    if (!codeToApply) return;
     
     const chosen = FORMATS.find(f => f.id === format)!;
     const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
@@ -79,7 +89,7 @@ export function CheckoutPage() {
     const subtotal = (chosen.price + deliveryPrice + addonTotal) * 100;
 
     try {
-      const result = await validateCoupon(promo.trim(), subtotal);
+      const result = await validateCoupon(codeToApply, subtotal);
       setAppliedCoupon(result.coupon);
       setDiscountPct(result.coupon.type === 'percentage' ? result.coupon.value : 0);
       setDiscountAmount(result.discountAmount);

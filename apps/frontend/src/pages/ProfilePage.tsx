@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllOrders } from '../api/orders';
+import { api } from '../api/client';
 import { BOOK_TEMPLATES, CATEGORIES } from '@bookmagic/shared';
 
 type Tab = 'books' | 'orders' | 'details' | 'notifications' | 'addresses';
@@ -529,12 +530,36 @@ function OrdersTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
 }
 
 /* ======== Tab: Personal Details ======== */
-function DetailsTab({ user }: { user: { firstName?: string; lastName?: string; email?: string } | null }) {
+function DetailsTab({ user }: { user: any }) {
+  const { setUser } = useAuth();
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(user?.phone ?? '');
   const [password, setPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      const res = await api.patch('/auth/me', {
+        firstName,
+        lastName,
+        phone,
+        // password: password || undefined, // add password update if supported by backend
+      });
+      setUser(res.data);
+      setSaveMsg('Profile updated successfully!');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      setSaveMsg('Failed to update profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '12px 16px', borderRadius: 8, border: '1px solid #E0E0E0',
@@ -562,11 +587,26 @@ function DetailsTab({ user }: { user: { firstName?: string; lastName?: string; e
         <Field label="New Password" style={{ marginBottom: 28 }}>
           <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Leave blank to keep current" />
         </Field>
-        <button style={{
-          padding: '12px 32px', borderRadius: 8, border: 'none',
-          background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
-        }}>
-          Save Changes
+        {saveMsg && (
+          <div style={{ 
+            fontSize: 13, 
+            color: saveMsg.includes('success') ? '#2E7D32' : '#C62828', 
+            marginBottom: 16,
+            fontWeight: 500
+          }}>
+            {saveMsg}
+          </div>
+        )}
+        <button 
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            padding: '12px 32px', borderRadius: 8, border: 'none',
+            background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            opacity: saving ? 0.7 : 1,
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
@@ -637,33 +677,197 @@ function NotificationsTab() {
 
 /* ======== Tab: Saved Addresses ======== */
 function AddressesTab() {
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchAddresses = async () => {
+    try {
+      const res = await api.get('/users/addresses');
+      setAddresses(res.data);
+    } catch (e) {
+      console.error('Failed to fetch addresses:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    try {
+      await api.delete(`/users/addresses/${id}`);
+      fetchAddresses();
+    } catch (e) {
+      console.error('Failed to delete address:', e);
+    }
+  };
+
   return (
     <div>
-      <h2 className="font-display" style={{ fontSize: 28, color: '#000', margin: '0 0 24px' }}>Saved Addresses</h2>
-      <div style={{
-        border: '1px solid #E0E0E0', borderRadius: 12, padding: '24px',
-        background: '#FAFAFA', marginBottom: 20,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <span style={{
-            padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-            background: '#000', color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.05em',
-          }}>
-            Default
-          </span>
-        </div>
-        <div style={{ fontSize: 15, color: '#000', lineHeight: 1.6 }}>
-          123 Storybook Lane<br />
-          San Francisco, CA 94102<br />
-          United States
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 className="font-display" style={{ fontSize: 28, color: '#000', margin: 0 }}>Saved Addresses</h2>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          style={{
+            padding: '10px 20px', borderRadius: 8, border: '1px solid #000',
+            background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+          }}
+        >
+          Add New Address
+        </button>
       </div>
-      <button style={{
-        padding: '12px 28px', borderRadius: 8, border: '1px solid #000',
-        background: '#FFF', color: '#000', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+
+      {loading ? (
+        <p style={{ color: '#6F6F6F' }}>Loading addresses...</p>
+      ) : addresses.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: '60px 24px', background: '#FAFAFA',
+          borderRadius: 16, border: '1px solid #E0E0E0',
+        }}>
+          <p style={{ fontSize: 16, color: '#6F6F6F' }}>No saved addresses yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {addresses.map((addr) => (
+            <div key={addr.id} style={{
+              border: '1px solid #E0E0E0', borderRadius: 12, padding: '24px',
+              background: '#FAFAFA', position: 'relative',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>{addr.label}</span>
+                {addr.isDefault && (
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700,
+                    background: '#000', color: '#FFF', textTransform: 'uppercase',
+                  }}>
+                    Default
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 14, color: '#000', lineHeight: 1.6, marginBottom: 16 }}>
+                <strong>{addr.firstName} {addr.lastName}</strong><br />
+                {addr.addressLine1}<br />
+                {addr.addressLine2 && <>{addr.addressLine2}<br /></>}
+                {addr.city}, {addr.state} {addr.postalCode}<br />
+                {addr.country}
+              </div>
+              <button
+                onClick={() => handleDelete(addr.id)}
+                style={{
+                  background: 'none', border: 'none', color: '#C62828',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0,
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isModalOpen && (
+        <AddressModal
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            fetchAddresses();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddressModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    label: 'Home',
+    firstName: '',
+    lastName: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'India',
+    phone: '',
+    isDefault: false,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post('/users/addresses', formData);
+      onSuccess();
+    } catch (err) {
+      console.error('Failed to save address:', err);
+      alert('Failed to save address. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #E0E0E0',
+    fontSize: 14, outline: 'none', marginBottom: 12,
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', zIndex: 1000, padding: 20,
+    }}>
+      <div style={{
+        background: '#FFF', borderRadius: 16, width: '100%', maxWidth: 500,
+        padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
       }}>
-        Add New Address
-      </button>
+        <h3 style={{ margin: '0 0 24px', fontSize: 20, fontWeight: 600 }}>Add New Address</h3>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <input placeholder="First Name" required style={inputStyle} value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+            <input placeholder="Last Name" required style={inputStyle} value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+          </div>
+          <input placeholder="Address Label (e.g. Home, Office)" required style={inputStyle} value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} />
+          <input placeholder="Address Line 1" required style={inputStyle} value={formData.addressLine1} onChange={e => setFormData({...formData, addressLine1: e.target.value})} />
+          <input placeholder="Address Line 2 (Optional)" style={inputStyle} value={formData.addressLine2} onChange={e => setFormData({...formData, addressLine2: e.target.value})} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <input placeholder="City" required style={inputStyle} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+            <input placeholder="State" required style={inputStyle} value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <input placeholder="Postal Code" required style={inputStyle} value={formData.postalCode} onChange={e => setFormData({...formData, postalCode: e.target.value})} />
+            <input placeholder="Country" required style={inputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
+          </div>
+          <input placeholder="Phone" required style={inputStyle} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+          
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 24 }}>
+            <input type="checkbox" checked={formData.isDefault} onChange={e => setFormData({...formData, isDefault: e.target.checked})} />
+            <span style={{ fontSize: 13, color: '#6F6F6F' }}>Set as default address</span>
+          </label>
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button type="button" onClick={onClose} style={{
+              flex: 1, padding: '12px', borderRadius: 8, border: '1px solid #E0E0E0',
+              background: '#FFF', color: '#000', fontWeight: 600, cursor: 'pointer',
+            }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={saving} style={{
+              flex: 1, padding: '12px', borderRadius: 8, border: 'none',
+              background: '#000', color: '#FFF', fontWeight: 600, cursor: 'pointer',
+              opacity: saving ? 0.7 : 1,
+            }}>
+              {saving ? 'Saving...' : 'Save Address'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

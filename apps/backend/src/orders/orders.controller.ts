@@ -23,6 +23,7 @@ import { OrdersService } from './orders.service';
 import { RazorpayService } from './razorpay.service';
 import { PdfService } from '../pdf/pdf.service';
 import { CouponsService } from './coupons.service';
+import { PricingService } from './pricing.service';
 import { ORCHESTRATOR_QUEUE, JobName } from '../queue/queue.constants';
 
 @Controller('orders')
@@ -32,6 +33,7 @@ export class OrdersController {
     private readonly couponsService: CouponsService,
     private readonly pdfService: PdfService,
     private readonly razorpayService: RazorpayService,
+    private readonly pricingService: PricingService,
     @InjectQueue(ORCHESTRATOR_QUEUE) private readonly queue: Queue,
   ) {}
 
@@ -43,8 +45,9 @@ export class OrdersController {
     @Body('couponCode') couponCode?: string,
   ) {
     const order = await this.ordersService.findById(id);
-    // Use amount from client (converted to INR) or fallback to 499
-    let amount = amountFromClient || 499; 
+    const pricing = this.pricingService.getPricing();
+    // Use amount from client or fallback to the configured ebook price
+    let amount = amountFromClient || pricing.ebookPrice; 
     let discountAmount = 0;
     let couponId: string | null = null;
 

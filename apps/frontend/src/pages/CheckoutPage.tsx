@@ -59,6 +59,22 @@ export function CheckoutPage() {
         setChildName(data.order.childName || '');
       });
     }
+
+    // Fetch dynamic pricing from Admin configuration
+    fetch('/api/pricing')
+      .then(r => r.json())
+      .then(data => {
+        if (data.ebookPrice) {
+          setFORMATS(prev => prev.map(f => f.id === 'ebook' ? { ...f, price: data.ebookPrice } : f));
+        }
+        if (data.physicalPrice) {
+          setFORMATS(prev => prev.map(f => f.id === 'print' ? { ...f, price: data.physicalPrice } : f));
+        }
+        if (data.shippingPrice) {
+          setDELIVERY_OPTIONS(prev => prev.map(d => d.id === 'standard' ? { ...d, price: data.shippingPrice } : d));
+        }
+      })
+      .catch(err => console.error('Failed to fetch pricing:', err));
   }, [orderId]);
 
   const [card, setCard] = useState({

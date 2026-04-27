@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
 import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment, completeOrder } from '../api/orders';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -247,6 +248,7 @@ function ScrollHint({ visible }: { visible: boolean }) {
 export function PreviewPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const bookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFlipping = useRef(false);
@@ -266,7 +268,7 @@ export function PreviewPage() {
   const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
   
   // Use payment status to determine if preview wall should be shown
-  const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!pages.some((p: any) => p.order?.paymentId);
+  const isPaid = ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!pages.some((p: any) => p.order?.paymentId);
   
   // Determine if this is a preview-only order (1 image) vs full book
   const isPreviewOnly = !isPaid && pagesWithImages.length <= 1 && totalStoryPages > 1;
@@ -900,44 +902,46 @@ export function PreviewPage() {
                 {paying ? 'Initiating...' : 'Unlock eBook ₹499'}
               </button>
             )}
-            <button
-              onClick={() => navigate(`/checkout/${orderId}`)}
-              style={{
-                padding: '0.65rem 2rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                fontFamily: FONT_UI,
-                borderRadius: 50,
-                border: '2px solid rgba(255,255,255,0.5)',
-                background: 'rgba(255,255,255,0.08)',
-                color: '#fff',
-                cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.25s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                e.currentTarget.style.borderColor = '#FFD700';
-                e.currentTarget.style.color = '#FFD700';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                e.currentTarget.style.color = '#fff';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                <line x1="12" y1="22.08" x2="12" y2="12" />
-              </svg>
-              Order Physical Book
-            </button>
+            {user?.role !== 'ADMIN' && (
+              <button
+                onClick={() => navigate(`/checkout/${orderId}`)}
+                style={{
+                  padding: '0.65rem 2rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  fontFamily: FONT_UI,
+                  borderRadius: 50,
+                  border: '2px solid rgba(255,255,255,0.5)',
+                  background: 'rgba(255,255,255,0.08)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.25s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  e.currentTarget.style.borderColor = '#FFD700';
+                  e.currentTarget.style.color = '#FFD700';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                Order Physical Book
+              </button>
+            )}
           </div>
         )}
       </div>

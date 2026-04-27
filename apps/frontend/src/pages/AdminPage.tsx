@@ -152,6 +152,7 @@ const selectStyle: React.CSSProperties = {
 function badge(status: string): React.CSSProperties {
   const map: Record<string, { bg: string; color: string }> = {
     PAID: { bg: '#6e997310', color: '#3a7048' },
+    ORDER_CONFIRMED: { bg: '#6e997310', color: '#3a7048' },
     PRINTING: { bg: '#4a90d910', color: '#2a6cb8' },
     SHIPPED: { bg: '#5bc0de10', color: '#31708f' },
     DELIVERED: { bg: '#6e997310', color: '#3a7048' },
@@ -243,6 +244,7 @@ function OrdersTab({ orders }: { orders: any[] }) {
         <select style={selectStyle}>
           <option>All Statuses</option>
           <option>PAID</option>
+          <option>ORDER_CONFIRMED</option>
           <option>PRINTING</option>
           <option>SHIPPED</option>
           <option>DELIVERED</option>

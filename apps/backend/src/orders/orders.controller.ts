@@ -104,7 +104,11 @@ export class OrdersController {
         await this.couponsService.incrementUsage(couponId);
       }
       
-      await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+      await this.queue.add(
+        JobName.COMPLETE_ORDER, 
+        { orderId: id },
+        { jobId: `free_${id}` }
+      );
       
       return { id: 'free_order', amount: 0, currency: 'INR' };
     }
@@ -139,17 +143,31 @@ export class OrdersController {
       throw new BadRequestException('Invalid payment signature');
     }
 
-    const order = await this.ordersService.findById(body.orderId);
-
-    if (order.status === 'PAID') {
+    // Check if this EXACT payment ID was already processed across any order
+    const existingPayment = await this.ordersService.findByPaymentId(body.razorpayPaymentId);
+    if (existingPayment) {
       return { success: true, message: 'Payment already processed' };
     }
 
-    await this.ordersService.updateOrder(body.orderId, {
-      paymentId: body.razorpayPaymentId,
-      paymentProvider: 'razorpay',
-      status: 'PAID',
-    });
+    const order = await this.ordersService.findById(body.orderId);
+
+    if (order.paymentId) {
+      return { success: true, message: 'Payment already processed' };
+    }
+
+    try {
+      await this.ordersService.updateOrder(body.orderId, {
+        paymentId: body.razorpayPaymentId,
+        paymentProvider: 'razorpay',
+        status: 'PAID',
+      });
+    } catch (error: any) {
+      // P2002: Unique constraint failed on the fields: (`paymentId`)
+      if (error.code === 'P2002') {
+        return { success: true, message: 'Payment already processed' };
+      }
+      throw error;
+    }
 
     // Increment coupon usage if a coupon was applied
     if ((order as any).couponId) {
@@ -157,7 +175,12 @@ export class OrdersController {
     }
 
     // Automatically trigger full book generation upon payment verification
-    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: body.orderId });
+    // Use the exact paymentId as the deterministic jobId to guarantee zero duplicate processing
+    await this.queue.add(
+      JobName.COMPLETE_ORDER, 
+      { orderId: body.orderId },
+      { jobId: body.razorpayPaymentId }
+    );
 
     return { success: true };
   }
@@ -168,7 +191,11 @@ export class OrdersController {
   async create(@Req() req: Request, @Body() dto: CreateOrderInput) {
     const userId = (req.user as any)?.id;
     const order = await this.ordersService.create(dto, userId);
-    await this.queue.add(JobName.PROCESS_ORDER, { orderId: order.id });
+    await this.queue.add(
+      JobName.PROCESS_ORDER, 
+      { orderId: order.id },
+      { jobId: `process_${order.id}` }
+    );
     return order;
   }
 
@@ -234,9 +261,13 @@ export class OrdersController {
     const order = await this.ordersService.findById(id);
 
     // Idempotent: Only update and queue if not already paid/processing
-    if (order.status !== 'PAID') {
+    if (!order.paymentId) {
       await this.ordersService.updateStatus(id, 'PAID' as any);
-      await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+      await this.queue.add(
+        JobName.COMPLETE_ORDER, 
+        { orderId: id },
+        { jobId: `complete_${id}` }
+      );
     }
 
     return { message: 'Full book generation started', orderId: id };

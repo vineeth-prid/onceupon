@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { getAllOrders } from '../api/orders';
 import { BOOK_TEMPLATES, CATEGORIES } from '@bookmagic/shared';
 
-type Tab = 'books' | 'orders' | 'details' | 'notifications' | 'addresses';
+type Tab = 'books' | 'orders' | 'cart' | 'details' | 'notifications' | 'addresses';
 
 const tabs: { key: Tab; label: string }[] = [
   { key: 'books', label: 'My Books' },
   { key: 'orders', label: 'Orders' },
+  { key: 'cart', label: 'My Cart' },
   { key: 'details', label: 'Personal Details' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'addresses', label: 'Saved Addresses' },
@@ -28,6 +30,7 @@ export function ProfilePage() {
     setSearchParams({ tab });
   };
 
+  const { cartCount } = useCart();
   const initial = user?.firstName?.charAt(0)?.toUpperCase() ?? 'U';
 
   return (
@@ -63,9 +66,18 @@ export function ProfilePage() {
                     fontSize: 14, fontWeight: 500, cursor: 'pointer',
                     background: activeTab === tab.key ? '#000' : 'transparent',
                     color: activeTab === tab.key ? '#FFF' : '#000',
+                    display: 'flex', alignItems: 'center', gap: 8,
                   }}
                 >
                   {tab.label}
+                  {tab.key === 'cart' && cartCount > 0 && (
+                    <span style={{
+                      background: '#ef4444', color: '#fff',
+                      borderRadius: '50%', width: 18, height: 18,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 11, fontWeight: 700,
+                    }}>{cartCount}</span>
+                  )}
                 </button>
               ))}
               <button
@@ -85,6 +97,7 @@ export function ProfilePage() {
           <main style={{ flex: 1, minWidth: 0 }}>
             {activeTab === 'books' && <BooksTab navigate={navigate} />}
             {activeTab === 'orders' && <OrdersTab navigate={navigate} />}
+            {activeTab === 'cart' && <CartTab navigate={navigate} />}
             {activeTab === 'details' && <DetailsTab user={user} />}
             {activeTab === 'notifications' && <NotificationsTab />}
             {activeTab === 'addresses' && <AddressesTab />}
@@ -269,6 +282,126 @@ function BooksTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
             <span style={{ fontSize: 14, fontWeight: 500, color: '#6F6F6F' }}>Create new book</span>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ======== Tab: My Cart ======== */
+function CartTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
+  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
+
+  if (cartItems.length === 0) {
+    return (
+      <div>
+        <h2 className="font-display" style={{ fontSize: 28, color: '#000', margin: '0 0 8px' }}>My Cart</h2>
+        <div style={{
+          textAlign: 'center', padding: '60px 24px', background: '#FAFAFA',
+          borderRadius: 16, border: '1px solid #E0E0E0', marginTop: 24,
+        }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🛒</div>
+          <p style={{ fontSize: 16, color: '#6F6F6F', marginBottom: 20 }}>Your cart is empty.</p>
+          <button
+            onClick={() => navigate('/templates')}
+            style={{
+              padding: '12px 32px', borderRadius: 8, border: 'none',
+              background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            }}
+          >
+            Browse Books
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <h2 className="font-display" style={{ fontSize: 28, color: '#000', margin: 0 }}>My Cart</h2>
+        <button
+          onClick={clearCart}
+          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          Clear all
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+        {cartItems.map(({ book, quantity }) => (
+          <div
+            key={book.id}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              border: '1px solid #E0E0E0', borderRadius: 16, padding: '16px 20px',
+              background: '#FAFAFA',
+            }}
+          >
+            {/* Thumbnail */}
+            <img
+              src={book.thumbnail}
+              alt={book.title}
+              style={{ width: 70, height: 70, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+            />
+            {/* Details */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#000', marginBottom: 2 }}>{book.title}</div>
+              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>{book.priceFormatted} each</div>
+              {/* Quantity controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => updateQuantity(book.id, quantity - 1)}
+                  style={{
+                    width: 28, height: 28, borderRadius: '50%', border: '1px solid #E0E0E0',
+                    background: '#fff', cursor: 'pointer', fontSize: 16, display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                  }}
+                >−</button>
+                <span style={{ fontSize: 14, fontWeight: 600, minWidth: 20, textAlign: 'center' }}>{quantity}</span>
+                <button
+                  onClick={() => updateQuantity(book.id, quantity + 1)}
+                  style={{
+                    width: 28, height: 28, borderRadius: '50%', border: '1px solid #E0E0E0',
+                    background: '#fff', cursor: 'pointer', fontSize: 16, display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                  }}
+                >+</button>
+              </div>
+            </div>
+            {/* Price + Remove */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>
+                ${((book.price * quantity) / 100).toFixed(2)}
+              </span>
+              <button
+                onClick={() => removeFromCart(book.id)}
+                style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary */}
+      <div style={{
+        border: '1px solid #E0E0E0', borderRadius: 16, padding: '20px 24px',
+        background: '#FAFAFA', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <div>
+          <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>Order Total</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#000' }}>${(cartTotal / 100).toFixed(2)}</div>
+        </div>
+        <button
+          onClick={() => navigate('/templates')}
+          style={{
+            padding: '14px 32px', borderRadius: 12, border: 'none',
+            background: '#000', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          Personalise & Checkout
+        </button>
       </div>
     </div>
   );

@@ -61,6 +61,7 @@ model User {
 
   orders        Order[]
   addresses     Address[]
+  reviews       Review[]
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -189,4 +190,18 @@ model Page {
   @@unique([orderId, pageNumber])
   @@index([orderId])
   @@index([status])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookId    String   // The slug/id from the catalog (e.g., "portugals-new-legend")
+  userId    String
+  rating    Int      // 1-5
+  comment   String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookId])
+  @@index([userId])
 }

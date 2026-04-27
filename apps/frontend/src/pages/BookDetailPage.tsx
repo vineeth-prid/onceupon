@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { BOOK_CATALOG } from '../data/bookCatalog';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { StarRating } from '../components/reviews/StarRating';
+import { ReviewList } from '../components/reviews/ReviewList';
+import { ReviewForm } from '../components/reviews/ReviewForm';
 
 /* ─── Per-book descriptions ──────────────────────────────────────────── */
 
@@ -55,10 +59,43 @@ export function BookDetailPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const { addToCart } = useCart();
+
+  // Reviews State
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [stats, setStats] = useState({ averageRating: 0, totalReviews: 0 });
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+
+  const fetchReviews = async () => {
+    if (!book) return;
+    setIsLoadingReviews(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const [reviewsRes, statsRes] = await Promise.all([
+        fetch(`${apiUrl}/reviews/${book.id}`),
+        fetch(`${apiUrl}/reviews/${book.id}/stats`)
+      ]);
+      
+      if (reviewsRes.ok) {
+        const data = await reviewsRes.json();
+        setReviews(data);
+      }
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
 
   useEffect(() => {
     setActiveIndex(0);
     setIsPlaying(true);
+    fetchReviews();
   }, [slug]);
 
   if (!book) {
@@ -304,15 +341,9 @@ export function BookDetailPage() {
 
           {/* Star rating */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-            <div style={{ display: 'flex', gap: 2 }}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <svg key={s} width="20" height="20" viewBox="0 0 24 24" fill="#FBBF24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              ))}
-            </div>
+            <StarRating rating={stats.averageRating} size={20} />
             <span className="font-body" style={{ fontSize: 14, color: '#9ca3af' }}>
-              (4,283) Reviews
+              ({stats.totalReviews}) {stats.totalReviews === 1 ? 'Review' : 'Reviews'}
             </span>
           </div>
 
@@ -381,6 +412,61 @@ export function BookDetailPage() {
             Personalise my book
           </button>
 
+          {/* Add to Cart */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              if (book) addToCart(book);
+              setAddedToCart(true);
+              setTimeout(() => setAddedToCart(false), 1500);
+            }}
+            className="font-body"
+            style={{
+              width: '100%',
+              padding: '14px 32px',
+              fontSize: 15,
+              fontWeight: 600,
+              color: addedToCart ? '#16a34a' : '#111',
+              background: '#fff',
+              border: `2px solid ${addedToCart ? '#16a34a' : '#111'}`,
+              borderRadius: 14,
+              cursor: 'pointer',
+              marginTop: 12,
+              transition: 'all 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            {addedToCart ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                Added to Cart!
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                Add to Cart
+              </>
+            )}
+          </button>
+
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div style={{ background: '#fcfcfc', borderTop: '1px solid rgba(0,0,0,0.05)', padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 48, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 500px' }}>
+              <h2 className="font-display" style={{ fontSize: 32, marginBottom: 32 }}>Customer Reviews</h2>
+              <ReviewList reviews={reviews} isLoading={isLoadingReviews} />
+            </div>
+            <div style={{ flex: '1 1 400px' }}>
+              <ReviewForm bookId={book.id} onSuccess={fetchReviews} />
+            </div>
+          </div>
         </div>
       </div>
 

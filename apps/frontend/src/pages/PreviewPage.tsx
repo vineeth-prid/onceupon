@@ -105,61 +105,94 @@ const CoverPage = forwardRef<HTMLDivElement, {
     {coverImageUrl && (
       <img src={coverImageUrl} alt="" style={{
         width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-        filter: 'brightness(0.45)',
+        filter: 'brightness(0.40)',
       }} />
     )}
+    {/* Vignette overlay */}
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: coverImageUrl
+        ? 'radial-gradient(ellipse at center, rgba(26,5,51,0.15) 0%, rgba(26,5,51,0.65) 100%)'
+        : 'transparent',
+    }} />
+
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '2rem',
-      background: coverImageUrl
-        ? 'linear-gradient(180deg, rgba(26,5,51,0.3) 0%, rgba(26,5,51,0.6) 100%)'
-        : 'transparent',
+      padding: '2rem 1.5rem',
+      gap: 0,
     }}>
-      <div style={{
-        fontSize: '1.5rem', marginBottom: '0.5rem',
-        filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.5))',
-      }}>&#x2728;</div>
+      {/* Top sparkle row */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: '0.75rem', opacity: 0.8 }}>
+        {['✦', '✧', '✦'].map((s, i) => (
+          <span key={i} style={{ fontSize: i === 1 ? '1.1rem' : '0.6rem', color: '#FFD700', opacity: i === 1 ? 1 : 0.6 }}>{s}</span>
+        ))}
+      </div>
 
+      {/* Tagline */}
       <p style={{
-        color: 'rgba(255,215,0,0.8)', fontSize: '0.7rem',
-        fontFamily: FONT_ACCENT, margin: '0 0 0.3rem', letterSpacing: 2,
-        textTransform: 'uppercase', textAlign: 'center',
+        color: 'rgba(255,215,0,0.85)',
+        fontSize: '0.62rem',
+        fontFamily: FONT_ACCENT,
+        margin: '0 0 0.45rem',
+        letterSpacing: 3,
+        textTransform: 'uppercase',
+        textAlign: 'center',
+        textShadow: '0 1px 6px rgba(0,0,0,0.5)',
       }}>
-        A personalized story for
+        A personalised story for
       </p>
 
+      {/* Child's Name — hero text */}
       <h1 style={{
-        color: '#fff', fontSize: '1.5rem', textAlign: 'center',
-        fontFamily: FONT_BRAND, fontWeight: 800,
-        textShadow: '0 2px 20px rgba(255,215,0,0.3), 0 4px 30px rgba(0,0,0,0.5)',
-        lineHeight: 1.3, margin: '0 0 0.6rem', letterSpacing: 1,
+        color: '#ffffff',
+        fontSize: '2.6rem',
+        textAlign: 'center',
+        fontFamily: FONT_BRAND,
+        fontWeight: 900,
+        textShadow: '0 0 30px rgba(255,215,0,0.55), 0 2px 16px rgba(255,180,0,0.4), 0 4px 40px rgba(0,0,0,0.7)',
+        lineHeight: 1.1,
+        margin: '0 0 0.6rem',
+        letterSpacing: 2,
+        wordBreak: 'break-word',
       }}>
         {childName}
       </h1>
 
+      {/* Divider */}
       <div style={{
-        width: 60, height: 2,
-        background: 'linear-gradient(90deg, transparent, #FFD700, transparent)',
-        borderRadius: 1, margin: '0 0 0.8rem',
+        width: 80, height: 2,
+        background: 'linear-gradient(90deg, transparent, #FFD700 30%, #FFD700 70%, transparent)',
+        borderRadius: 1, margin: '0 0 0.85rem',
+        boxShadow: '0 0 8px rgba(255,215,0,0.4)',
       }} />
 
+      {/* Book Title */}
       <h2 style={{
-        color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', textAlign: 'center',
-        fontFamily: FONT_TITLE, fontWeight: 400, fontStyle: 'italic',
-        textShadow: '0 1px 8px rgba(0,0,0,0.4)',
-        lineHeight: 1.5, margin: 0, maxWidth: '80%',
+        color: 'rgba(255,255,255,0.92)',
+        fontSize: '1.15rem',
+        textAlign: 'center',
+        fontFamily: FONT_TITLE,
+        fontWeight: 600,
+        fontStyle: 'italic',
+        textShadow: '0 1px 10px rgba(0,0,0,0.6)',
+        lineHeight: 1.4,
+        margin: 0,
+        maxWidth: '85%',
+        letterSpacing: 0.5,
       }}>
         {title}
       </h2>
+    </div>
 
-      <div style={{
-        position: 'absolute', bottom: '1rem',
-        fontSize: '0.55rem', color: 'rgba(255,215,0,0.4)',
-        fontFamily: FONT_ACCENT, letterSpacing: 1, textAlign: 'center',
-      }}>
-        Once Upon a Time
-      </div>
+    {/* Brand footer */}
+    <div style={{
+      position: 'absolute', bottom: '1rem', left: 0, right: 0,
+      textAlign: 'center',
+      fontSize: '0.5rem', color: 'rgba(255,215,0,0.45)',
+      fontFamily: FONT_ACCENT, letterSpacing: 1.5,
+    }}>
+      Once Upon a Time
     </div>
   </div>
 ));

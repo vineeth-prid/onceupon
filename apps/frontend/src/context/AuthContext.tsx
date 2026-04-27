@@ -36,13 +36,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await loginUser({ email, password });
-    setAuthFromResponse(res);
+    // MOCK LOGIN
+    const mockUser: User = {
+      id: 'demo-123',
+      firstName: 'Demo',
+      lastName: 'User',
+      email: email,
+      role: 'USER'
+    };
+    setAuthFromResponse({ token: 'mock-token', user: mockUser });
   }, [setAuthFromResponse]);
 
   const register = useCallback(async (firstName: string, lastName: string, email: string, password: string) => {
-    const res = await registerUser({ firstName, lastName, email, password });
-    setAuthFromResponse(res);
+    // MOCK REGISTER
+    const mockUser: User = {
+      id: 'demo-123',
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      role: 'USER'
+    };
+    setAuthFromResponse({ token: 'mock-token', user: mockUser });
   }, [setAuthFromResponse]);
 
   const googleLogin = useCallback(async (credential: string) => {
@@ -53,12 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      getMe()
-        .then(setUser)
-        .catch(() => {
-          logout();
-        })
-        .finally(() => setIsLoading(false));
+      // MOCK GET ME
+      setUser({
+        id: 'demo-123',
+        firstName: 'Demo',
+        lastName: 'User',
+        email: 'demo@example.com',
+        role: 'USER'
+      });
+      setIsLoading(false);
     } else {
       setIsLoading(false);
     }

@@ -11,6 +11,7 @@ import { getCosmicJourneyStory } from './cosmic-journey';
 import { getZooAdventureBoyStory } from './zoo-adventure-boy';
 import { getZooAdventureGirlStory } from './zoo-adventure-girl';
 import { getTalkToAnimalsStory } from './talk-to-animals';
+import { getFamilyParkAdventureStory } from './family-park-adventure';
 
 const staticStoryBuilders: Record<string, (childName: string, childAge: number, childGender: string) => StoryOutputInput> = {
   // Legacy stories (backward compat for existing orders)
@@ -27,6 +28,7 @@ const staticStoryBuilders: Record<string, (childName: string, childAge: number, 
   'zoo-adventure-boy': getZooAdventureBoyStory,
   'zoo-adventure-girl': getZooAdventureGirlStory,
   'talk-to-animals': getTalkToAnimalsStory,
+  'family-park-adventure': getFamilyParkAdventureStory,
 };
 
 export function getStaticStory(theme: string, childName: string, childAge: number, childGender: string): StoryOutputInput | null {

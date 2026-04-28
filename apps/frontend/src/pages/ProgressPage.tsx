@@ -17,7 +17,7 @@ const FULL_STEPS = [
   { status: 'IMAGES_GENERATING', label: 'Painting illustrations...', detail: '', icon: '\uD83D\uDD8C\uFE0F', progress: 20 },
   { status: 'IMAGES_COMPLETE', label: 'All illustrations done!', detail: 'Assembling your book', icon: '\uD83C\uDF1F', progress: 90 },
   { status: 'PDF_GENERATING', label: 'Building your book...', detail: 'Adding finishing touches', icon: '\uD83D\uDCD6', progress: 95 },
-  { status: 'PREVIEW_READY', label: 'Your book is ready!', detail: 'Opening your storybook...', icon: '\uD83C\uDF89', progress: 100 },
+  { status: 'ORDER_CONFIRMED', label: 'Your book is ready!', detail: 'Opening your storybook...', icon: '\uD83C\uDF89', progress: 100 },
 ];
 
 const FUN_FACTS = [
@@ -75,7 +75,7 @@ export function ProgressPage() {
         setCompletedPages(data.progress.completedPages);
         setTotalPages(data.progress.totalPages);
 
-        if (data.progress.status === 'PREVIEW_READY' || data.progress.status === 'IMAGES_COMPLETE') {
+        if (data.progress.status === 'PREVIEW_READY' || data.progress.status === 'IMAGES_COMPLETE' || data.progress.status === 'ORDER_CONFIRMED' || data.progress.status === 'DELIVERED') {
           clearInterval(poll);
           setTimeout(() => navigate(`/preview/${orderId}`), 1500);
         }

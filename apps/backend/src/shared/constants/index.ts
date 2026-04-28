@@ -1,6 +1,10 @@
 export const NEGATIVE_PROMPT =
   'multiple people, two people, two children, two kids, second child, another child, duplicate person, twin, siblings, crowd, group, adult, woman, man, couple, extra person, human face on animal, animal face on human, human-animal hybrid, chimera, centaur, horns on child, tail on child, animal ears on child, scales on child, fur on child, snout on child, claws on child, wings on child, child merged with animal, child fused with dinosaur, animal body parts on human, scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame, gender swap, wrong gender';
 
+// Negative prompt for multi-person scenes — allows multiple people but keeps quality/safety guards
+export const MULTI_PERSON_NEGATIVE_PROMPT =
+  'human face on animal, animal face on human, human-animal hybrid, chimera, centaur, horns on child, tail on child, animal ears on child, scales on child, fur on child, snout on child, claws on child, wings on child, child merged with animal, child fused with dinosaur, animal body parts on human, scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame, gender swap, wrong gender';
+
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 export const CATEGORIES = [
@@ -58,6 +62,8 @@ export const BOOK_TEMPLATES = [
   { id: 'zoo-adventure-boy', categoryId: 'animals' as CategoryId, name: 'Zoo Adventure (Boy)', description: 'A wild day meeting amazing animals' },
   { id: 'zoo-adventure-girl', categoryId: 'animals' as CategoryId, name: 'Zoo Adventure (Girl)', description: 'A wild day meeting amazing animals' },
   { id: 'talk-to-animals', categoryId: 'animals' as CategoryId, name: 'Talk to Animals', description: 'A gift that changes everything' },
+  // Family mode test story
+  { id: 'family-park-adventure', categoryId: 'nurture' as CategoryId, name: 'Family Park Adventure', description: 'A magical day at the park with the whole family' },
   // Custom story (user-provided prompt)
   { id: 'custom', categoryId: 'adventure' as CategoryId, name: 'Custom Story', description: 'Your own story idea' },
 ] as const;
@@ -155,6 +161,36 @@ export const IMAGE_GEN_CONFIG = {
   numOutputs: 1,
 } as const;
 
+export const MULTI_PERSON_IMAGE_GEN_CONFIG = {
+  model: 'mattheum/flux-multi-pulid-controlnet:698d4bd4cecda02d32cdb226d1dc397aeaf9b5ec4abdcc388833435317e18f78',
+  numSteps: 20,
+  startStep: 0,
+  guidanceScale: 4,
+  idWeight: 1,
+  width: 1024,
+  height: 1024,
+  numOutputs: 1,
+  outputFormat: 'png',
+} as const;
+
+// Alias for family mode — same content as MULTI_PERSON_NEGATIVE_PROMPT
+export const NEGATIVE_PROMPT_FAMILY = MULTI_PERSON_NEGATIVE_PROMPT;
+
+// Easel Advanced Face Swap — used for swapping additional family member faces
+export const EASEL_FACE_SWAP_MODEL = 'easel/advanced-face-swap' as const;
+
+// Illustration styles that support family mode (PhotoMaker-based only)
+export const FAMILY_COMPATIBLE_STYLES = [
+  'disney-character',
+  '3d-animation',
+  'watercolor',
+  'geometric',
+] as const;
+
+// Family role types
+export const FAMILY_ROLES = ['MAIN_CHILD', 'SIBLING', 'PARENT', 'GRANDPARENT'] as const;
+export type FamilyRole = (typeof FAMILY_ROLES)[number];
+
 export const BOOK_DIMENSIONS = {
   pageWidth: 8.75, // inches, with bleed
   pageHeight: 8.75,
@@ -170,14 +206,14 @@ export const STATUS_TRANSITIONS: Record<string, readonly string[]> = {
   CREATED: ['STORY_GENERATING', 'FAILED'],
   STORY_GENERATING: ['STORY_COMPLETE', 'FAILED'],
   STORY_COMPLETE: ['IMAGES_GENERATING', 'FAILED'],
-  IMAGES_GENERATING: ['IMAGES_COMPLETE', 'PREVIEW_READY', 'FAILED'],
-  IMAGES_COMPLETE: ['PDF_GENERATING', 'FAILED'],
-  PDF_GENERATING: ['PREVIEW_READY', 'FAILED'],
-  PREVIEW_READY: ['PAYMENT_PENDING', 'PAID'],
-  PAYMENT_PENDING: ['PAID', 'FAILED'],
-  PAID: ['IMAGES_GENERATING', 'IMAGES_COMPLETE', 'PRINTING', 'FAILED'],
+  IMAGES_GENERATING: ['IMAGES_COMPLETE', 'PREVIEW_READY', 'FAILED', 'PAID'],
+  IMAGES_COMPLETE: ['PDF_GENERATING', 'PREVIEW_READY', 'FAILED'],
+  PDF_GENERATING: ['PREVIEW_READY', 'FAILED', 'IMAGES_COMPLETE'],
+  PREVIEW_READY: ['PAYMENT_PENDING', 'PAID', 'IMAGES_GENERATING'],
+  PAYMENT_PENDING: ['PAID', 'FAILED', 'IMAGES_GENERATING'],
+  PAID: ['IMAGES_GENERATING', 'IMAGES_COMPLETE', 'PDF_GENERATING', 'PREVIEW_READY', 'PRINTING', 'FAILED'],
   PRINTING: ['SHIPPED', 'FAILED'],
   SHIPPED: ['DELIVERED'],
   DELIVERED: [],
-  FAILED: ['CREATED', 'IMAGES_GENERATING'], // allow retry
+  FAILED: ['CREATED', 'STORY_GENERATING', 'IMAGES_GENERATING', 'PAID'],
 };

@@ -54,7 +54,7 @@ export class CouponsService {
     });
   }
 
-  async validateCoupon(code: string, orderAmount: number) {
+  async validateCoupon(code: string, orderAmount: number, userId?: string | null) {
     const coupon = await this.prisma.coupon.findUnique({
       where: { code: code.toUpperCase() },
     });
@@ -75,6 +75,19 @@ export class CouponsService {
       throw new BadRequestException(`Minimum order amount of ${coupon.minAmount / 100} required`);
     }
 
+    if (userId) {
+      const pastUsage = await this.prisma.order.count({
+        where: {
+          userId,
+          couponId: coupon.id,
+          status: { in: ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'] }
+        }
+      });
+      if (pastUsage > 0) {
+        throw new BadRequestException('You have already used this coupon.');
+      }
+    }
+
     let discount = 0;
     if (coupon.type === 'percentage') {
       discount = Math.round((orderAmount * coupon.value) / 100);
@@ -82,7 +95,7 @@ export class CouponsService {
         discount = coupon.maxDiscount;
       }
     } else {
-      discount = coupon.value;
+      discount = coupon.value * 100;
     }
 
     return {
@@ -107,5 +120,21 @@ export class CouponsService {
 
   async deleteCoupon(id: string) {
     return this.prisma.coupon.delete({ where: { id } });
+  }
+
+  async incrementUsage(id: string) {
+    const updatedCount = await this.prisma.$executeRaw`
+      UPDATE "Coupon"
+      SET "usageCount" = "usageCount" + 1
+      WHERE id = ${id}
+        AND ("usageLimit" IS NULL OR "usageCount" < "usageLimit")
+    `;
+    
+    // updatedCount returns the number of rows affected
+    if (updatedCount === 0) {
+      throw new BadRequestException('Coupon usage limit reached during checkout.');
+    }
+    
+    return true;
   }
 }

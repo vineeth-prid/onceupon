@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { CreateOrderInput } from '@bookmagic/shared';
+import type { CreateOrderInput, CreateFamilyOrderInput } from '@bookmagic/shared';
 
 export async function uploadPhoto(file: File): Promise<{ url: string }> {
   const form = new FormData();
@@ -10,6 +10,11 @@ export async function uploadPhoto(file: File): Promise<{ url: string }> {
 
 export async function createOrder(input: CreateOrderInput) {
   const { data } = await api.post('/orders', input);
+  return data;
+}
+
+export async function createFamilyOrder(input: CreateFamilyOrderInput) {
+  const { data } = await api.post('/orders/family', input);
   return data;
 }
 

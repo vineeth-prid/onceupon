@@ -17,6 +17,7 @@ enum OrderStatus {
   PREVIEW_READY
   PAYMENT_PENDING
   PAID
+  ORDER_CONFIRMED
   PRINTING
   SHIPPED
   DELIVERED
@@ -34,6 +35,13 @@ enum ChildGender {
   boy
   girl
   other
+}
+
+enum FamilyRole {
+  MAIN_CHILD
+  SIBLING
+  PARENT
+  GRANDPARENT
 }
 
 enum AuthProvider {
@@ -62,6 +70,7 @@ model User {
 
   orders        Order[]
   addresses     Address[]
+  reviews       Review[]
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -103,6 +112,8 @@ model Order {
   illustrationStyle String      @default("disney-character")
   customStoryPrompt String?
   photoUrl          String
+  familyMode        Boolean     @default(false)
+  groupPhotoUrl     String?
   email             String?
   status            OrderStatus @default(CREATED)
   storyJson         Json?
@@ -138,6 +149,7 @@ model Order {
 
   user              User?       @relation(fields: [userId], references: [id])
   pages             Page[]
+  familyMembers     FamilyMember[]
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -190,4 +202,37 @@ model Page {
   @@unique([orderId, pageNumber])
   @@index([orderId])
   @@index([status])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookId    String   // The slug/id from the catalog (e.g., "portugals-new-legend")
+  userId    String
+  rating    Int      // 1-5
+  comment   String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model FamilyMember {
+  id                   String      @id @default(uuid())
+  orderId              String
+  role                 FamilyRole
+  name                 String
+  age                  Int?
+  gender               String?
+  croppedPhotoUrl      String
+  characterDescription String?
+  sortOrder            Int         @default(0)
+
+  order                Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@index([orderId])
 }

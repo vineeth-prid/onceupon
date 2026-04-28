@@ -7,7 +7,7 @@ import { OrdersModule } from './orders/orders.module';
 import { QueueModule } from './queue/queue.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
-import { UsersModule } from './users/users.module';
+import { ReviewModule } from './reviews/review.module';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { UsersModule } from './users/users.module';
     OrdersModule,
     QueueModule,
     AdminModule,
-    UsersModule,
+    ReviewModule,
   ],
   controllers: [AppController],
 })

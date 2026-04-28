@@ -55,15 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       getMe()
-        .then(setUser)
-        .catch(() => {
-          logout();
-        })
+        .then((user) => setUser(user))
+        .catch(() => logout())
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, logout]);
 
   return (
     <AuthContext.Provider

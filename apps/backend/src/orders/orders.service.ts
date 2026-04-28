@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { CreateOrderInput, OrderStatus, STATUS_TRANSITIONS } from '@bookmagic/shared';
+import { CreateOrderInput, CreateFamilyOrderInput, OrderStatus, STATUS_TRANSITIONS } from '@bookmagic/shared';
 
 @Injectable()
 export class OrdersService {
@@ -23,6 +23,53 @@ export class OrdersService {
     });
   }
 
+  async createFamilyOrder(dto: CreateFamilyOrderInput & { email?: string }, userId?: string) {
+    // Find the main child member to populate backward-compatible fields
+    const mainChild = dto.familyMembers.find((m) => m.role === 'MAIN_CHILD');
+    if (!mainChild) {
+      throw new BadRequestException('Family must include a MAIN_CHILD member');
+    }
+
+    return this.prisma.$transaction(async (tx: any) => {
+      const order = await tx.order.create({
+        data: {
+          childName: mainChild.name,
+          childAge: mainChild.age || dto.childAge,
+          childGender: (mainChild.gender as any) || dto.childGender,
+          theme: dto.theme,
+          illustrationStyle: dto.illustrationStyle || 'disney-character',
+          customStoryPrompt: dto.customStoryPrompt,
+          photoUrl: mainChild.croppedPhotoUrl,
+          familyMode: true,
+          groupPhotoUrl: dto.groupPhotoUrl,
+          email: dto.email,
+          status: 'CREATED',
+          ...(userId ? { userId } : {}),
+        },
+      });
+
+      // Create FamilyMember records
+      for (const member of dto.familyMembers) {
+        await tx.familyMember.create({
+          data: {
+            orderId: order.id,
+            role: member.role as any,
+            name: member.name,
+            age: member.age,
+            gender: member.gender,
+            croppedPhotoUrl: member.croppedPhotoUrl,
+            sortOrder: member.sortOrder,
+          },
+        });
+      }
+
+      return tx.order.findUnique({
+        where: { id: order.id },
+        include: { familyMembers: { orderBy: { sortOrder: 'asc' } } },
+      });
+    });
+  }
+
   async findAllAdmin() {
     return this.prisma.order.findMany({
       include: {
@@ -40,7 +87,7 @@ export class OrdersService {
     const totalBooks = await this.prisma.order.count({
       where: {
         status: {
-          in: ['PREVIEW_READY', 'PAYMENT_PENDING', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED']
+          in: ['PREVIEW_READY', 'PAYMENT_PENDING', 'PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED']
         }
       }
     });
@@ -68,7 +115,7 @@ export class OrdersService {
     // Paid orders count for conversion rate
     const paidOrdersCount = await this.prisma.order.count({
       where: {
-        status: { in: ['PAID', 'PREVIEW_READY', 'PRINTING', 'SHIPPED', 'DELIVERED'] }
+        status: { in: ['PAID', 'PREVIEW_READY', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'] }
       }
     });
 
@@ -124,12 +171,19 @@ export class OrdersService {
       where: { id },
       include: {
         pages: { orderBy: { pageNumber: 'asc' } },
+        familyMembers: { orderBy: { sortOrder: 'asc' } },
       },
     });
     if (!order) {
       throw new NotFoundException(`Order ${id} not found`);
     }
     return order;
+  }
+
+  async findByPaymentId(paymentId: string) {
+    return this.prisma.order.findUnique({
+      where: { paymentId },
+    });
   }
 
   async updateStatus(id: string, newStatus: OrderStatus) {
@@ -180,7 +234,7 @@ export class OrdersService {
     return this.prisma.order.findMany({
       where: {
         status: {
-          in: ['PREVIEW_READY', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED']
+          in: ['PREVIEW_READY', 'PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED']
         }
       },
       include: {

@@ -3,6 +3,7 @@ import { VideoBackground } from '../components/VideoBackground';
 import BookShowcase from '../components/BookShowcase';
 import OccasionGallery from '../components/OccasionGallery';
 import VideoTestimonials from '../components/VideoTestimonials';
+import { HowItWorksDemo } from '../components/HowItWorksDemo';
 import { Footer } from '../components/Footer';
 
 export function LandingPage() {
@@ -47,6 +48,9 @@ export function LandingPage() {
 
       {/* Book Flip Animation Showcase */}
       <BookShowcase />
+
+      {/* How It Works Interactive Demo */}
+      <HowItWorksDemo />
 
       {/* Video Testimonials */}
       <VideoTestimonials />

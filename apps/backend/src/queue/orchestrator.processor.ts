@@ -42,6 +42,12 @@ export class OrchestratorProcessor extends WorkerHost {
       // 1. Generate only 1 page of story (not the full book)
       await this.ordersService.updateStatus(orderId, OrderStatus.STORY_GENERATING);
       const order = await this.ordersService.findById(orderId);
+      const isFamilyMode = order.familyMode && order.familyMembers && order.familyMembers.length >= 2;
+
+      // Build familyMembers info for story generation if in family mode
+      const familyMembersInfo = isFamilyMode
+        ? order.familyMembers.map((m: any) => ({ role: m.role, name: m.name, age: m.age, gender: m.gender }))
+        : undefined;
 
       const previewStory = await this.storyService.generatePreviewPage(
         order.childName,
@@ -49,6 +55,7 @@ export class OrchestratorProcessor extends WorkerHost {
         order.childGender,
         order.theme,
         order.customStoryPrompt || undefined,
+        familyMembersInfo,
       );
 
       // Save the preview story (just title + 1 page)
@@ -75,63 +82,135 @@ export class OrchestratorProcessor extends WorkerHost {
       });
 
       await this.ordersService.updateStatus(orderId, OrderStatus.STORY_COMPLETE);
-      this.logger.log(`Preview story generated: "${previewStory.title}"`);
+      this.logger.log(`Preview story generated: "${previewStory.title}"${isFamilyMode ? ' (family mode)' : ''}`);
 
       // 2. Generate preview image (only 1)
       await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_GENERATING);
 
-      // 2a. Character description
-      let characterDescription = '';
-      try {
-        characterDescription = await this.imageService.describeCharacter(
-          order.photoUrl,
-          order.childName,
-          order.childAge,
-          order.childGender,
+      if (isFamilyMode) {
+        // ─── Family Mode Preview ───
+        // 2a. Describe all family members (keyed by member ID, not role)
+        const descriptions = await this.imageService.describeMultipleCharacters(order.familyMembers as any);
+
+        // Save descriptions to each FamilyMember record by ID
+        for (const member of order.familyMembers) {
+          const desc = descriptions.get((member as any).id) || '';
+          if (desc) {
+            await this.prisma.familyMember.update({
+              where: { id: (member as any).id },
+              data: { characterDescription: desc },
+            });
+          }
+        }
+
+        // Also save main child description to order for backward compat
+        const mainChild = order.familyMembers.find((m: any) => m.role === 'MAIN_CHILD');
+        const mainChildDesc = mainChild ? (descriptions.get((mainChild as any).id) || '') : '';
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { characterDescription: mainChildDesc },
+        });
+
+        // 2b. Reference sheet (main child only)
+        const refUrl = await this.imageService.generateReferenceSheet(
+          mainChild ? (mainChild as any).croppedPhotoUrl : order.photoUrl,
+          orderId,
+          order.illustrationStyle,
         );
         await this.prisma.order.update({
           where: { id: orderId },
-          data: { characterDescription },
+          data: { referenceSheetUrl: refUrl },
         });
-        this.logger.log(`Character description generated for ${order.childName}`);
-      } catch (error) {
-        this.logger.warn(`Character description failed, continuing without it: ${(error as Error).message}`);
-      }
 
-      // 2b. Reference sheet
-      const refUrl = await this.imageService.generateReferenceSheet(
-        order.photoUrl,
-        orderId,
-        order.illustrationStyle,
-      );
-      await this.prisma.order.update({
-        where: { id: orderId },
-        data: { referenceSheetUrl: refUrl },
-      });
-      this.logger.log(`Reference sheet generated`);
+        // 2c. Generate family preview image
+        const page = await this.prisma.page.findFirst({
+          where: { orderId },
+          orderBy: { pageNumber: 'asc' },
+        });
 
-      // 2c. Generate the single preview page image
-      const page = await this.prisma.page.findFirst({
-        where: { orderId },
-        orderBy: { pageNumber: 'asc' },
-      });
+        if (page) {
+          const charactersInScene = (previewPage as any).charactersInScene ||
+            order.familyMembers.map((m: any) => m.role);
 
-      if (page) {
-        await this.processPageImage(
-          orderId,
+          // Include gender and name for each member so the image pipeline
+          // can build gender-specific prompts (man vs woman)
+          const membersWithDescriptions = order.familyMembers.map((m: any) => ({
+            role: m.role,
+            gender: m.gender,
+            name: m.name,
+            croppedPhotoUrl: m.croppedPhotoUrl,
+            characterDescription: descriptions.get(m.id) || m.characterDescription,
+          }));
+
+          await this.processFamilyPageImage(
+            orderId,
+            membersWithDescriptions,
+            page,
+            charactersInScene,
+            undefined,
+            mainChildDesc,
+            order.childGender,
+            page.layout,
+            order.illustrationStyle,
+          );
+
+          const updatedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+          if (updatedPage?.status === 'FAILED') {
+            this.logger.warn(`Family preview image failed, retrying once...`);
+            await this.processFamilyPageImage(
+              orderId,
+              membersWithDescriptions,
+              page,
+              charactersInScene,
+              undefined,
+              mainChildDesc,
+              order.childGender,
+              page.layout,
+              order.illustrationStyle,
+            );
+
+            const retriedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+            if (retriedPage?.status === 'FAILED') {
+              throw new Error(`Family preview image generation failed after retry`);
+            }
+          }
+        }
+      } else {
+        // ─── Solo Mode Preview (unchanged) ───
+        let characterDescription = '';
+        try {
+          characterDescription = await this.imageService.describeCharacter(
+            order.photoUrl,
+            order.childName,
+            order.childAge,
+            order.childGender,
+          );
+          await this.prisma.order.update({
+            where: { id: orderId },
+            data: { characterDescription },
+          });
+          this.logger.log(`Character description generated for ${order.childName}`);
+        } catch (error) {
+          this.logger.warn(`Character description failed, continuing without it: ${(error as Error).message}`);
+        }
+
+        const refUrl = await this.imageService.generateReferenceSheet(
           order.photoUrl,
-          page,
-          undefined,
-          characterDescription,
-          order.childGender,
-          page.layout,
+          orderId,
           order.illustrationStyle,
         );
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { referenceSheetUrl: refUrl },
+        });
+        this.logger.log(`Reference sheet generated`);
 
-        // Verify the page image was actually generated
-        const updatedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
-        if (updatedPage?.status === 'FAILED') {
-          this.logger.warn(`Preview image failed for page ${page.pageNumber}, retrying once...`);
+        const page = await this.prisma.page.findFirst({
+          where: { orderId },
+          orderBy: { pageNumber: 'asc' },
+        });
+
+        if (page) {
           await this.processPageImage(
             orderId,
             order.photoUrl,
@@ -143,18 +222,33 @@ export class OrchestratorProcessor extends WorkerHost {
             order.illustrationStyle,
           );
 
-          const retriedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
-          if (retriedPage?.status === 'FAILED') {
-            throw new Error(`Preview image generation failed after retry for page ${page.pageNumber}`);
-          }
-        }
+          const updatedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+          if (updatedPage?.status === 'FAILED') {
+            this.logger.warn(`Preview image failed for page ${page.pageNumber}, retrying once...`);
+            await this.processPageImage(
+              orderId,
+              order.photoUrl,
+              page,
+              undefined,
+              characterDescription,
+              order.childGender,
+              page.layout,
+              order.illustrationStyle,
+            );
 
-        this.logger.log(`Preview image generated for page ${page.pageNumber}`);
+            const retriedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
+            if (retriedPage?.status === 'FAILED') {
+              throw new Error(`Preview image generation failed after retry for page ${page.pageNumber}`);
+            }
+          }
+
+          this.logger.log(`Preview image generated for page ${page.pageNumber}`);
+        }
       }
 
       // Set status to PREVIEW_READY (with only 1 image)
       await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
-      this.logger.log(`Order ${orderId} preview ready — 1 sample image generated`);
+      this.logger.log(`Order ${orderId} preview ready — 1 sample image generated${isFamilyMode ? ' (family mode)' : ''}`);
 
     } catch (error) {
       this.logger.error(`Order ${orderId} preview failed: ${(error as Error).message}`);
@@ -177,45 +271,60 @@ export class OrchestratorProcessor extends WorkerHost {
     try {
       const order = await this.ordersService.findById(orderId);
       const characterDescription = (order as any).characterDescription || '';
+      const isFamilyMode = order.familyMode && order.familyMembers && order.familyMembers.length >= 2;
 
       // 1. Generate the FULL story (16 pages) — replacing the 1-page preview
       await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_GENERATING);
 
-      const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
-      const story = staticStory
-        ? staticStory
-        : await this.storyService.generateStory(
-            order.childName,
-            order.childAge,
-            order.childGender,
-            order.theme,
-            order.customStoryPrompt || undefined,
-          );
-      this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages`);
+      const familyMembersInfo = isFamilyMode
+        ? order.familyMembers.map((m: any) => ({ role: m.role, name: m.name, age: m.age, gender: m.gender }))
+        : undefined;
 
-      // Save the full story JSON (replaces preview)
-      await this.prisma.order.update({
-        where: { id: orderId },
-        data: { storyJson: story as any },
-      });
+      const existingStory = order.storyJson as unknown as StoryOutputInput | null;
+      const isFullStoryAlreadyGenerated = existingStory && existingStory.pages && existingStory.pages.length > 1;
+      let storyData: StoryOutputInput;
 
-      // Delete old preview page records
-      await this.prisma.page.deleteMany({ where: { orderId } });
+      if (!isFullStoryAlreadyGenerated) {
+        const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
+        const story = staticStory
+          ? staticStory
+          : await this.storyService.generateStory(
+              order.childName,
+              order.childAge,
+              order.childGender,
+              order.theme,
+              order.customStoryPrompt || undefined,
+              familyMembersInfo,
+            );
+        this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages${isFamilyMode ? ' (family mode)' : ''}`);
 
-      // Create all page records
-      const storyData = story as StoryOutputInput;
-      for (const page of storyData.pages) {
-        await this.prisma.page.create({
-          data: {
-            orderId,
-            pageNumber: page.pageNumber,
-            text: page.text,
-            imagePrompt: page.imagePrompt,
-            sceneDescription: page.sceneDescription,
-            layout: page.layout || 'full-bleed-text-bottom',
-            status: 'PENDING',
-          },
+        // Save the full story JSON (replaces preview)
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { storyJson: story as any },
         });
+
+        // Delete old preview page records
+        await this.prisma.page.deleteMany({ where: { orderId } });
+
+        // Create all page records
+        storyData = story as StoryOutputInput;
+        for (const page of storyData.pages) {
+          await this.prisma.page.create({
+            data: {
+              orderId,
+              pageNumber: page.pageNumber,
+              text: page.text,
+              imagePrompt: page.imagePrompt,
+              sceneDescription: page.sceneDescription,
+              layout: page.layout || 'full-bleed-text-bottom',
+              status: 'PENDING',
+            },
+          });
+        }
+      } else {
+        storyData = existingStory;
+        this.logger.log(`Reusing already generated full story: "${storyData.title}"`);
       }
 
       // 2. Generate all page images
@@ -224,7 +333,23 @@ export class OrchestratorProcessor extends WorkerHost {
         orderBy: { pageNumber: 'asc' },
       });
 
+      // Build family members with descriptions AND gender for family mode
+      const membersWithDescriptions = isFamilyMode
+        ? order.familyMembers.map((m: any) => ({
+            role: m.role,
+            gender: m.gender,
+            name: m.name,
+            croppedPhotoUrl: m.croppedPhotoUrl,
+            characterDescription: m.characterDescription,
+          }))
+        : [];
+
+      // Delay between pages: 18s for family mode (more API calls), 12s for solo
+      const pageDelay = isFamilyMode ? 18000 : 12000;
+
       for (const page of pages) {
+        if (page.status === 'COMPLETE') continue;
+
         const storyPage = storyData.pages.find((p: any) => p.pageNumber === page.pageNumber);
 
         if (page.layout === 'chapter-title') {
@@ -236,18 +361,37 @@ export class OrchestratorProcessor extends WorkerHost {
           continue;
         }
 
-        await this.processPageImage(
-          orderId,
-          order.photoUrl,
-          page,
-          storyPage?.imageComposition,
-          characterDescription,
-          order.childGender,
-          page.layout,
-          order.illustrationStyle,
-        );
-        // 12s delay between requests to stay within rate limit
-        await new Promise((resolve) => setTimeout(resolve, 12000));
+        if (isFamilyMode) {
+          // Family mode: use two-stage pipeline (PhotoMaker + Easel face swap)
+          const charactersInScene = (storyPage as any)?.charactersInScene ||
+            order.familyMembers.map((m: any) => m.role);
+
+          await this.processFamilyPageImage(
+            orderId,
+            membersWithDescriptions,
+            page,
+            charactersInScene,
+            storyPage?.imageComposition,
+            characterDescription,
+            order.childGender,
+            page.layout,
+            order.illustrationStyle,
+          );
+        } else {
+          // Solo mode: standard single-person pipeline
+          await this.processPageImage(
+            orderId,
+            order.photoUrl,
+            page,
+            storyPage?.imageComposition,
+            characterDescription,
+            order.childGender,
+            page.layout,
+            order.illustrationStyle,
+          );
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, pageDelay));
       }
 
       // Retry failed pages once
@@ -259,17 +403,35 @@ export class OrchestratorProcessor extends WorkerHost {
         this.logger.log(`Retrying ${failedPages.length} failed pages...`);
         for (const page of failedPages) {
           const storyPage = storyData.pages.find((p: any) => p.pageNumber === page.pageNumber);
-          await this.processPageImage(
-            orderId,
-            order.photoUrl,
-            page,
-            storyPage?.imageComposition,
-            characterDescription,
-            order.childGender,
-            page.layout,
-            order.illustrationStyle,
-          );
-          await new Promise((resolve) => setTimeout(resolve, 12000));
+
+          if (isFamilyMode) {
+            const charactersInScene = (storyPage as any)?.charactersInScene ||
+              order.familyMembers.map((m: any) => m.role);
+            await this.processFamilyPageImage(
+              orderId,
+              membersWithDescriptions,
+              page,
+              charactersInScene,
+              storyPage?.imageComposition,
+              characterDescription,
+              order.childGender,
+              page.layout,
+              order.illustrationStyle,
+            );
+          } else {
+            await this.processPageImage(
+              orderId,
+              order.photoUrl,
+              page,
+              storyPage?.imageComposition,
+              characterDescription,
+              order.childGender,
+              page.layout,
+              order.illustrationStyle,
+            );
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, pageDelay));
         }
       }
 
@@ -282,17 +444,17 @@ export class OrchestratorProcessor extends WorkerHost {
       if (allComplete) {
         await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
         await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
-        await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
+        await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
         this.logger.log(`Order ${orderId} complete — all images generated`);
-        await this.sendBookReadyNotification(orderId, order, story.title);
+        await this.sendBookReadyNotification(orderId, order, storyData.title);
       } else {
         const failedCount = updatedPages.filter((p: any) => p.status === 'FAILED').length;
         this.logger.warn(`Order ${orderId}: ${failedCount} pages failed`);
         if (failedCount <= 3) {
           await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
           await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
-          await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
-          await this.sendBookReadyNotification(orderId, order, story.title);
+          await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
+          await this.sendBookReadyNotification(orderId, order, storyData.title);
         } else {
           await this.ordersService.updateStatus(orderId, OrderStatus.FAILED);
         }
@@ -343,6 +505,58 @@ export class OrchestratorProcessor extends WorkerHost {
     } catch (error) {
       this.logger.error(`Failed to send notification for order ${orderId}: ${(error as Error).message}`);
       // Never throw — notification failure must not affect order status
+    }
+  }
+
+  private async processFamilyPageImage(
+    orderId: string,
+    familyMembers: Array<{ role: string; croppedPhotoUrl: string; characterDescription?: string | null }>,
+    page: { id: string; pageNumber: number; imagePrompt: string; layout?: string },
+    charactersInScene: string[],
+    imageComposition?: string,
+    primaryCharacterDescription?: string,
+    primaryGender?: string,
+    layout?: string,
+    illustrationStyle?: string,
+  ): Promise<void> {
+    try {
+      await this.prisma.page.update({
+        where: { id: page.id },
+        data: { status: 'GENERATING' },
+      });
+
+      const mainChild = familyMembers.find((m) => m.role === 'MAIN_CHILD');
+      const primaryPhotoUrl = mainChild?.croppedPhotoUrl || '';
+
+      const imageUrl = await this.imageService.generateFamilyPageImage(
+        primaryPhotoUrl,
+        familyMembers,
+        page.imagePrompt,
+        charactersInScene,
+        orderId,
+        page.pageNumber,
+        imageComposition,
+        primaryCharacterDescription,
+        primaryGender,
+        layout || page.layout,
+        illustrationStyle,
+      );
+
+      await this.prisma.page.update({
+        where: { id: page.id },
+        data: { imageUrl, status: 'COMPLETE' },
+      });
+
+      this.logger.log(`Page ${page.pageNumber} family image complete`);
+    } catch (error) {
+      this.logger.error(`Page ${page.pageNumber} family image failed: ${(error as Error).message}`);
+      await this.prisma.page.update({
+        where: { id: page.id },
+        data: {
+          status: 'FAILED',
+          retryCount: { increment: 1 },
+        },
+      });
     }
   }
 

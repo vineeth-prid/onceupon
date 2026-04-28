@@ -481,7 +481,6 @@ export default function BookShowcase() {
               transform: `translateX(${bookShift}px)`,
               transition: `transform ${ANIM_MS}ms ${ANIM_EASE}`,
             }}>
-              {/* @ts-ignore — react-pageflip typings */}
               <HTMLFlipBook
                 key={useSpread ? 'spread' : 'portrait'}
                 ref={bookRef}

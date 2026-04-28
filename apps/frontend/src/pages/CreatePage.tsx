@@ -139,6 +139,43 @@ export function CreatePage() {
             {customPrompt.length} / 2000
           </div>
 
+          {/* Family Test Prompt */}
+          <div style={{
+            marginBottom: '1.2rem',
+            padding: '1rem',
+            background: 'linear-gradient(135deg, #E8F5E9, #F3E5F5)',
+            borderRadius: 14,
+            border: '1px solid #C8E6C9',
+          }}>
+            <p style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              color: '#2E7D32',
+              margin: '0 0 0.5rem',
+            }}>
+              Family Story (3 members — child + mother + father):
+            </p>
+            <button
+              onClick={() => setCustomPrompt('A magical family adventure at an enchanted park. The father carries the child on his shoulders while the mother points at singing flowers. They discover a cloud playground, skip stones at a glowing lake, and walk through a firefly meadow at sunset. The father is a tall strong man and the mother is a graceful woman. The whole family dances together under the stars before heading home for a cozy bedtime.')}
+              style={{
+                background: 'linear-gradient(135deg, #43A047, #AB47BC)',
+                border: 'none',
+                borderRadius: 10,
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: '#fff',
+                transition: 'all 0.2s',
+                width: '100%',
+              }}
+            >
+              Use Family Test Prompt
+            </button>
+          </div>
+
           <div style={{ marginBottom: '1.5rem' }}>
             <p style={{
               fontFamily: "'Inter', sans-serif",

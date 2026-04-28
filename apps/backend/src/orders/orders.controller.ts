@@ -17,7 +17,7 @@ import { AdminGuard } from '../auth/admin.guard';
 import { Response, Request } from 'express';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { createOrderSchema, CreateOrderInput } from '@bookmagic/shared';
+import { createOrderSchema, createFamilyOrderSchema, CreateOrderInput, CreateFamilyOrderInput } from '@bookmagic/shared';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { OrdersService } from './orders.service';
 import { RazorpayService } from './razorpay.service';
@@ -147,6 +147,16 @@ export class OrdersController {
     return order;
   }
 
+  @Post('family')
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ZodValidationPipe(createFamilyOrderSchema))
+  async createFamily(@Req() req: Request, @Body() dto: CreateFamilyOrderInput) {
+    const userId = (req.user as any)?.id;
+    const order = await this.ordersService.createFamilyOrder(dto, userId);
+    await this.queue.add(JobName.PROCESS_ORDER, { orderId: order!.id });
+    return order;
+  }
+
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async findAll(@Req() req: Request) {
@@ -215,6 +225,28 @@ export class OrdersController {
     }
 
     return { message: 'Full book generation started', orderId: id };
+  }
+
+  /**
+   * TEST ONLY: Trigger full book generation without payment.
+   * Skips payment check — sets status to PAID and queues COMPLETE_ORDER.
+   * Remove or protect this endpoint in production.
+   */
+  @Post(':id/test-generate')
+  async testGenerate(@Param('id') id: string) {
+    const order = await this.ordersService.findById(id);
+
+    if (!['PREVIEW_READY', 'PAYMENT_PENDING', 'CREATED', 'STORY_COMPLETE', 'IMAGES_COMPLETE'].includes(order.status)) {
+      // Already generating or completed
+      if (order.status === 'PAID') {
+        return { message: 'Already paid, generation may be in progress', orderId: id, status: order.status };
+      }
+    }
+
+    await this.ordersService.updateStatus(id, 'PAID' as any);
+    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+
+    return { message: 'TEST: Full book generation started (no payment)', orderId: id };
   }
 
   @Get(':id/pdf')

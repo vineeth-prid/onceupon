@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { TOTAL_PAGES, BOOK_TEMPLATES, ILLUSTRATION_STYLES } from '../constants';
+import { TOTAL_PAGES, BOOK_TEMPLATES, ILLUSTRATION_STYLES, FAMILY_ROLES } from '../constants';
 
 const bookTemplateIds = BOOK_TEMPLATES.map((t) => t.id) as [string, ...string[]];
 const illustrationStyleIds = ILLUSTRATION_STYLES.map((s) => s.id) as [string, ...string[]];
+const familyRoles = FAMILY_ROLES as unknown as readonly [string, ...string[]];
 
 export const createOrderSchema = z.object({
   childName: z
@@ -24,8 +25,33 @@ export const createOrderSchema = z.object({
     errorMap: () => ({ message: 'Please select a valid illustration style' }),
   }).default('disney-character'),
   photoUrl: z.string().min(1, 'Photo URL is required'),
+  email: z.string().email('Invalid email address').optional(),
   customStoryPrompt: z.string().max(2000, 'Story prompt must be under 2000 characters').optional(),
 });
+
+// ─── Family Mode Schemas ─────────────────────────────────────────────────────
+
+export const familyMemberSchema = z.object({
+  role: z.enum(familyRoles, {
+    errorMap: () => ({ message: 'Invalid family role' }),
+  }),
+  name: z.string().min(1, 'Name is required').max(50),
+  age: z.number().int().min(0).max(99).optional(),
+  gender: z.string().optional(),
+  croppedPhotoUrl: z.string().min(1, 'Cropped photo URL is required'),
+  sortOrder: z.number().int().min(0).default(0),
+});
+
+export const createFamilyOrderSchema = createOrderSchema.extend({
+  familyMode: z.literal(true),
+  groupPhotoUrl: z.string().min(1, 'Group photo URL is required'),
+  familyMembers: z
+    .array(familyMemberSchema)
+    .min(2, 'At least 2 family members required')
+    .max(4, 'Maximum 4 family members'),
+});
+
+// ─── Story Page Schemas ──────────────────────────────────────────────────────
 
 export const pageLayoutEnum = z.enum([
   'full-bleed-text-bottom',
@@ -47,6 +73,7 @@ export const storyPageSchema = z.object({
   sceneDescription: z.string().min(1, 'Scene description is required'),
   layout: pageLayoutEnum,
   imageComposition: z.string().optional(),
+  charactersInScene: z.array(z.enum(familyRoles)).optional(),
 });
 
 export const storyOutputSchema = z.object({
@@ -86,6 +113,8 @@ export const uploadPhotoSchema = z.object({
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+export type CreateFamilyOrderInput = z.infer<typeof createFamilyOrderSchema>;
+export type FamilyMemberInput = z.infer<typeof familyMemberSchema>;
 export type StoryPageInput = z.infer<typeof storyPageSchema>;
 export type StoryOutputInput = z.infer<typeof storyOutputSchema>;
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>;

@@ -24,25 +24,47 @@ export class StoryService {
     childGender: string,
     theme: string,
     customStoryPrompt?: string,
-  ): Promise<{ title: string; pages: Array<{ pageNumber: number; text: string; imagePrompt: string; sceneDescription: string; layout: string }> }> {
+    familyMembers?: Array<{ role: string; name: string; age?: number | null; gender?: string | null }>,
+  ): Promise<{ title: string; pages: Array<{ pageNumber: number; text: string; imagePrompt: string; sceneDescription: string; layout: string; charactersInScene?: string[] }> }> {
     const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
     const storyContext = customStoryPrompt
       ? `Story idea: "${customStoryPrompt}"`
       : `Theme: "${theme}"`;
 
+    const isFamilyMode = familyMembers && familyMembers.length >= 2;
+
+    let familyInstructions = '';
+    let characterFields = '';
+    if (isFamilyMode) {
+      const charList = familyMembers.map((m) => {
+        const roleLabel = m.role === 'MAIN_CHILD' ? 'main child'
+          : m.role === 'PARENT' ? (m.gender === 'man' ? 'father' : m.gender === 'woman' ? 'mother' : 'parent')
+          : m.role === 'SIBLING' ? (m.gender === 'boy' ? 'younger brother' : m.gender === 'girl' ? 'younger sister' : 'sibling')
+          : m.role === 'GRANDPARENT' ? (m.gender === 'man' ? 'grandfather' : m.gender === 'woman' ? 'grandmother' : 'grandparent')
+          : m.role.toLowerCase();
+        return `${m.name} (${roleLabel}, age ${m.age || '?'})`;
+      }).join(', ');
+      familyInstructions = `\nThis is a FAMILY story featuring: ${charList}.\nIMPORTANT: Use the ACTUAL NAMES of family members in the story text (e.g., "${familyMembers[0]?.name}", "${familyMembers[1]?.name}"). Do NOT use generic labels like "the parent" or "the sibling" in story text.\nInclude at least 2 family members in the preview scene. In imagePrompt, refer to the main child as "the child" and use reference tags for others ("the father", "the mother", etc.).\n`;
+      characterFields = '\n  - "charactersInScene": array of roles appearing in the scene. Use EXACTLY these enum values: "MAIN_CHILD", "SIBLING", "PARENT", "GRANDPARENT". Do NOT use "FATHER"/"MOTHER" — always use "PARENT". Example: ["MAIN_CHILD", "PARENT", "PARENT"]';
+    }
+
+    const humanRule = isFamilyMode
+      ? 'Only include the listed family members — no strangers or crowds.'
+      : 'NO other human characters.';
+
     const prompt = `You are a children's book author. Create a SINGLE preview page for a personalized storybook.
 
 Child: ${childName}, age ${childAge}, ${childGender} (${pronoun})
-${storyContext}
+${storyContext}${familyInstructions}
 
 Return JSON with:
 - "title": a creative, catchy book title
 - "pages": array with EXACTLY 1 page object containing:
   - "pageNumber": 1
   - "text": 2-3 sentences of the opening scene, age-appropriate for ${childAge}
-  - "imagePrompt": a VERY detailed scene description for image generation. Describe the setting, lighting, atmosphere, and refer to ${childName} as "the child". NO other human characters.
+  - "imagePrompt": a VERY detailed scene description for image generation. Describe the setting, lighting, atmosphere, and refer to ${childName} as "the child". ${humanRule}
   - "sceneDescription": brief description of what's happening
-  - "layout": "full-bleed-text-bottom"
+  - "layout": "full-bleed-text-bottom"${characterFields}
 
 Return ONLY valid JSON, nothing else.`;
 
@@ -90,8 +112,9 @@ Return ONLY valid JSON, nothing else.`;
     childGender: string,
     theme: string,
     customStoryPrompt?: string,
+    familyMembers?: Array<{ role: string; name: string; age?: number | null; gender?: string | null }>,
   ): Promise<StoryOutputInput> {
-    const builder = getPromptBuilder(theme, customStoryPrompt);
+    const builder = getPromptBuilder(theme, customStoryPrompt, familyMembers);
     const prompt = builder(childName, childAge, childGender);
 
     let lastError: Error | null = null;

@@ -43,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firstName: 'Demo',
       lastName: 'User',
       email: email,
-      role: 'USER'
+      role: 'USER',
+      authProvider: 'EMAIL',
+      avatarUrl: null,
+      isVerified: false,
+      createdAt: new Date().toISOString(),
     };
     setAuthFromResponse({ token: 'mock-token', user: mockUser });
   }, [setAuthFromResponse]);
@@ -55,7 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firstName: firstName,
       lastName: lastName,
       email: email,
-      role: 'USER'
+      role: 'USER',
+      authProvider: 'EMAIL',
+      avatarUrl: null,
+      isVerified: false,
+      createdAt: new Date().toISOString(),
     };
     setAuthFromResponse({ token: 'mock-token', user: mockUser });
   }, [setAuthFromResponse]);
@@ -74,7 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstName: 'Demo',
         lastName: 'User',
         email: 'demo@example.com',
-        role: 'USER'
+        role: 'USER',
+        authProvider: 'EMAIL',
+        avatarUrl: null,
+        isVerified: false,
+        createdAt: new Date().toISOString(),
       });
       setIsLoading(false);
     } else {

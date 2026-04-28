@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HTMLFlipBook from 'react-pageflip';
 import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment, completeOrder } from '../api/orders';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -279,6 +281,7 @@ function ScrollHint({ visible }: { visible: boolean }) {
 export function PreviewPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const bookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFlipping = useRef(false);
@@ -418,10 +421,10 @@ export function PreviewPage() {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
             });
-            alert('Payment Successful!');
+            toast.success('Payment Successful!');
             fetchOrder();
           } catch (err) {
-            alert('Payment verification failed. Please contact support.');
+            toast.error('Payment verification failed. Please contact support.');
           }
         },
         prefill: {
@@ -437,7 +440,7 @@ export function PreviewPage() {
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (err) {
-      alert('Failed to initiate payment. Please try again.');
+      toast.error('Failed to initiate payment. Please try again.');
     }
     setPaying(false);
   };
@@ -677,7 +680,6 @@ export function PreviewPage() {
             transform: `translateX(${bookShift}px)`,
             transition: `transform ${ANIM_MS}ms ${ANIM_EASE}`,
           }}>
-            {/* @ts-ignore — react-pageflip typings */}
             <HTMLFlipBook
               key={useSpread ? 'spread' : 'portrait'}
               ref={bookRef}
@@ -902,10 +904,10 @@ export function PreviewPage() {
                 onClick={async () => {
                   try {
                     await completeOrder(orderId!);
-                    alert('Re-starting generation. Please wait a few minutes.');
+                    toast.success('Re-starting generation. Please wait a few minutes.');
                     fetchOrder();
                   } catch (err) {
-                    alert('Failed to retry. Please contact support.');
+                    toast.error('Failed to retry. Please contact support.');
                   }
                 }}
                 className="btn-primary"

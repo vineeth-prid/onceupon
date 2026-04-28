@@ -87,7 +87,7 @@ export class OrdersService {
     const totalBooks = await this.prisma.order.count({
       where: {
         status: {
-          in: ['PREVIEW_READY', 'PAYMENT_PENDING', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED']
+          in: ['PREVIEW_READY', 'PAYMENT_PENDING', 'PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED']
         }
       }
     });
@@ -115,7 +115,7 @@ export class OrdersService {
     // Paid orders count for conversion rate
     const paidOrdersCount = await this.prisma.order.count({
       where: {
-        status: { in: ['PAID', 'PREVIEW_READY', 'PRINTING', 'SHIPPED', 'DELIVERED'] }
+        status: { in: ['PAID', 'PREVIEW_READY', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'] }
       }
     });
 
@@ -180,6 +180,12 @@ export class OrdersService {
     return order;
   }
 
+  async findByPaymentId(paymentId: string) {
+    return this.prisma.order.findUnique({
+      where: { paymentId },
+    });
+  }
+
   async updateStatus(id: string, newStatus: OrderStatus) {
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) {
@@ -228,7 +234,7 @@ export class OrdersService {
     return this.prisma.order.findMany({
       where: {
         status: {
-          in: ['PREVIEW_READY', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED']
+          in: ['PREVIEW_READY', 'PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED']
         }
       },
       include: {

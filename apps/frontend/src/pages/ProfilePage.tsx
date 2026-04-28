@@ -431,6 +431,7 @@ function OrdersTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
       PREVIEW_READY: { label: 'Preview Ready', bg: '#E3F2FD', color: '#1565C0' },
       PAYMENT_PENDING: { label: 'Payment Pending', bg: '#FFF3E0', color: '#E65100' },
       PAID: { label: 'Paid', bg: '#E8F5E9', color: '#2E7D32' },
+      ORDER_CONFIRMED: { label: 'Confirmed', bg: '#E8F5E9', color: '#2E7D32' },
       PRINTING: { label: 'Printing', bg: '#F3E5F5', color: '#7B1FA2' },
       SHIPPED: { label: 'Shipped', bg: '#E3F2FD', color: '#1565C0' },
       DELIVERED: { label: 'Delivered', bg: '#000', color: '#FFF' },
@@ -468,10 +469,10 @@ function OrdersTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
 
   // Filter to only orders that have progressed past creation (have a story or payment)
   const paidOrders = orders.filter((o) =>
-    ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(o.status),
+    ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(o.status),
   );
   const activeOrders = orders.filter((o) =>
-    !['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED'].includes(o.status)
+    !['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED'].includes(o.status)
     && o.pages && o.pages.length > 0,
   );
 

@@ -293,29 +293,45 @@ export class OrchestratorProcessor extends WorkerHost {
           );
       this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages${isFamilyMode ? ' (family mode)' : ''}`);
 
-      // Save the full story JSON (replaces preview)
-      await this.prisma.order.update({
-        where: { id: orderId },
-        data: { storyJson: story as any },
-      });
+      if (!isFullStoryAlreadyGenerated) {
+        const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
+        const story = staticStory
+          ? staticStory
+          : await this.storyService.generateStory(
+              order.childName,
+              order.childAge,
+              order.childGender,
+              order.theme,
+              order.customStoryPrompt || undefined,
+            );
+        this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages`);
 
-      // Delete old preview page records
-      await this.prisma.page.deleteMany({ where: { orderId } });
-
-      // Create all page records
-      const storyData = story as StoryOutputInput;
-      for (const page of storyData.pages) {
-        await this.prisma.page.create({
-          data: {
-            orderId,
-            pageNumber: page.pageNumber,
-            text: page.text,
-            imagePrompt: page.imagePrompt,
-            sceneDescription: page.sceneDescription,
-            layout: page.layout || 'full-bleed-text-bottom',
-            status: 'PENDING',
-          },
+        // Save the full story JSON (replaces preview)
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { storyJson: story as any },
         });
+
+        // Delete old preview page records
+        await this.prisma.page.deleteMany({ where: { orderId } });
+
+        // Create all page records
+        storyData = story as StoryOutputInput;
+        for (const page of storyData.pages) {
+          await this.prisma.page.create({
+            data: {
+              orderId,
+              pageNumber: page.pageNumber,
+              text: page.text,
+              imagePrompt: page.imagePrompt,
+              sceneDescription: page.sceneDescription,
+              layout: page.layout || 'full-bleed-text-bottom',
+              status: 'PENDING',
+            },
+          });
+        }
+      } else {
+        this.logger.log(`Reusing already generated full story: "${storyData.title}"`);
       }
 
       // 2. Generate all page images
@@ -339,6 +355,8 @@ export class OrchestratorProcessor extends WorkerHost {
       const pageDelay = isFamilyMode ? 18000 : 12000;
 
       for (const page of pages) {
+        if (page.status === 'COMPLETE') continue;
+
         const storyPage = storyData.pages.find((p: any) => p.pageNumber === page.pageNumber);
 
         if (page.layout === 'chapter-title') {
@@ -433,7 +451,7 @@ export class OrchestratorProcessor extends WorkerHost {
       if (allComplete) {
         await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
         await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
-        await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
+        await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
         this.logger.log(`Order ${orderId} complete — all images generated`);
         await this.sendBookReadyNotification(orderId, order, story.title);
       } else {
@@ -442,7 +460,7 @@ export class OrchestratorProcessor extends WorkerHost {
         if (failedCount <= 3) {
           await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
           await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
-          await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
+          await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
           await this.sendBookReadyNotification(orderId, order, story.title);
         } else {
           await this.ordersService.updateStatus(orderId, OrderStatus.FAILED);

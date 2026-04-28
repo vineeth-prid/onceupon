@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
 import { api } from '../api/client';
 
@@ -101,6 +102,14 @@ export function CheckoutPage() {
     }).catch(() => {});
   }, [orderId]);
 
+  useEffect(() => {
+    // If a coupon is active but the user changes their cart items/format,
+    // re-validate to update the discountAmount dynamically.
+    if (appliedCoupon) {
+      applyPromo();
+    }
+  }, [format, delivery, addons, appliedCoupon]);
+
   const [card, setCard] = useState({
     number: '', expiry: '', cvv: '', name: '',
   });
@@ -111,7 +120,8 @@ export function CheckoutPage() {
     setAddons(prev => ({ ...prev, [id]: !prev[id] }));
 
   const applyPromo = async () => {
-    if (!promo.trim()) return;
+    const codeToApply = promo.trim() || appliedCoupon?.code;
+    if (!codeToApply) return;
     
     const chosen = FORMATS.find(f => f.id === format)!;
     const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
@@ -119,7 +129,7 @@ export function CheckoutPage() {
     const subtotal = (chosen.price + deliveryPrice + addonTotal) * 100;
 
     try {
-      const result = await validateCoupon(promo.trim(), subtotal);
+      const result = await validateCoupon(codeToApply, subtotal);
       setAppliedCoupon(result.coupon);
       setDiscountPct(result.coupon.type === 'percentage' ? result.coupon.value : 0);
       setDiscountAmount(result.discountAmount);
@@ -185,10 +195,16 @@ export function CheckoutPage() {
 
       const rzpOrder = await createRazorpayOrder(
         orderId, 
-        breakdown.total, 
+        subtotal, 
         isPrint ? shipping : null,
         appliedCoupon?.code
       );
+
+      // Bypass Razorpay if amount is 0 (100% coupon)
+      if (rzpOrder.amount === 0) {
+        navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
+        return;
+      }
       
       const options = {
         key: RZP_KEY_ID,
@@ -211,7 +227,7 @@ export function CheckoutPage() {
             navigate(`/progress/${orderId}`, { state: { mode: 'full' } });
           } catch (err) {
             console.error('Payment verification failed:', err);
-            alert('Payment verification failed. Please contact support.');
+            toast.error('Payment verification failed. Please contact support.');
             setPaying(false);
           }
         },
@@ -230,8 +246,8 @@ export function CheckoutPage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-    } catch (err) {
-      alert('Failed to initiate payment. Please try again.');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
       setPaying(false);
     }
   };
@@ -548,6 +564,7 @@ export function CheckoutPage() {
                 placeholder="Enter code"
                 value={promo}
                 onChange={e => { setPromo(e.target.value); setPromoApplied(null); }}
+                disabled={appliedCoupon !== null}
               />
               <button
                 onClick={applyPromo}
@@ -644,7 +661,7 @@ export function CheckoutPage() {
 
               {breakdown.discount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2E7D32' }}>
-                  <span>Discount ({discountPct}%)</span>
+                  <span>Discount {discountPct > 0 ? `(${discountPct}%)` : ''}</span>
                   <span>-{formatPrice(breakdown.discount)}</span>
                 </div>
               )}

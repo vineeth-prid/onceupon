@@ -53,7 +53,7 @@ export class OrdersController {
 
     if (couponCode) {
       try {
-        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100);
+        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100, order.userId);
         discountAmount = validation.discountAmount; // in paise
         amount = Math.max(0, amount - (discountAmount / 100)); // amount is in INR
         couponId = validation.coupon.id;
@@ -98,6 +98,33 @@ export class OrdersController {
       await this.ordersService.updateOrder(id, updateData);
     }
 
+    // Handle 100% discount / free orders without calling Razorpay
+    if (amount === 0) {
+      if (order.status === 'PAID') {
+        return { id: 'free_order', amount: 0, currency: 'INR' };
+      }
+
+      await this.ordersService.updateOrder(id, {
+        paymentId: 'FREE_100_PCT_' + Math.random().toString(36).substring(7),
+        paymentProvider: 'free',
+        status: 'PAID',
+        amountPaid: 0,
+        currency: 'INR',
+      });
+      
+      if (couponId) {
+        await this.couponsService.incrementUsage(couponId);
+      }
+      
+      await this.queue.add(
+        JobName.COMPLETE_ORDER, 
+        { orderId: id },
+        { jobId: `free_${id}` }
+      );
+      
+      return { id: 'free_order', amount: 0, currency: 'INR' };
+    }
+
     const razorpayOrder = await this.razorpayService.createOrder(id, amount);
     
     await this.ordersService.updateOrder(id, {
@@ -128,14 +155,44 @@ export class OrdersController {
       throw new BadRequestException('Invalid payment signature');
     }
 
-    await this.ordersService.updateOrder(body.orderId, {
-      paymentId: body.razorpayPaymentId,
-      paymentProvider: 'razorpay',
-      status: 'PAID',
-    });
+    // Check if this EXACT payment ID was already processed across any order
+    const existingPayment = await this.ordersService.findByPaymentId(body.razorpayPaymentId);
+    if (existingPayment) {
+      return { success: true, message: 'Payment already processed' };
+    }
+
+    const order = await this.ordersService.findById(body.orderId);
+
+    if (order.paymentId) {
+      return { success: true, message: 'Payment already processed' };
+    }
+
+    try {
+      await this.ordersService.updateOrder(body.orderId, {
+        paymentId: body.razorpayPaymentId,
+        paymentProvider: 'razorpay',
+        status: 'PAID',
+      });
+    } catch (error: any) {
+      // P2002: Unique constraint failed on the fields: (`paymentId`)
+      if (error.code === 'P2002') {
+        return { success: true, message: 'Payment already processed' };
+      }
+      throw error;
+    }
+
+    // Increment coupon usage if a coupon was applied
+    if ((order as any).couponId) {
+      await this.couponsService.incrementUsage((order as any).couponId);
+    }
 
     // Automatically trigger full book generation upon payment verification
-    await this.queue.add(JobName.COMPLETE_ORDER, { orderId: body.orderId });
+    // Use the exact paymentId as the deterministic jobId to guarantee zero duplicate processing
+    await this.queue.add(
+      JobName.COMPLETE_ORDER, 
+      { orderId: body.orderId },
+      { jobId: body.razorpayPaymentId }
+    );
 
     return { success: true };
   }
@@ -146,7 +203,11 @@ export class OrdersController {
   async create(@Req() req: Request, @Body() dto: CreateOrderInput) {
     const userId = (req.user as any)?.id;
     const order = await this.ordersService.create(dto, userId);
-    await this.queue.add(JobName.PROCESS_ORDER, { orderId: order.id });
+    await this.queue.add(
+      JobName.PROCESS_ORDER, 
+      { orderId: order.id },
+      { jobId: `process_${order.id}` }
+    );
     return order;
   }
 
@@ -222,9 +283,13 @@ export class OrdersController {
     const order = await this.ordersService.findById(id);
 
     // Idempotent: Only update and queue if not already paid/processing
-    if (order.status !== 'PAID') {
+    if (!order.paymentId) {
       await this.ordersService.updateStatus(id, 'PAID' as any);
-      await this.queue.add(JobName.COMPLETE_ORDER, { orderId: id });
+      await this.queue.add(
+        JobName.COMPLETE_ORDER, 
+        { orderId: id },
+        { jobId: `complete_${id}` }
+      );
     }
 
     return { message: 'Full book generation started', orderId: id };

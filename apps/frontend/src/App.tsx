@@ -21,6 +21,8 @@ import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
+import { ScrollToTop } from './components/ScrollToTop';
+import { CartProvider } from './context/CartContext';
 
 function ConditionalNavBar() {
   const location = useLocation();
@@ -48,8 +50,10 @@ function GlobalSections() {
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
-        <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+        <CartProvider>
+          <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
           <ConditionalNavBar />
           <main>
             <Routes>
@@ -88,7 +92,8 @@ export function App() {
             </Routes>
           </main>
           <GlobalSections />
-        </div>
+          </div>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );

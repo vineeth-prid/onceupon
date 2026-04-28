@@ -37,35 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // MOCK LOGIN
-    const mockUser: User = {
-      id: 'demo-123',
-      firstName: 'Demo',
-      lastName: 'User',
-      email: email,
-      role: 'USER',
-      authProvider: 'EMAIL',
-      avatarUrl: null,
-      isVerified: false,
-      createdAt: new Date().toISOString(),
-    };
-    setAuthFromResponse({ token: 'mock-token', user: mockUser });
+    const res = await loginUser({ email, password });
+    setAuthFromResponse(res);
   }, [setAuthFromResponse]);
 
   const register = useCallback(async (firstName: string, lastName: string, email: string, password: string) => {
-    // MOCK REGISTER
-    const mockUser: User = {
-      id: 'demo-123',
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      role: 'USER',
-      authProvider: 'EMAIL',
-      avatarUrl: null,
-      isVerified: false,
-      createdAt: new Date().toISOString(),
-    };
-    setAuthFromResponse({ token: 'mock-token', user: mockUser });
+    const res = await registerUser({ firstName, lastName, email, password });
+    setAuthFromResponse(res);
   }, [setAuthFromResponse]);
 
   const googleLogin = useCallback(async (credential: string) => {
@@ -76,19 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // MOCK GET ME
-      setUser({
-        id: 'demo-123',
-        firstName: 'Demo',
-        lastName: 'User',
-        email: 'demo@example.com',
-        role: 'USER',
-        authProvider: 'EMAIL',
-        avatarUrl: null,
-        isVerified: false,
-        createdAt: new Date().toISOString(),
-      });
-      setIsLoading(false);
+      getMe()
+        .then((user) => setUser(user))
+        .catch(() => logout())
+        .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }

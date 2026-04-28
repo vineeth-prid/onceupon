@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
@@ -177,6 +177,10 @@ function badge(status: string): React.CSSProperties {
     color: c.color,
   };
 }
+
+/* ── Polling interval in milliseconds ── */
+const POLL_INTERVAL_MS = 30_000;
+
 
 /* ── Tab Components ── */
 
@@ -664,6 +668,36 @@ export function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initialLoadDone = useRef(false);
+
+  const fetchData = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const [statsRes, ordersRes, usersRes] = await Promise.all([
+        api.get('/admin/stats').then(res => res.data),
+        api.get('/admin/orders').then(res => res.data),
+        api.get('/admin/users').then(res => res.data),
+      ]);
+      setStats(statsRes);
+      setOrders(ordersRes);
+      setUsers(usersRes);
+      if (isInitial) setError(null);
+    } catch (e: any) {
+      console.error('Admin data fetch failed:', e);
+      if (isInitial) {
+        if (e.response?.status === 403 || e.response?.status === 401) {
+          setError('Unauthorized: Admin access required');
+        } else {
+          setError('Failed to load dashboard data');
+        }
+      }
+    }
+    if (isInitial) setLoading(false);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -679,32 +713,19 @@ export function AdminPage() {
       return;
     }
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [statsRes, ordersRes, usersRes] = await Promise.all([
-          api.get('/admin/stats').then(res => res.data),
-          api.get('/admin/orders').then(res => res.data),
-          api.get('/admin/users').then(res => res.data),
-        ]);
-        // WAIT! Axios api client already has /api prefix? YES.
-        setStats(statsRes);
-        setOrders(ordersRes);
-        setUsers(usersRes);
-      } catch (e: any) {
-        console.error('Admin data fetch failed:', e);
-        if (e.response?.status === 403 || e.response?.status === 401) {
-          setError('Unauthorized: Admin access required');
-        } else {
-          setError('Failed to load dashboard data');
-        }
-      }
-      setLoading(false);
-    };
+    // Initial fetch
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      fetchData(true);
+    }
 
-    fetchData();
-  }, [isAuthenticated, user, navigate, authLoading]);
+    // Start polling for real-time updates
+    pollRef.current = setInterval(() => fetchData(false), POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [isAuthenticated, user, navigate, authLoading, fetchData]);
 
   if (authLoading || (loading && stats === null)) return <div style={{ padding: 40, textAlign: 'center' }}>Loading Admin Panel...</div>;
 

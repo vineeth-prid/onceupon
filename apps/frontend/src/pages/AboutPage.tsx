@@ -187,52 +187,64 @@ export function AboutPage() {
           {/* Right column -- decorative collage */}
           <div className="relative flex items-center justify-center" style={{ minHeight: '400px' }}>
             <div
-              className="absolute rounded-2xl flex items-end p-6"
+              className="absolute rounded-2xl overflow-hidden"
               style={{
                 width: '220px',
                 height: '280px',
-                background: 'linear-gradient(135deg, #E8E8E8, #D0D0D0)',
                 top: '0',
                 right: '10%',
                 transform: 'rotate(3deg)',
                 zIndex: 1,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(3deg) scale(1.05)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(3deg)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
             >
-              <span className="font-display text-sm" style={{ color: '#000' }}>
-                Children's Book
-              </span>
+              <img src="/images/about/childrens-book.png" alt="Children's Book" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                <span className="font-display text-sm" style={{ color: '#FFF' }}>Children's Book</span>
+              </div>
             </div>
             <div
-              className="absolute rounded-2xl flex items-end p-6"
+              className="absolute rounded-2xl overflow-hidden"
               style={{
                 width: '200px',
                 height: '260px',
-                background: 'linear-gradient(135deg, #D5D5D5, #BFBFBF)',
                 top: '60px',
                 right: '35%',
                 transform: 'rotate(-4deg)',
                 zIndex: 2,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(-4deg) scale(1.05)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(-4deg)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
             >
-              <span className="font-display text-sm" style={{ color: '#000' }}>
-                Love Story
-              </span>
+              <img src="/images/about/love-story.png" alt="Love Story" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                <span className="font-display text-sm" style={{ color: '#FFF' }}>Love Story</span>
+              </div>
             </div>
             <div
-              className="absolute rounded-2xl flex items-end p-6"
+              className="absolute rounded-2xl overflow-hidden"
               style={{
                 width: '190px',
                 height: '250px',
-                background: 'linear-gradient(135deg, #C8C8C8, #ABABAB)',
                 top: '120px',
                 right: '5%',
                 transform: 'rotate(1deg)',
                 zIndex: 3,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(1deg) scale(1.05)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(1deg)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.12)'; }}
             >
-              <span className="font-display text-sm" style={{ color: '#FFF' }}>
-                Pregnancy
-              </span>
+              <img src="/images/about/pregnancy.png" alt="Pregnancy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+                <span className="font-display text-sm" style={{ color: '#FFF' }}>Pregnancy</span>
+              </div>
             </div>
           </div>
         </div>

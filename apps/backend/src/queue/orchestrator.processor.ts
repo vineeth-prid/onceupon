@@ -280,18 +280,9 @@ export class OrchestratorProcessor extends WorkerHost {
         ? order.familyMembers.map((m: any) => ({ role: m.role, name: m.name, age: m.age, gender: m.gender }))
         : undefined;
 
-      const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
-      const story = staticStory
-        ? staticStory
-        : await this.storyService.generateStory(
-            order.childName,
-            order.childAge,
-            order.childGender,
-            order.theme,
-            order.customStoryPrompt || undefined,
-            familyMembersInfo,
-          );
-      this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages${isFamilyMode ? ' (family mode)' : ''}`);
+      const existingStory = order.storyJson as unknown as StoryOutputInput | null;
+      const isFullStoryAlreadyGenerated = existingStory && existingStory.pages && existingStory.pages.length > 1;
+      let storyData: StoryOutputInput;
 
       if (!isFullStoryAlreadyGenerated) {
         const staticStory = getStaticStory(order.theme, order.childName, order.childAge, order.childGender);
@@ -303,8 +294,9 @@ export class OrchestratorProcessor extends WorkerHost {
               order.childGender,
               order.theme,
               order.customStoryPrompt || undefined,
+              familyMembersInfo,
             );
-        this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages`);
+        this.logger.log(`Full story generated: "${story.title}" — ${story.pages.length} pages${isFamilyMode ? ' (family mode)' : ''}`);
 
         // Save the full story JSON (replaces preview)
         await this.prisma.order.update({
@@ -331,6 +323,7 @@ export class OrchestratorProcessor extends WorkerHost {
           });
         }
       } else {
+        storyData = existingStory;
         this.logger.log(`Reusing already generated full story: "${storyData.title}"`);
       }
 
@@ -453,7 +446,7 @@ export class OrchestratorProcessor extends WorkerHost {
         await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
         await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
         this.logger.log(`Order ${orderId} complete — all images generated`);
-        await this.sendBookReadyNotification(orderId, order, story.title);
+        await this.sendBookReadyNotification(orderId, order, storyData.title);
       } else {
         const failedCount = updatedPages.filter((p: any) => p.status === 'FAILED').length;
         this.logger.warn(`Order ${orderId}: ${failedCount} pages failed`);
@@ -461,7 +454,7 @@ export class OrchestratorProcessor extends WorkerHost {
           await this.ordersService.updateStatus(orderId, OrderStatus.IMAGES_COMPLETE);
           await this.ordersService.updateStatus(orderId, OrderStatus.PDF_GENERATING);
           await this.ordersService.updateStatus(orderId, OrderStatus.ORDER_CONFIRMED);
-          await this.sendBookReadyNotification(orderId, order, story.title);
+          await this.sendBookReadyNotification(orderId, order, storyData.title);
         } else {
           await this.ordersService.updateStatus(orderId, OrderStatus.FAILED);
         }

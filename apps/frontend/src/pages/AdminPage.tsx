@@ -182,7 +182,9 @@ function badge(status: string): React.CSSProperties {
 
 /* ── Tab Components ── */
 
-function DashboardTab({ stats }: { stats: any }) {
+function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate?: (tab: Tab) => void }) {
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
   const displayStats = [
     { emoji: '📦', label: 'Total Orders', value: stats?.totalOrders?.toString() || '0', delta: stats?.deltas?.orders || '+0%', up: true },
     { emoji: '💰', label: 'Total Revenue', value: stats?.revenue ? `₹${stats.revenue.toLocaleString()}` : '₹0', delta: stats?.deltas?.revenue || '+0%', up: true },
@@ -192,13 +194,98 @@ function DashboardTab({ stats }: { stats: any }) {
     { emoji: '📈', label: 'Conversion Rate', value: '23.4%', delta: '-1.2%', up: false },
   ];
 
-  const quickActions = [
-    '📦 Process Pending Orders',
-    '🔄 Retry Failed Generations',
-    '📧 Send Bulk Notification',
-    '💰 Update Pricing',
-    '🎟️ Create Coupon Code',
-    '📊 Export Monthly Report',
+  const handleProcessPending = async () => {
+    setLoadingAction('process');
+    try {
+      const res = await api.post('/admin/actions/process-pending');
+      const { processed, orderIds } = res.data;
+      if (processed === 0) {
+        toast.success('No pending orders to process');
+      } else {
+        toast.success(`Queued ${processed} pending order${processed > 1 ? 's' : ''} for processing`);
+      }
+      console.log('Processed order IDs:', orderIds);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to process pending orders');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleRetryFailed = async () => {
+    setLoadingAction('retry');
+    try {
+      const res = await api.post('/admin/actions/retry-failed');
+      const { retried, orderIds } = res.data;
+      if (retried === 0) {
+        toast.success('No failed orders to retry');
+      } else {
+        toast.success(`Retrying ${retried} failed order${retried > 1 ? 's' : ''}`);
+      }
+      console.log('Retried order IDs:', orderIds);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to retry failed generations');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleSendBulkNotification = async () => {
+    if (!confirm('Send book-ready notification emails to all users with completed orders?')) return;
+    setLoadingAction('notify');
+    try {
+      const res = await api.post('/admin/actions/send-bulk-notification');
+      const { sent, failed } = res.data;
+      if (sent === 0 && failed === 0) {
+        toast.success('No completed orders with emails to notify');
+      } else {
+        toast.success(`Sent ${sent} notification${sent !== 1 ? 's' : ''}${failed > 0 ? `, ${failed} failed` : ''}`);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send bulk notifications');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleUpdatePricing = () => {
+    onNavigate?.('pricing');
+  };
+
+  const handleCreateCoupon = () => {
+    onNavigate?.('coupons');
+  };
+
+  const handleExportReport = async () => {
+    setLoadingAction('export');
+    try {
+      const res = await api.get('/admin/actions/export-report', {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `monthly_report_${new Date().toISOString().slice(0, 7)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Monthly report exported successfully');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to export report');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const quickActions: { key: string; label: string; handler: () => void }[] = [
+    { key: 'process', label: '📦 Process Pending Orders', handler: handleProcessPending },
+    { key: 'retry', label: '🔄 Retry Failed Generations', handler: handleRetryFailed },
+    { key: 'notify', label: '📧 Send Bulk Notification', handler: handleSendBulkNotification },
+    { key: 'pricing', label: '💰 Update Pricing', handler: handleUpdatePricing },
+    { key: 'coupons', label: '🎟️ Create Coupon Code', handler: handleCreateCoupon },
+    { key: 'export', label: '📊 Export Monthly Report', handler: handleExportReport },
   ];
 
   return (
@@ -227,7 +314,20 @@ function DashboardTab({ stats }: { stats: any }) {
           <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {quickActions.map((a) => (
-              <button key={a} style={{ ...btnOutline, textAlign: 'left', padding: '10px 14px' }}>{a}</button>
+              <button
+                key={a.key}
+                onClick={a.handler}
+                disabled={loadingAction !== null}
+                style={{
+                  ...btnOutline,
+                  textAlign: 'left',
+                  padding: '10px 14px',
+                  opacity: loadingAction !== null && loadingAction !== a.key ? 0.5 : 1,
+                  cursor: loadingAction !== null ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {loadingAction === a.key ? `⏳ ${a.label.slice(2)}...` : a.label}
+              </button>
             ))}
           </div>
         </div>
@@ -720,7 +820,7 @@ export function AdminPage() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardTab stats={stats} />;
+      case 'dashboard': return <DashboardTab stats={stats} onNavigate={setActiveTab} />;
       case 'orders': return <OrdersTab orders={orders} />;
       case 'pricing': return <PricingTab />;
       case 'coupons': return <CouponsTab />;

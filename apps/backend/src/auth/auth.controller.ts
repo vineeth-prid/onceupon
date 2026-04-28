@@ -8,7 +8,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  register(@Body() body: { firstName: string; lastName: string; email: string; password: string }) {
+  register(@Body() body: { firstName: string; lastName: string; email: string; password: string; phone?: string }) {
     return this.authService.register(body);
   }
 
@@ -31,7 +31,7 @@ export class AuthController {
 
   @Patch('me')
   @UseGuards(AuthGuard('jwt'))
-  updateProfile(@Req() req: any, @Body() body: { firstName?: string; lastName?: string }) {
+  updateProfile(@Req() req: any, @Body() body: { firstName?: string; lastName?: string; phone?: string }) {
     return this.authService.updateProfile(req.user.id, body);
   }
 

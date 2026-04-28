@@ -286,6 +286,7 @@ export function PreviewPage() {
   const [title, setTitle] = useState('');
   const [childName, setChildName] = useState('');
   const [orderStatus, setOrderStatus] = useState('');
+  const [orderPaymentId, setOrderPaymentId] = useState<string | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
@@ -293,15 +294,27 @@ export function PreviewPage() {
   const [paying, setPaying] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [useSpread, setUseSpread] = useState(window.innerWidth >= 860);
+  const [ebookPrice, setEbookPrice] = useState(499);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const pagesWithImages = pages.filter((p: any) => p.imageUrl);
   const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
   
   // Use payment status to determine if preview wall should be shown
-  const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!pages.some((p: any) => p.order?.paymentId);
+  const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!orderPaymentId;
+  
+  // Detect if full book generation is still in progress after payment
+  const isGenerating = isPaid && (
+    ['PAID', 'IMAGES_GENERATING', 'STORY_GENERATING', 'STORY_COMPLETE'].includes(orderStatus) ||
+    (totalStoryPages > 1 && pages.some((p: any) => p.status === 'PENDING' || p.status === 'GENERATING'))
+  );
   
   // Determine if this is a preview-only order (1 image) vs full book
   const isPreviewOnly = !isPaid && pagesWithImages.length <= 1 && totalStoryPages > 1;
+  
+  // Compute generation progress for paid orders
+  const completedPages = pages.filter((p: any) => p.status === 'COMPLETE').length;
+  const generationProgress = totalStoryPages > 0 ? Math.round((completedPages / totalStoryPages) * 100) : 0;
 
   const totalBookPages = pages.length + 2;
 
@@ -336,27 +349,53 @@ export function PreviewPage() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  const fetchOrder = () => {
+  const fetchOrder = useCallback(() => {
     if (!orderId) return;
     getOrder(orderId).then((data) => {
       const orderPages = data.order.pages || [];
       setPages(orderPages);
       setTitle(data.order.storyJson?.title || 'Your Storybook');
       setChildName(data.order.childName || '');
-      
-      // If paymentId exists in the order record, force a Paid status check
-      const effectiveStatus = data.order.paymentId ? 'PAID' : (data.order.status || '');
-      setOrderStatus(effectiveStatus);
+      setOrderPaymentId(data.order.paymentId || null);
+      setOrderStatus(data.order.status || '');
       
       const firstPageWithImage = orderPages.find((p: any) => p.imageUrl);
       setCoverImageUrl(firstPageWithImage?.imageUrl || null);
       setLoading(false);
     }).catch(() => setLoading(false));
-  };
+  }, [orderId]);
 
   useEffect(() => {
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, fetchOrder]);
+
+  // Poll for order updates while generation is in progress
+  useEffect(() => {
+    if (isGenerating && !pollingRef.current) {
+      pollingRef.current = setInterval(() => {
+        fetchOrder();
+      }, 5000);
+    }
+    if (!isGenerating && pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [isGenerating, fetchOrder]);
+
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then(r => r.json())
+      .then(data => {
+        if (data.ebookPrice) setEbookPrice(data.ebookPrice);
+      })
+      .catch(err => console.error('Failed to fetch pricing:', err));
+  }, []);
 
   const handlePayment = async () => {
     if (!orderId) return;
@@ -723,8 +762,8 @@ export function PreviewPage() {
           {currentPage + 1} / {totalBookPages}
         </span>
 
-        {isPreviewOnly ? (
-          /* ── PREVIEW MODE: show unlock CTA ── */
+        {!isPaid ? (
+          /* ── UNPAID: show unlock CTA ── */
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -738,7 +777,7 @@ export function PreviewPage() {
               margin: 0,
               textAlign: 'center',
             }}>
-              This is a preview. Unlock the full {totalStoryPages}-page storybook to download or order a print copy.
+              This is a preview. Unlock the full storybook to download or order a print copy.
             </p>
             <div style={{
               display: 'flex',
@@ -748,44 +787,73 @@ export function PreviewPage() {
               flexWrap: 'wrap',
             }}>
               <button
-                onClick={() => navigate(`/checkout/${orderId}`)}
+                onClick={handlePayment}
+                disabled={paying}
                 className="btn-gold"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0110 0v4" />
                 </svg>
-                Unlock Full Book
+                {paying ? 'Initiating...' : `Unlock eBook ₹${ebookPrice}`}
               </button>
               <button
-                disabled={downloading}
-                onClick={async () => {
-                  if (!orderId) return;
-                  setDownloading(true);
-                  try {
-                    const blob = await downloadPdf(orderId);
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${childName || 'storybook'}_storybook.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  } catch (err) {
-                    alert('Download failed. The book might still be processing.');
-                  }
-                  setDownloading(false);
-                }}
+                onClick={() => navigate(`/checkout/${orderId}`)}
                 className="btn-outline-white"
-                style={{ padding: '0.7rem 1.6rem', border: '1px solid #FFD700', color: '#FFD700' }}
               >
-                {downloading ? 'Preparing...' : 'Download PDF (Beta)'}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                Order Physical Book
               </button>
             </div>
           </div>
+        ) : isGenerating ? (
+          /* ── GENERATING MODE: show progress while book is being created ── */
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.6rem',
+          }}>
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontFamily: FONT_UI,
+              fontSize: '0.85rem',
+              margin: 0,
+              textAlign: 'center',
+            }}>
+              ✨ Your full storybook is being created...
+            </p>
+            <div style={{
+              width: 220,
+              height: 6,
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.max(generationProgress, 5)}%`,
+                background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                borderRadius: 3,
+                transition: 'width 1s ease',
+                boxShadow: '0 0 8px rgba(255,215,0,0.4)',
+              }} />
+            </div>
+            <p style={{
+              color: 'rgba(255,215,0,0.6)',
+              fontFamily: FONT_UI,
+              fontSize: '0.7rem',
+              margin: 0,
+            }}>
+              {completedPages} of {totalStoryPages} pages ready ({generationProgress}%)
+            </p>
+          </div>
         ) : (
-          /* ── FULL BOOK MODE: download + order buttons ── */
+          /* ── PAID & COMPLETE: download + order buttons ── */
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -829,7 +897,7 @@ export function PreviewPage() {
               {downloading ? 'Generating...' : 'Download eBook'}
             </button>
 
-            {orderStatus === 'FAILED' && isPaid && (
+            {orderStatus === 'FAILED' && (
               <button
                 onClick={async () => {
                   try {
@@ -847,15 +915,6 @@ export function PreviewPage() {
               </button>
             )}
 
-            {orderStatus === 'PREVIEW_READY' && !isPaid && (
-              <button
-                onClick={handlePayment}
-                disabled={paying}
-                className="btn-gold"
-              >
-                {paying ? 'Initiating...' : 'Unlock eBook ₹499'}
-              </button>
-            )}
             <button
               onClick={() => navigate(`/checkout/${orderId}`)}
               className="btn-outline-white"

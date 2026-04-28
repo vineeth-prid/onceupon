@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
+import { api } from '../api/client';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -49,6 +50,9 @@ export function CheckoutPage() {
     firstName: '', lastName: '', address1: '', address2: '',
     city: '', state: '', postcode: '', country: 'IN', phone: '',
   });
+  const [saveForLater, setSaveForLater] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
 
   const [childName, setChildName] = useState('');
   const [paying, setPaying] = useState(false);
@@ -59,6 +63,42 @@ export function CheckoutPage() {
         setChildName(data.order.childName || '');
       });
     }
+
+    // Fetch dynamic pricing from Admin configuration
+    fetch('/api/pricing')
+      .then(r => r.json())
+      .then(data => {
+        if (data.ebookPrice) {
+          setFORMATS(prev => prev.map(f => f.id === 'ebook' ? { ...f, price: data.ebookPrice } : f));
+        }
+        if (data.physicalPrice) {
+          setFORMATS(prev => prev.map(f => f.id === 'print' ? { ...f, price: data.physicalPrice } : f));
+        }
+        if (data.shippingPrice) {
+          setDELIVERY_OPTIONS(prev => prev.map(d => d.id === 'standard' ? { ...d, price: data.shippingPrice } : d));
+        }
+      })
+      .catch(err => console.error('Failed to fetch pricing:', err));
+
+    // Fetch saved addresses
+    api.get('/users/addresses').then(res => {
+      setSavedAddresses(res.data);
+      const def = res.data.find((a: any) => a.isDefault);
+      if (def) {
+        setSelectedAddressId(def.id);
+        setShipping({
+          firstName: def.firstName,
+          lastName: def.lastName,
+          address1: def.addressLine1,
+          address2: def.addressLine2 || '',
+          city: def.city,
+          state: def.state || '',
+          postcode: def.postalCode,
+          country: def.country === 'India' ? 'IN' : def.country,
+          phone: def.phone || '',
+        });
+      }
+    }).catch(() => {});
   }, [orderId]);
 
   const [card, setCard] = useState({
@@ -126,6 +166,23 @@ export function CheckoutPage() {
     setPaying(true);
     
     try {
+      // If user chose a new address and wanted to save it
+      if (selectedAddressId === 'new' && saveForLater) {
+        await api.post('/users/addresses', {
+          label: 'Saved Address',
+          firstName: shipping.firstName,
+          lastName: shipping.lastName,
+          addressLine1: shipping.address1,
+          addressLine2: shipping.address2,
+          city: shipping.city,
+          state: shipping.state,
+          postalCode: shipping.postcode,
+          country: shipping.country === 'IN' ? 'India' : shipping.country,
+          phone: shipping.phone,
+          isDefault: savedAddresses.length === 0,
+        }).catch(err => console.error('Failed to save address for later:', err));
+      }
+
       const rzpOrder = await createRazorpayOrder(
         orderId, 
         breakdown.total, 
@@ -293,6 +350,67 @@ export function CheckoutPage() {
           {isPrint && (
             <section style={{ marginBottom: 36 }}>
               <h2 style={sectionTitle}>Shipping Address</h2>
+              
+              {savedAddresses.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <label style={label}>Select Saved Address</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginTop: 8 }}>
+                    {savedAddresses.map(addr => (
+                      <div
+                        key={addr.id}
+                        onClick={() => {
+                          setSelectedAddressId(addr.id);
+                          setShipping({
+                            firstName: addr.firstName,
+                            lastName: addr.lastName,
+                            address1: addr.addressLine1,
+                            address2: addr.addressLine2 || '',
+                            city: addr.city,
+                            state: addr.state || '',
+                            postcode: addr.postalCode,
+                            country: addr.country === 'India' ? 'IN' : addr.country,
+                            phone: addr.phone || '',
+                          });
+                        }}
+                        style={{
+                          ...radioCard(selectedAddressId === addr.id),
+                          padding: '12px 16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 4
+                        }}
+                      >
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#000' }}>{addr.label}</div>
+                        <div style={{ fontSize: 11, color: '#6F6F6F', lineHeight: 1.4 }}>
+                          {addr.addressLine1}, {addr.city}
+                        </div>
+                      </div>
+                    ))}
+                    <div
+                      onClick={() => {
+                        setSelectedAddressId('new');
+                        setShipping({
+                          firstName: '', lastName: '', address1: '', address2: '',
+                          city: '', state: '', postcode: '', country: 'IN', phone: '',
+                        });
+                      }}
+                      style={{
+                        ...radioCard(selectedAddressId === 'new'),
+                        padding: '12px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: selectedAddressId === 'new' ? '#000' : '#6F6F6F'
+                      }}
+                    >
+                      + New Address
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
                   <label style={label}>First Name *</label>
@@ -373,6 +491,17 @@ export function CheckoutPage() {
                   />
                 </div>
               </div>
+
+              {selectedAddressId === 'new' && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={saveForLater}
+                    onChange={e => setSaveForLater(e.target.checked)}
+                  />
+                  <span style={{ fontSize: 13, color: '#6F6F6F' }}>Save this address for future use</span>
+                </label>
+              )}
             </section>
           )}
 

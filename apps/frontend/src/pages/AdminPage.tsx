@@ -235,6 +235,36 @@ function DashboardTab({ stats }: { stats: any }) {
 }
 
 function OrdersTab({ orders }: { orders: any[] }) {
+  const exportOrdersCSV = () => {
+    const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)'];
+    const rows = orders.map((o) => [
+      o.id,
+      new Date(o.createdAt).toLocaleDateString(),
+      o.user?.firstName || 'Guest',
+      o.childName,
+      o.theme,
+      o.status,
+      o.amountPaid ? (o.amountPaid / 100).toString() : '0',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) =>
+        row.map((cell: string) => `"${(cell ?? '').replace(/"/g, '""')}"`).join(',')
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -247,7 +277,7 @@ function OrdersTab({ orders }: { orders: any[] }) {
           <option>DELIVERED</option>
           <option>FAILED</option>
         </select>
-        <button style={btnPrimary}>Export CSV</button>
+        <button style={btnPrimary} onClick={exportOrdersCSV}>Export CSV</button>
       </div>
 
       <div style={cardStyle}>
@@ -297,18 +327,20 @@ function PricingTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/pricing').then(r => r.json())
-      .then((data: any) => { setPricing(data); setLoading(false); })
-      .catch(() => setLoading(false));
+    api.get('/pricing').then(res => {
+      setPricing(res.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleSavePricing = async () => {
     setSaving(true);
     setSaveMsg('');
     try {
-      await fetch('/api/pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pricing) });
+      await api.put('/pricing', pricing);
       setSaveMsg('Pricing saved successfully!');
-    } catch {
+    } catch (error) {
+      console.error('Failed to save pricing:', error);
       setSaveMsg('Failed to save pricing.');
     }
     setSaving(false);
@@ -376,7 +408,13 @@ function PricingTab() {
                 />
               </div>
             </div>
-            <button style={{ ...btnPrimary, marginTop: 8, width: '100%' }}>Save Shipping & Tax</button>
+            <button
+              style={{ ...btnPrimary, marginTop: 8, width: '100%', opacity: saving ? 0.7 : 1 }}
+              onClick={handleSavePricing}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Shipping & Tax'}
+            </button>
           </>
         )}
       </div>
@@ -399,11 +437,8 @@ function CouponsTab() {
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch('/api/coupons');
-      if (res.ok) {
-        const data = await res.json();
-        setCoupons(data);
-      }
+      const res = await api.get('/coupons');
+      setCoupons(res.data);
     } catch (e) {
       console.error('Failed to fetch coupons:', e);
     }
@@ -421,40 +456,32 @@ function CouponsTab() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/coupons', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: newCoupon.code,
-          name: newCoupon.code,
-          type: newCoupon.type === 'Fixed Amount' ? 'flat' : 'percentage',
-          value: parseInt(newCoupon.value),
-          usageLimit: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : undefined,
-          validTill: newCoupon.expiryDate ? new Date(newCoupon.expiryDate).toISOString() : undefined,
-          minAmount: newCoupon.minOrder ? parseInt(newCoupon.minOrder) * 100 : undefined,
-          syncWithRazorpay: newCoupon.syncWithRazorpay,
-        }),
+      await api.post('/coupons', {
+        code: newCoupon.code,
+        name: newCoupon.code,
+        type: newCoupon.type === 'Fixed Amount' ? 'flat' : 'percentage',
+        value: parseInt(newCoupon.value),
+        usageLimit: newCoupon.maxUses ? parseInt(newCoupon.maxUses) : undefined,
+        validTill: newCoupon.expiryDate ? new Date(newCoupon.expiryDate).toISOString() : undefined,
+        minAmount: newCoupon.minOrder ? parseInt(newCoupon.minOrder) * 100 : undefined,
+        syncWithRazorpay: newCoupon.syncWithRazorpay,
       });
 
-      if (res.ok) {
-        alert('Coupon created successfully!');
-        setNewCoupon({
-          code: '',
-          type: 'percentage',
-          value: '',
-          maxUses: '',
-          expiryDate: '',
-          minOrder: '',
-          syncWithRazorpay: true,
-        });
-        fetchCoupons();
-      } else {
-        const err = await res.json();
-        alert(`Error: ${err.message || 'Failed to create coupon'}`);
-      }
-    } catch (e) {
+      alert('Coupon created successfully!');
+      setNewCoupon({
+        code: '',
+        type: 'percentage',
+        value: '',
+        maxUses: '',
+        expiryDate: '',
+        minOrder: '',
+        syncWithRazorpay: true,
+      });
+      fetchCoupons();
+    } catch (e: any) {
       console.error(e);
-      alert('Failed to connect to backend');
+      const msg = e.response?.data?.message || 'Failed to create coupon';
+      alert(`Error: ${msg}`);
     }
     setLoading(false);
   };
@@ -462,7 +489,7 @@ function CouponsTab() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this coupon?')) return;
     try {
-      await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+      await api.delete(`/coupons/${id}`);
       fetchCoupons();
     } catch (e) {
       console.error(e);

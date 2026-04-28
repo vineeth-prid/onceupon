@@ -65,6 +65,7 @@ model User {
   avatarUrl     String?
   isVerified    Boolean      @default(false)
   role          UserRole     @default(USER)
+  phone         String?
 
   orders        Order[]
   addresses     Address[]

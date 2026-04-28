@@ -45,4 +45,17 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async getMessages() {
+    return this.prisma.contactMessage.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async markMessageAsRead(id: string) {
+    return this.prisma.contactMessage.update({
+      where: { id },
+      data: { isRead: true },
+    });
+  }
 }

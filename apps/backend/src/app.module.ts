@@ -8,6 +8,7 @@ import { QueueModule } from './queue/queue.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ReviewModule } from './reviews/review.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ReviewModule } from './reviews/review.module';
     QueueModule,
     AdminModule,
     ReviewModule,
+    ContactModule,
   ],
   controllers: [AppController],
 })

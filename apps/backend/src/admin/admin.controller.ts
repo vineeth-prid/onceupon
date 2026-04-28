@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { UserRole } from '@prisma/client';
@@ -30,5 +30,17 @@ export class AdminController {
   async getUsers(@Req() req: any) {
     this.checkAdmin(req);
     return this.adminService.getAllUsers();
+  }
+
+  @Get('messages')
+  async getMessages(@Req() req: any) {
+    this.checkAdmin(req);
+    return this.adminService.getMessages();
+  }
+
+  @Patch('messages/:id/read')
+  async markMessageAsRead(@Req() req: any, @Param('id') id: string) {
+    this.checkAdmin(req);
+    return this.adminService.markMessageAsRead(id);
   }
 }

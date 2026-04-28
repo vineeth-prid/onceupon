@@ -6,48 +6,56 @@ const occasions = [
     tag: 'Fantasy',
     description: 'A brave child befriends a lonely dragon in this heartwarming tale of courage.',
     image: '/thumbnails/super-boy-and-the-dragon.webp',
+    id: 'super-boy-dragon',
   },
   {
     title: 'Girl Saves the Arctic Kingdom',
     tag: 'Adventure',
     description: 'An icy adventure powered by care and courage to save the kingdom.',
     image: '/thumbnails/girl-saves-the-arctic-kingdom.webp',
+    id: 'girl-saves-arctic',
   },
   {
     title: 'Girl and the Lost Fairy Wings',
     tag: 'Fantasy',
     description: 'A magical quest to find the legendary fairy wings in an enchanted realm.',
     image: '/thumbnails/girl-and-the-lost-fairy-wings.webp',
+    id: 'girl-lost-fairy-wings',
   },
   {
     title: 'The Boy and the Cosmic Journey',
     tag: 'Adventure',
     description: 'Blast off through stars, planets, and galaxies on an epic space adventure.',
     image: '/thumbnails/the-boy-and-the-cosmic-journey.webp',
+    id: 'boy-cosmic-journey',
   },
   {
     title: 'Vroom Vroom, The Boy Wins the Race',
     tag: 'Adventure',
     description: "A child's magical race to believe, try, and win against all odds.",
     image: '/thumbnails/vroom-vroom-the-boy-wins-the-race.webp',
+    id: 'vroom-vroom-boy',
   },
   {
     title: 'Boy Explores the Zoo',
     tag: 'Animals',
     description: 'A fun-filled day discovering amazing animals at the zoo.',
     image: '/thumbnails/boy-explores-the-zoo.webp',
+    id: 'boy-explores-zoo',
   },
   {
     title: "The Portugal's New Legend",
     tag: 'Sports',
     description: 'For champions with red and green at heart — a legendary sports story.',
     image: '/thumbnails/the-portugals-new-legend.webp',
+    id: 'portugals-new-legend',
   },
   {
     title: 'The Boy Who Could Talk to Animals',
     tag: 'Animals',
     description: 'A magical gift that lets a child hear what animals truly have to say.',
     image: '/thumbnails/the-boy-who-could-talk-to-animals.webp',
+    id: 'boy-talk-to-animals',
   },
 ];
 
@@ -108,14 +116,18 @@ export default function OccasionGallery() {
         }}
       >
         {occasions.map((item) => (
-          <div
+          <Link
+            to={`/books/${item.id}`}
             key={item.title}
             className="occasion-card liquid-glass"
             style={{
+              display: 'block',
               flexShrink: 0,
               width: 300,
               borderRadius: 20,
               overflow: 'hidden',
+              textDecoration: 'none',
+              color: 'inherit',
             }}
           >
             {/* Image area */}
@@ -166,22 +178,21 @@ export default function OccasionGallery() {
               >
                 {item.description}
               </p>
-              <Link
-                to="/create"
+              <span
                 className="font-body"
                 style={{
+                  display: 'inline-block',
                   fontSize: 12,
                   fontWeight: 600,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   color: '#000',
-                  textDecoration: 'none',
                 }}
               >
                 Create Yours &rarr;
-              </Link>
+              </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

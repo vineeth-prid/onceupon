@@ -112,6 +112,9 @@ export function ProgressPage() {
     return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
   };
 
+  // Special clean screen for payment confirmation (before generation starts)
+  const isPaymentConfirmed = isFullMode && status === 'PAID';
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -154,6 +157,11 @@ export function ProgressPage() {
           0%, 100% { opacity: 0.15; }
           50% { opacity: 0.7; }
         }
+        @keyframes checkPop {
+          0% { transform: scale(0.5); opacity: 0; }
+          60% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
       `}</style>
 
       {/* Background stars */}
@@ -173,219 +181,260 @@ export function ProgressPage() {
         ))}
       </div>
 
-      <div style={{
-        background: 'rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 30,
-        padding: '2.5rem 2.5rem 2rem',
-        maxWidth: 460,
-        width: '100%',
-        textAlign: 'center',
-        border: '1px solid rgba(255,255,255,0.1)',
-        animation: 'fadeIn 0.5s ease',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        {/* Animated icon */}
+      {isPaymentConfirmed ? (
+        /* ── PAYMENT CONFIRMED: Clean, minimal confirmation ── */
         <div style={{
-          fontSize: '3.5rem',
-          marginBottom: '1rem',
-          animation: status === 'PREVIEW_READY' ? 'none' : 'bookFloat 3s ease-in-out infinite',
-        }}>
-          {currentStep.icon}
-        </div>
-
-        <h1 style={{
-          fontFamily: "'Baloo 2', cursive",
-          fontSize: '1.4rem',
-          fontWeight: 800,
-          color: '#fff',
-          margin: '0 0 0.3rem',
-        }}>
-          {isFullMode ? 'Creating Your Full Book' : 'Generating Preview'}
-        </h1>
-
-        <p style={{
-          fontFamily: "'Nunito', sans-serif",
-          fontSize: '1rem',
-          color: '#FFD700',
-          margin: '0 0 0.3rem',
-          fontWeight: 600,
-        }}>
-          {currentStep.label}
-        </p>
-
-        <p style={{
-          fontFamily: "'Nunito', sans-serif",
-          fontSize: '0.85rem',
-          color: 'rgba(255,255,255,0.55)',
-          margin: '0 0 1.5rem',
-          minHeight: '1.2em',
-        }}>
-          {isFullMode && status === 'IMAGES_GENERATING'
-            ? `Painting illustration ${completedPages + 1} of ${totalPages}...`
-            : currentStep.detail}
-        </p>
-
-        {/* Step indicators */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 6,
-          marginBottom: '1.2rem',
-        }}>
-          {steps.map((step, i) => (
-            <div
-              key={step.status}
-              style={{
-                width: i <= currentStepIndex ? 28 : 10,
-                height: 6,
-                borderRadius: 3,
-                background: i < currentStepIndex
-                  ? '#FFD700'
-                  : i === currentStepIndex
-                  ? 'linear-gradient(90deg, #FFD700, #FFA500)'
-                  : 'rgba(255,255,255,0.15)',
-                transition: 'all 0.5s ease',
-                ...(i === currentStepIndex ? {
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 2s linear infinite',
-                  backgroundImage: 'linear-gradient(90deg, #FFD700 0%, #fff 50%, #FFD700 100%)',
-                } : {}),
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Progress bar */}
-        <div style={{
-          background: 'rgba(255,255,255,0.08)',
-          borderRadius: 50,
-          height: 10,
-          overflow: 'hidden',
-          marginBottom: '0.6rem',
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 30,
+          padding: '3rem 2.5rem',
+          maxWidth: 420,
+          width: '100%',
+          textAlign: 'center',
+          border: '1px solid rgba(255,255,255,0.1)',
+          animation: 'fadeIn 0.5s ease',
           position: 'relative',
+          zIndex: 1,
         }}>
+          {/* Green check icon */}
           <div style={{
-            background: 'linear-gradient(90deg, #FFD700, #FFA500, #FF6347)',
-            height: '100%',
-            width: `${progress}%`,
-            transition: 'width 1s ease',
-            borderRadius: 50,
-            animation: 'progressGlow 2s ease-in-out infinite',
-          }} />
-        </div>
+            fontSize: '4.5rem',
+            marginBottom: '1.2rem',
+            animation: 'checkPop 0.6s ease-out',
+            filter: 'drop-shadow(0 0 20px rgba(76,175,80,0.4))',
+          }}>
+            ✅
+          </div>
 
+          {/* Payment Received text */}
+          <h1 style={{
+            fontFamily: "'Baloo 2', cursive",
+            fontSize: '1.8rem',
+            fontWeight: 800,
+            color: '#fff',
+            margin: '0 0 0.5rem',
+            letterSpacing: '0.5px',
+            textShadow: '0 2px 15px rgba(255,255,255,0.15)',
+          }}>
+            Payment Received
+          </h1>
+
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '0.9rem',
+            color: 'rgba(255,255,255,0.45)',
+            margin: 0,
+          }}>
+            Preparing your storybook...
+          </p>
+        </div>
+      ) : (
+        /* ── GENERATION PROGRESS: Full progress UI ── */
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '1.4rem',
-          fontSize: '0.78rem',
-          fontFamily: "'Nunito', sans-serif",
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 30,
+          padding: '2.5rem 2.5rem 2rem',
+          maxWidth: 460,
+          width: '100%',
+          textAlign: 'center',
+          border: '1px solid rgba(255,255,255,0.1)',
+          animation: 'fadeIn 0.5s ease',
+          position: 'relative',
+          zIndex: 1,
         }}>
-          <span style={{ color: 'rgba(255,255,255,0.4)' }}>{progress}%</span>
-          <span style={{ color: 'rgba(255,255,255,0.35)' }}>{formatTime(elapsed)}</span>
-        </div>
+          {/* Animated icon */}
+          <div style={{
+            fontSize: '3.5rem',
+            marginBottom: '1rem',
+            animation: status === 'PREVIEW_READY' || status === 'ORDER_CONFIRMED' ? 'none' : 'bookFloat 3s ease-in-out infinite',
+          }}>
+            {currentStep.icon}
+          </div>
 
-        {/* Image progress for full mode */}
-        {isFullMode && status === 'IMAGES_GENERATING' && totalPages > 0 && (
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '1rem',
+            color: '#FFD700',
+            margin: '0 0 0.3rem',
+            fontWeight: 600,
+          }}>
+            {currentStep.label}
+          </p>
+
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '0.85rem',
+            color: 'rgba(255,255,255,0.55)',
+            margin: '0 0 1.5rem',
+            minHeight: '1.2em',
+          }}>
+            {isFullMode && status === 'IMAGES_GENERATING'
+              ? `Painting illustration ${completedPages + 1} of ${totalPages}...`
+              : currentStep.detail}
+          </p>
+
+          {/* Step indicators */}
           <div style={{
             display: 'flex',
-            gap: 3,
             justifyContent: 'center',
-            flexWrap: 'wrap',
+            gap: 6,
             marginBottom: '1.2rem',
           }}>
-            {Array.from({ length: totalPages }, (_, i) => (
+            {steps.map((step, i) => (
               <div
-                key={i}
+                key={step.status}
                 style={{
-                  width: 18,
-                  height: 24,
+                  width: i <= currentStepIndex ? 28 : 10,
+                  height: 6,
                   borderRadius: 3,
-                  background: i < completedPages
-                    ? 'linear-gradient(135deg, #FFD700, #FFA500)'
-                    : i === completedPages
-                    ? 'rgba(255,215,0,0.4)'
-                    : 'rgba(255,255,255,0.08)',
-                  transition: 'all 0.4s ease',
-                  boxShadow: i < completedPages ? '0 0 6px rgba(255,215,0,0.3)' : 'none',
-                  ...(i === completedPages ? {
-                    animation: 'progressGlow 1.5s ease-in-out infinite',
+                  background: i < currentStepIndex
+                    ? '#FFD700'
+                    : i === currentStepIndex
+                    ? 'linear-gradient(90deg, #FFD700, #FFA500)'
+                    : 'rgba(255,255,255,0.15)',
+                  transition: 'all 0.5s ease',
+                  ...(i === currentStepIndex ? {
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 2s linear infinite',
+                    backgroundImage: 'linear-gradient(90deg, #FFD700 0%, #fff 50%, #FFD700 100%)',
                   } : {}),
                 }}
               />
             ))}
           </div>
-        )}
 
-        {/* Spinning loader */}
-        {!error && status !== 'FAILED' && status !== 'PREVIEW_READY' && (
+          {/* Progress bar */}
           <div style={{
-            width: 36,
-            height: 36,
-            border: '3px solid rgba(255,255,255,0.08)',
-            borderTop: '3px solid #FFD700',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 1rem',
-          }} />
-        )}
-
-        {/* Fun fact */}
-        {!error && status !== 'FAILED' && status !== 'PREVIEW_READY' && (
-          <div style={{
-            background: 'rgba(255,215,0,0.06)',
-            borderRadius: 12,
-            padding: '10px 16px',
-            border: '1px solid rgba(255,215,0,0.1)',
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: 50,
+            height: 10,
+            overflow: 'hidden',
+            marginBottom: '0.6rem',
+            position: 'relative',
           }}>
-            <p
-              key={factIndex}
-              style={{
-                fontFamily: "'Nunito', sans-serif",
-                fontSize: '0.78rem',
-                color: 'rgba(255,215,0,0.7)',
-                margin: 0,
-                lineHeight: 1.5,
-                fontStyle: 'italic',
-                animation: 'fadeSwitch 6s ease-in-out',
-              }}
-            >
-              {FUN_FACTS[factIndex]}
-            </p>
+            <div style={{
+              background: 'linear-gradient(90deg, #FFD700, #FFA500, #FF6347)',
+              height: '100%',
+              width: `${progress}%`,
+              transition: 'width 1s ease',
+              borderRadius: 50,
+              animation: 'progressGlow 2s ease-in-out infinite',
+            }} />
           </div>
-        )}
 
-        {error && (
-          <div style={{ marginTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
-            <p style={{
-              color: '#FF6B6B',
-              fontFamily: "'Nunito', sans-serif",
-              fontSize: '0.9rem',
-              margin: '0 0 1rem',
-            }}>
-              {error}
-            </p>
-            <button
-              onClick={() => navigate('/')}
-              style={{
-                padding: '0.6rem 2rem',
-                borderRadius: 50,
-                border: '2px solid rgba(255,255,255,0.3)',
-                background: 'transparent',
-                color: '#fff',
-                cursor: 'pointer',
-                fontFamily: "'Nunito', sans-serif",
-                fontWeight: 600,
-                fontSize: '0.9rem',
-              }}
-            >
-              Go Back
-            </button>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '1.4rem',
+            fontSize: '0.78rem',
+            fontFamily: "'Nunito', sans-serif",
+          }}>
+            <span style={{ color: 'rgba(255,255,255,0.4)' }}>{progress}%</span>
+            <span style={{ color: 'rgba(255,255,255,0.35)' }}>{formatTime(elapsed)}</span>
           </div>
-        )}
-      </div>
+
+          {/* Image progress for full mode */}
+          {isFullMode && status === 'IMAGES_GENERATING' && totalPages > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: 3,
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginBottom: '1.2rem',
+            }}>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: 18,
+                    height: 24,
+                    borderRadius: 3,
+                    background: i < completedPages
+                      ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+                      : i === completedPages
+                      ? 'rgba(255,215,0,0.4)'
+                      : 'rgba(255,255,255,0.08)',
+                    transition: 'all 0.4s ease',
+                    boxShadow: i < completedPages ? '0 0 6px rgba(255,215,0,0.3)' : 'none',
+                    ...(i === completedPages ? {
+                      animation: 'progressGlow 1.5s ease-in-out infinite',
+                    } : {}),
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Spinning loader */}
+          {!error && status !== 'FAILED' && status !== 'PREVIEW_READY' && (
+            <div style={{
+              width: 36,
+              height: 36,
+              border: '3px solid rgba(255,255,255,0.08)',
+              borderTop: '3px solid #FFD700',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1rem',
+            }} />
+          )}
+
+          {/* Fun fact */}
+          {!error && status !== 'FAILED' && status !== 'PREVIEW_READY' && (
+            <div style={{
+              background: 'rgba(255,215,0,0.06)',
+              borderRadius: 12,
+              padding: '10px 16px',
+              border: '1px solid rgba(255,215,0,0.1)',
+            }}>
+              <p
+                key={factIndex}
+                style={{
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '0.78rem',
+                  color: 'rgba(255,215,0,0.7)',
+                  margin: 0,
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                  animation: 'fadeSwitch 6s ease-in-out',
+                }}
+              >
+                {FUN_FACTS[factIndex]}
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ marginTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
+              <p style={{
+                color: '#FF6B6B',
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: '0.9rem',
+                margin: '0 0 1rem',
+              }}>
+                {error}
+              </p>
+              <button
+                onClick={() => navigate('/')}
+                style={{
+                  padding: '0.6rem 2rem',
+                  borderRadius: 50,
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  background: 'transparent',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              >
+                Go Back
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+

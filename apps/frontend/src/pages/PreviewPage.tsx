@@ -312,6 +312,9 @@ export function PreviewPage() {
     (totalStoryPages > 1 && pages.some((p: any) => p.status === 'PENDING' || p.status === 'GENERATING'))
   );
   
+  // Admin viewing mode — hide customer-facing purchase buttons
+  const isAdmin = user?.role === 'ADMIN';
+
   // Determine if this is a preview-only order (1 image) vs full book
   const isPreviewOnly = !isPaid && pagesWithImages.length <= 1 && totalStoryPages > 1;
   
@@ -765,52 +768,70 @@ export function PreviewPage() {
         </span>
 
         {!isPaid ? (
-          /* ── UNPAID: show unlock CTA ── */
+          /* ── UNPAID: show unlock CTA (hidden for admins) ── */
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '0.6rem',
           }}>
-            <p style={{
-              color: 'rgba(255,255,255,0.6)',
-              fontFamily: FONT_UI,
-              fontSize: '0.8rem',
-              margin: 0,
-              textAlign: 'center',
-            }}>
-              This is a preview. Unlock the full storybook to download or order a print copy.
-            </p>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.8rem',
-              flexWrap: 'wrap',
-            }}>
-              <button
-                onClick={handlePayment}
-                disabled={paying}
-                className="btn-gold"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-                {paying ? 'Initiating...' : `Unlock eBook ₹${ebookPrice}`}
-              </button>
-              <button
-                onClick={() => navigate(`/checkout/${orderId}`)}
-                className="btn-outline-white"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                  <line x1="12" y1="22.08" x2="12" y2="12" />
-                </svg>
-                Order Physical Book
-              </button>
-            </div>
+            {isAdmin ? (
+              <p style={{
+                color: 'rgba(255,215,0,0.5)',
+                fontFamily: FONT_UI,
+                fontSize: '0.75rem',
+                margin: 0,
+                textAlign: 'center',
+                padding: '6px 16px',
+                borderRadius: 20,
+                border: '1px solid rgba(255,215,0,0.15)',
+                background: 'rgba(255,215,0,0.05)',
+              }}>
+                👁 Viewing as Admin — Preview only (unpaid order)
+              </p>
+            ) : (
+              <>
+                <p style={{
+                  color: 'rgba(255,255,255,0.6)',
+                  fontFamily: FONT_UI,
+                  fontSize: '0.8rem',
+                  margin: 0,
+                  textAlign: 'center',
+                }}>
+                  This is a preview. Unlock the full storybook to download or order a print copy.
+                </p>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.8rem',
+                  flexWrap: 'wrap',
+                }}>
+                  <button
+                    onClick={handlePayment}
+                    disabled={paying}
+                    className="btn-gold"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0110 0v4" />
+                    </svg>
+                    {paying ? 'Initiating...' : `Unlock eBook ₹${ebookPrice}`}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/checkout/${orderId}`)}
+                    className="btn-outline-white"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Order Physical Book
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : isGenerating ? (
           /* ── GENERATING MODE: show progress while book is being created ── */
@@ -917,17 +938,19 @@ export function PreviewPage() {
               </button>
             )}
 
-            <button
-              onClick={() => navigate(`/checkout/${orderId}`)}
-              className="btn-outline-white"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                <line x1="12" y1="22.08" x2="12" y2="12" />
-              </svg>
-              Order Physical Book
-            </button>
+            {!isAdmin && (
+              <button
+                onClick={() => navigate(`/checkout/${orderId}`)}
+                className="btn-outline-white"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                Order Physical Book
+              </button>
+            )}
           </div>
         )}
       </div>

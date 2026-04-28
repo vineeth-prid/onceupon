@@ -336,16 +336,62 @@ function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate?: (tab: Ta
   );
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  CREATED: 'Created',
+  STORY_GENERATING: 'Story Generating',
+  STORY_COMPLETE: 'Story Complete',
+  IMAGES_GENERATING: 'Images Generating',
+  IMAGES_COMPLETE: 'Images Complete',
+  PDF_GENERATING: 'PDF Generating',
+  PREVIEW_READY: 'Preview Ready',
+  PAID: 'Paid',
+  ORDER_CONFIRMED: 'Order Confirmed',
+  PRINTING: 'Printing',
+  SHIPPED: 'Shipped',
+  DELIVERED: 'Delivered',
+  FAILED: 'Failed',
+};
+
+function statusLabel(status: string): string {
+  return STATUS_LABELS[status] || status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+const ALL_ORDER_STATUSES = [
+  'CREATED', 'STORY_GENERATING', 'STORY_COMPLETE', 'IMAGES_GENERATING',
+  'IMAGES_COMPLETE', 'PDF_GENERATING', 'PREVIEW_READY', 'PAID',
+  'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED',
+];
+
 function OrdersTab({ orders }: { orders: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const filteredOrders = orders.filter((o) => {
+    // Status filter
+    if (statusFilter && o.status !== statusFilter) return false;
+    // Search filter (case-insensitive match on ID, customer, child name, theme)
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        o.id.toLowerCase().includes(q) ||
+        (o.user?.firstName || '').toLowerCase().includes(q) ||
+        (o.user?.lastName || '').toLowerCase().includes(q) ||
+        (o.childName || '').toLowerCase().includes(q) ||
+        (o.theme || '').toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
+
   const exportOrdersCSV = () => {
     const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)'];
-    const rows = orders.map((o) => [
+    const rows = filteredOrders.map((o) => [
       o.id,
       new Date(o.createdAt).toLocaleDateString(),
       o.user?.firstName || 'Guest',
       o.childName,
       o.theme,
-      o.status,
+      statusLabel(o.status),
       o.amountPaid ? (o.amountPaid / 100).toString() : '0',
     ]);
 
@@ -370,15 +416,21 @@ function OrdersTab({ orders }: { orders: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search orders..." />
-        <select style={selectStyle}>
-          <option>All Statuses</option>
-          <option>PAID</option>
-          <option>ORDER_CONFIRMED</option>
-          <option>PRINTING</option>
-          <option>SHIPPED</option>
-          <option>DELIVERED</option>
-          <option>FAILED</option>
+        <input
+          style={{ ...inputStyle, flex: 1, minWidth: 180 }}
+          placeholder="Search orders..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select
+          style={selectStyle}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">All Statuses</option>
+          {ALL_ORDER_STATUSES.map((s) => (
+            <option key={s} value={s}>{statusLabel(s)}</option>
+          ))}
         </select>
         <button style={btnPrimary} onClick={exportOrdersCSV}>Export CSV</button>
       </div>
@@ -398,17 +450,17 @@ function OrdersTab({ orders }: { orders: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {orders.length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No orders found</td></tr>
             ) : (
-              orders.map((o) => (
+              filteredOrders.map((o) => (
                 <tr key={o.id}>
                   <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{o.id.slice(0, 8)}...</td>
                   <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td style={tdStyle}>{o.user?.firstName || 'Guest'}</td>
                   <td style={tdStyle}>{o.childName}</td>
                   <td style={tdStyle}>{o.theme}</td>
-                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                  <td style={tdStyle}><span style={badge(o.status)}>{statusLabel(o.status)}</span></td>
                   <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '₹0'}</td>
                   <td style={tdStyle}>
                     <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>

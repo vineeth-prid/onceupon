@@ -587,9 +587,177 @@ function CouponsTab() {
   );
 }
 
-function UsersTab({ users }: { users: any[] }) {
+function UsersTab({ users, onRefresh }: { users: any[]; onRefresh: () => void }) {
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [userDetail, setUserDetail] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  const handleView = async (userId: string) => {
+    setLoadingDetail(true);
+    setSelectedUser(userId);
+    try {
+      const res = await api.get(`/admin/users/${userId}`);
+      setUserDetail(res.data);
+    } catch (e) {
+      console.error('Failed to load user details:', e);
+      alert('Failed to load user details');
+      setSelectedUser(null);
+    }
+    setLoadingDetail(false);
+  };
+
+  const handleDeactivate = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete user "${userName}"? This will also delete all their orders. This action cannot be undone.`)) return;
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      alert('User deleted successfully');
+      setSelectedUser(null);
+      setUserDetail(null);
+      onRefresh();
+    } catch (e) {
+      console.error('Failed to delete user:', e);
+      alert('Failed to delete user');
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      await api.put(`/admin/users/${userId}/role`, { role: newRole });
+      onRefresh();
+      if (userDetail && userDetail.id === userId) {
+        setUserDetail({ ...userDetail, role: newRole });
+      }
+    } catch (e) {
+      console.error('Failed to update role:', e);
+      alert('Failed to update role');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* User detail modal */}
+      {selectedUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={() => { setSelectedUser(null); setUserDetail(null); }}>
+          <div style={{
+            ...cardStyle, width: '90%', maxWidth: 700, maxHeight: '80vh',
+            overflow: 'auto', position: 'relative',
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8a8578' }}
+              onClick={() => { setSelectedUser(null); setUserDetail(null); }}
+            >✕</button>
+
+            {loadingDetail ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#8a8578' }}>Loading user details...</div>
+            ) : userDetail ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: '50%', background: '#1a1814',
+                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, fontWeight: 700,
+                  }}>
+                    {(userDetail.firstName?.[0] || '?').toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{userDetail.firstName} {userDetail.lastName}</h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 13, color: '#8a8578' }}>{userDetail.email}</p>
+                  </div>
+                  <span style={{ ...badge(userDetail.role === 'ADMIN' ? 'ADMIN' : 'USER'), marginLeft: 'auto' }}>{userDetail.role}</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 24 }}>
+                  <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700 }}>{userDetail.orders?.length || 0}</div>
+                    <div style={{ fontSize: 11, color: '#8a8578' }}>Orders</div>
+                  </div>
+                  <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700 }}>
+                      ₹{((userDetail.orders || []).reduce((s: number, o: any) => s + (o.amountPaid || 0), 0) / 100).toLocaleString('en-IN')}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#8a8578' }}>Total Spent</div>
+                  </div>
+                  <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700 }}>{userDetail.authProvider}</div>
+                    <div style={{ fontSize: 11, color: '#8a8578' }}>Auth Provider</div>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', letterSpacing: '0.5px' }}>Info</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#6a6560', lineHeight: 2 }}>
+                    <div><strong>ID:</strong> {userDetail.id}</div>
+                    <div><strong>Phone:</strong> {userDetail.phone || '—'}</div>
+                    <div><strong>Verified:</strong> {userDetail.isVerified ? 'Yes' : 'No'}</div>
+                    <div><strong>Joined:</strong> {new Date(userDetail.createdAt).toLocaleString()}</div>
+                  </div>
+                </div>
+
+                {userDetail.addresses?.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', letterSpacing: '0.5px' }}>Addresses</span>
+                    {userDetail.addresses.map((a: any) => (
+                      <div key={a.id} style={{ fontSize: 12, color: '#6a6560', padding: '8px 0', borderBottom: '1px solid #f0ede8' }}>
+                        <strong>{a.label}</strong>: {a.firstName} {a.lastName}, {a.addressLine1}{a.addressLine2 ? `, ${a.addressLine2}` : ''}, {a.city}, {a.state} {a.postalCode}, {a.country}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {userDetail.orders?.length > 0 && (
+                  <div>
+                    <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', letterSpacing: '0.5px' }}>Orders</span>
+                    <table style={{ ...tableStyle, marginTop: 8 }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Order ID</th>
+                          <th style={thStyle}>Child</th>
+                          <th style={thStyle}>Status</th>
+                          <th style={thStyle}>Amount</th>
+                          <th style={thStyle}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userDetail.orders.map((o: any) => (
+                          <tr key={o.id}>
+                            <td style={{ ...tdStyle, fontSize: 11, fontFamily: 'monospace' }}>{o.id.slice(0, 8)}...</td>
+                            <td style={tdStyle}>{o.childName}</td>
+                            <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                            <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid / 100}` : '—'}</td>
+                            <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+                  <button
+                    style={btnPrimary}
+                    onClick={() => handleRoleChange(userDetail.id, userDetail.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                  >
+                    {userDetail.role === 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}
+                  </button>
+                  <button
+                    style={{ ...btnOutline, color: '#c47560' }}
+                    onClick={() => handleDeactivate(userDetail.id, `${userDetail.firstName} ${userDetail.lastName}`)}
+                  >
+                    Delete User
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       <div style={cardStyle}>
         <table style={tableStyle}>
           <thead>
@@ -617,11 +785,14 @@ function UsersTab({ users }: { users: any[] }) {
                     <td style={tdStyle}>{u.orders?.length || 0}</td>
                     <td style={tdStyle}>₹{(totalSpent / 100).toLocaleString('en-IN')}</td>
                     <td style={tdStyle}>{new Date(u.createdAt).toLocaleDateString()}</td>
-                    <td style={tdStyle}><span style={badge(u.role === 'ADMIN' ? 'Active' : 'Pending')}>{u.role}</span></td>
+                    <td style={tdStyle}><span style={badge(u.role === 'ADMIN' ? 'ADMIN' : 'USER')}>{u.role}</span></td>
                     <td style={tdStyle}>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button style={btnOutline}>View</button>
-                        <button style={{ ...btnOutline, color: '#c47560' }}>Deactivate</button>
+                        <button style={btnOutline} onClick={() => handleView(u.id)}>View</button>
+                        <button
+                          style={{ ...btnOutline, color: '#c47560' }}
+                          onClick={() => handleDeactivate(u.id, `${u.firstName} ${u.lastName}`)}
+                        >Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -742,7 +913,7 @@ export function AdminPage() {
       case 'orders': return <OrdersTab orders={orders} />;
       case 'pricing': return <PricingTab />;
       case 'coupons': return <CouponsTab />;
-      case 'users': return <UsersTab users={users} />;
+      case 'users': return <UsersTab users={users} onRefresh={() => fetchData(false)} />;
       case 'books': return <BooksTab />;
       case 'payments': return <PaymentsTab />;
     }

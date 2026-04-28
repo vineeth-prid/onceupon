@@ -82,7 +82,40 @@ export class AdminService {
 
   async getAllUsers() {
     return this.prisma.user.findMany({
+      include: {
+        orders: {
+          select: { id: true, amountPaid: true, status: true, createdAt: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async getUserById(id: string) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: { id },
+      include: {
+        orders: {
+          include: {
+            pages: { select: { id: true, pageNumber: true, imageUrl: true, status: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        addresses: true,
+      },
+    });
+  }
+
+  async updateUserRole(id: string, role: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { role: role as any },
+    });
+  }
+
+  async deleteUser(id: string) {
+    // Delete user's orders first (cascade should handle pages), then user
+    await this.prisma.order.deleteMany({ where: { userId: id } });
+    return this.prisma.user.delete({ where: { id } });
   }
 }

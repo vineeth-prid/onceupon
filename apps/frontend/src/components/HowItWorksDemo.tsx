@@ -94,8 +94,8 @@ export function HowItWorksDemo() {
           <span
             style={{
               display: 'inline-block',
-              background: '#f3f0ff',
-              color: '#7c3aed',
+              background: '#f0fdf4',
+              color: '#16a34a',
               borderRadius: 999,
               padding: '4px 16px',
               fontSize: 13,
@@ -142,8 +142,8 @@ export function HowItWorksDemo() {
                     padding: '14px 16px',
                     marginBottom: 8,
                     borderRadius: 14,
-                    border: isActive ? '2px solid #7c3aed' : '2px solid transparent',
-                    background: isActive ? '#f3f0ff' : isDone ? '#f9fafb' : 'transparent',
+                    border: isActive ? '2px solid #16a34a' : '2px solid transparent',
+                    background: isActive ? '#f0fdf4' : isDone ? '#f9fafb' : 'transparent',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -156,7 +156,7 @@ export function HowItWorksDemo() {
                       width: 36,
                       height: 36,
                       borderRadius: '50%',
-                      background: isActive ? '#7c3aed' : isDone ? '#16a34a' : '#f3f4f6',
+                      background: isActive ? '#16a34a' : isDone ? '#16a34a' : '#f3f4f6',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -174,16 +174,16 @@ export function HowItWorksDemo() {
                     )}
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? '#7c3aed' : '#374151' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? '#16a34a' : '#374151' }}>
                       {s.label}
                     </div>
                     {/* Progress bar for active step */}
                     {isActive && (
-                      <div style={{ height: 3, background: '#e9d5ff', borderRadius: 99, marginTop: 6, overflow: 'hidden' }}>
+                      <div style={{ height: 3, background: '#bbf7d0', borderRadius: 99, marginTop: 6, overflow: 'hidden' }}>
                         <div
                           style={{
                             height: '100%',
-                            background: '#7c3aed',
+                            background: '#16a34a',
                             width: `${progress}%`,
                             transition: 'width 0.06s linear',
                             borderRadius: 99,
@@ -270,20 +270,13 @@ export function HowItWorksDemo() {
         <div style={{ textAlign: 'center', marginTop: 56 }}>
           <button
             onClick={() => navigate('/templates')}
-            className="font-body"
+            className="btn-primary"
             style={{
-              background: '#111',
-              color: '#fff',
-              border: 'none',
               padding: '18px 48px',
               borderRadius: 14,
               fontSize: 17,
               fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             Create Your Book Now →
           </button>
@@ -389,11 +382,11 @@ function StepUploadPhoto() {
       {phase < 2 ? (
         <div
           style={{
-            border: `2px dashed ${phase === 1 ? '#7c3aed' : '#e5e7eb'}`,
+            border: `2px dashed ${phase === 1 ? '#16a34a' : '#e5e7eb'}`,
             borderRadius: 20,
             padding: '36px 24px',
             textAlign: 'center',
-            background: phase === 1 ? '#f3f0ff' : '#fafafa',
+            background: phase === 1 ? '#f0fdf4' : '#fafafa',
             transition: 'all 0.4s ease',
           }}
         >
@@ -404,8 +397,8 @@ function StepUploadPhoto() {
           <p style={{ fontSize: 12, color: '#d1d5db', margin: '6px 0 0' }}>JPEG · PNG · WebP · max 10MB</p>
           {phase === 1 && (
             <div style={{ position: 'relative', margin: '12px auto 0', width: 40, height: 40 }}>
-              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '3px solid #7c3aed', animation: 'pulse-ring 1s ease infinite' }} />
-              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '3px solid #7c3aed20' }} />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '3px solid #16a34a', animation: 'pulse-ring 1s ease infinite' }} />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '3px solid #16a34a20' }} />
             </div>
           )}
         </div>
@@ -453,9 +446,9 @@ function StepPersonalize() {
 
       <div>
         <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 4 }}>Child's Name</label>
-        <div style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #7c3aed', background: '#f3f0ff', fontSize: 15, fontWeight: 600, color: '#111', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #16a34a', background: '#f0fdf4', fontSize: 15, fontWeight: 600, color: '#111', display: 'flex', alignItems: 'center', gap: 4 }}>
           {name}
-          <span style={{ width: 2, height: 18, background: '#7c3aed', borderRadius: 1, animation: 'fadeInUp 0.5s ease infinite alternate' }} />
+          <span style={{ width: 2, height: 18, background: '#16a34a', borderRadius: 1, animation: 'fadeInUp 0.5s ease infinite alternate' }} />
         </div>
       </div>
 
@@ -520,7 +513,7 @@ function StepAI() {
               animation: i === step ? 'fadeInUp 0.4s ease' : 'none',
             }}
           >
-            <div style={{ width: 24, height: 24, borderRadius: '50%', background: i < step ? '#16a34a' : i === step ? '#7c3aed' : '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.4s' }}>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: i < step ? '#16a34a' : i === step ? '#16a34a' : '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.4s' }}>
               {i < step ? (
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
               ) : i === step ? (
@@ -529,13 +522,13 @@ function StepAI() {
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#9ca3af' }} />
               )}
             </div>
-            <span style={{ fontSize: 14, fontWeight: i <= step ? 600 : 400, color: i === step ? '#7c3aed' : '#374151' }}>
+            <span style={{ fontSize: 14, fontWeight: i <= step ? 600 : 400, color: i === step ? '#16a34a' : '#374151' }}>
               {s.label}
             </span>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 24, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #f3f0ff, #fce7f3)', fontSize: 13, color: '#7c3aed', fontWeight: 600 }}>
+      <div style={{ marginTop: 24, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #f0fdf4, #fdf2f8)', fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
         ⏱ Estimated time: 3–5 minutes
       </div>
     </div>
@@ -553,7 +546,7 @@ function StepPreview() {
       {/* Book preview mockup */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
         {[
-          { bg: 'linear-gradient(135deg, #7c3aed, #a855f7)', text: 'Cover' },
+          { bg: 'linear-gradient(135deg, #16a34a, #4ade80)', text: 'Cover' },
           { bg: 'linear-gradient(135deg, #f97316, #fb923c)', text: 'Page 1' },
           { bg: 'linear-gradient(135deg, #06b6d4, #22d3ee)', text: 'Page 2' },
         ].map((p, i) => (
@@ -581,17 +574,17 @@ function StepPreview() {
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button
+          className="btn-secondary"
           style={{
-            flex: 1, padding: '11px 8px', borderRadius: 10, border: '1.5px solid #111',
-            background: '#fff', color: '#111', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            flex: 1, padding: '11px 8px', borderRadius: 10, fontSize: 13,
           }}
         >
           📥 eBook PDF
         </button>
         <button
+          className="btn-primary"
           style={{
-            flex: 1, padding: '11px 8px', borderRadius: 10, border: 'none',
-            background: '#111', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            flex: 1, padding: '11px 8px', borderRadius: 10, fontSize: 13,
           }}
         >
           📦 Print Book

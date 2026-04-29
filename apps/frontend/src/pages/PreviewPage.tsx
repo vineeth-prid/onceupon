@@ -35,7 +35,8 @@ const StoryPage = forwardRef<HTMLDivElement, {
   page: { text: string; imageUrl: string | null; pageNumber: number };
   childName: string;
   totalPages: number;
-}>(({ page, childName, totalPages }, ref) => {
+  displayPageNumber: number;
+}>(({ page, childName, totalPages, displayPageNumber }, ref) => {
   return (
     <div ref={ref} style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
@@ -88,7 +89,7 @@ const StoryPage = forwardRef<HTMLDivElement, {
         fontFamily: FONT_UI,
         fontWeight: 600,
       }}>
-        {page.pageNumber} / {totalPages}
+        {displayPageNumber} / {totalPages}
       </div>
     </div>
   );
@@ -319,7 +320,8 @@ export function PreviewPage() {
   const completedPages = pages.filter((p: any) => p.status === 'COMPLETE').length;
   const generationProgress = totalStoryPages > 0 ? Math.round((completedPages / totalStoryPages) * 100) : 0;
 
-  const totalBookPages = pages.length + 2;
+  const filteredPages = pages.filter((p: any) => p.layout !== 'chapter-title');
+  const totalBookPages = filteredPages.length + 2;
 
   // Derive book visual phase
   const bookPhase: 'closed-front' | 'open' | 'closed-back' = !useSpread
@@ -709,12 +711,13 @@ export function PreviewPage() {
               disableFlipByClick={false}
             >
               <CoverPage title={title} childName={childName} coverImageUrl={coverImageUrl} />
-              {pages.map((page) => (
+              {filteredPages.map((page, idx) => (
                 <StoryPage
                   key={page.pageNumber}
                   page={page}
                   childName={childName}
-                  totalPages={pages.length}
+                  totalPages={filteredPages.length}
+                  displayPageNumber={idx + 1}
                 />
               ))}
               <BackCover coverImageUrl={coverImageUrl} />

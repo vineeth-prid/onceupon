@@ -44,7 +44,7 @@ export function ProfilePage() {
             {/* Avatar */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
               <div style={{
-                width: 72, height: 72, borderRadius: '50%', background: '#000',
+                width: 72, height: 72, borderRadius: '50%', background: '#16a34a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#FFF', fontSize: 28, fontWeight: 600, marginBottom: 12,
               }}>
@@ -65,7 +65,7 @@ export function ProfilePage() {
                   style={{
                     padding: '10px 16px', borderRadius: 8, border: 'none', textAlign: 'left',
                     fontSize: 14, fontWeight: 500, cursor: 'pointer',
-                    background: activeTab === tab.key ? '#000' : 'transparent',
+                    background: activeTab === tab.key ? '#16a34a' : 'transparent',
                     color: activeTab === tab.key ? '#FFF' : '#000',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
@@ -167,7 +167,7 @@ function BooksTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
             onClick={() => navigate('/create')}
             style={{
               padding: '12px 32px', borderRadius: 8, border: 'none',
-              background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              background: '#16a34a', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
             }}
           >
             Create Your First Book
@@ -248,8 +248,9 @@ function BooksTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
                 </div>
                 <div style={{
                   display: 'inline-block', padding: '4px 14px', borderRadius: 50,
-                  background: isHovered ? '#000' : '#f0f0f0',
-                  color: isHovered ? '#fff' : '#000',
+                  background: isHovered ? '#16a34a' : '#FFF',
+                  color: isHovered ? '#FFF' : '#000',
+                  border: `1px solid ${isHovered ? '#16a34a' : '#E0E0E0'}`,
                   fontWeight: 600, fontSize: 12, transition: 'all 0.3s ease',
                 }}>
                   Read Book
@@ -398,7 +399,7 @@ function CartTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
           onClick={() => navigate('/templates')}
           style={{
             padding: '14px 32px', borderRadius: 12, border: 'none',
-            background: '#000', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+            background: '#16a34a', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',
           }}
         >
           Personalise & Checkout
@@ -736,7 +737,7 @@ function DetailsTab({ user }: { user: any }) {
           disabled={saving}
           style={{
             padding: '12px 32px', borderRadius: 8, border: 'none',
-            background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            background: '#16a34a', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
             opacity: saving ? 0.7 : 1,
           }}
         >

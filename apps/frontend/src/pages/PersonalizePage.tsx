@@ -17,7 +17,7 @@ export function PersonalizePage() {
 
   const book = BOOK_TEMPLATES.find((t) => t.id === bookId);
   const category = book ? CATEGORIES.find((c) => c.id === book.categoryId) : null;
-  const accent = isCustom ? '#43A047' : (category?.color || '#9B59B6');
+  const accent = '#16a34a';
 
   // Mode toggle
   const [mode, setMode] = useState<'solo' | 'family'>('solo');
@@ -191,7 +191,7 @@ export function PersonalizePage() {
                 margin: '0 auto 0.6rem',
                 fontSize: '1.4rem',
                 boxShadow: item.active ? '0 4px 15px rgba(0, 0, 0, 0.06)' : 'none',
-                border: item.active ? '2px solid #43A047' : 'none',
+                border: item.active ? '2px solid #16a34a' : 'none',
               }}>
                 {item.icon}
               </div>
@@ -660,20 +660,15 @@ export function PersonalizePage() {
             <button
               type="submit"
               disabled={loading || (mode === 'family' && !familyData)}
+              className="btn-primary"
               style={{
                 width: '100%',
-                padding: '0.9rem',
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                fontFamily: "'Nunito', sans-serif",
-                background: (loading || (mode === 'family' && !familyData)) ? '#ccc' : `linear-gradient(135deg, ${accent}, ${accent}CC)`,
-                border: 'none',
+                padding: '1.1rem',
+                fontSize: '1.1rem',
                 borderRadius: 14,
-                cursor: (loading || (mode === 'family' && !familyData)) ? 'not-allowed' : 'pointer',
-                color: '#fff',
-                boxShadow: loading ? 'none' : `0 4px 15px ${accent}40`,
-                transition: 'all 0.2s',
                 letterSpacing: '0.3px',
+                marginTop: '1rem',
+                opacity: (loading || (mode === 'family' && !familyData)) ? 0.6 : 1,
               }}
             >
               {loading ? (

@@ -388,25 +388,13 @@ export function BookDetailPage() {
           {/* CTA Button */}
           <button
             onClick={handlePersonalize}
-            className="font-body"
+            className="btn-primary"
             style={{
               width: '100%',
               padding: '18px 32px',
               fontSize: 17,
-              fontWeight: 700,
-              color: '#fff',
-              background: '#111',
-              border: 'none',
               borderRadius: 14,
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
               letterSpacing: 0.3,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
             Personalise my book
@@ -420,23 +408,15 @@ export function BookDetailPage() {
               setAddedToCart(true);
               setTimeout(() => setAddedToCart(false), 1500);
             }}
-            className="font-body"
+            className={`font-body transition-all duration-300 flex items-center justify-center gap-2 w-full py-4 rounded-xl border-2 mt-3 ${
+              addedToCart 
+                ? 'bg-[#16a34a] text-white border-[#16a34a]' 
+                : 'bg-white text-[#111] border-[#111] hover:bg-[#f9f9f9]'
+            }`}
             style={{
-              width: '100%',
-              padding: '14px 32px',
               fontSize: 15,
               fontWeight: 600,
-              color: addedToCart ? '#16a34a' : '#111',
-              background: '#fff',
-              border: `2px solid ${addedToCart ? '#16a34a' : '#111'}`,
-              borderRadius: 14,
               cursor: 'pointer',
-              marginTop: 12,
-              transition: 'all 0.3s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
             }}
           >
             {addedToCart ? (

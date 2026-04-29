@@ -87,20 +87,13 @@ export function ReviewForm({ bookId, onSuccess }: ReviewFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="font-body"
+          className="btn-primary"
           style={{
-            background: '#111',
-            color: '#fff',
-            border: 'none',
-            padding: '12px 24px',
+            padding: '12px 32px',
             borderRadius: '10px',
-            fontWeight: 600,
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
             opacity: isSubmitting ? 0.7 : 1,
-            transition: 'transform 0.2s',
           }}
-          onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-          onMouseLeave={(e) => { if (!isSubmitting) e.currentTarget.style.transform = 'translateY(0)'; }}
         >
           {isSubmitting ? 'Submitting...' : 'Post Review'}
         </button>

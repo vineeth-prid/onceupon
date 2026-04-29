@@ -395,7 +395,13 @@ function CartTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
           <div style={{ fontSize: 24, fontWeight: 700, color: '#000' }}>${(cartTotal / 100).toFixed(2)}</div>
         </div>
         <button
-          onClick={() => navigate('/templates')}
+          onClick={() => {
+            if (cartItems.length > 0) {
+              navigate(`/personalize/${cartItems[0].book.slug}`);
+            } else {
+              navigate('/templates');
+            }
+          }}
           style={{
             padding: '14px 32px', borderRadius: 12, border: 'none',
             background: '#000', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',

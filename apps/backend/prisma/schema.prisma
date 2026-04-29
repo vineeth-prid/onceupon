@@ -67,6 +67,8 @@ model User {
   isVerified    Boolean      @default(false)
   role          UserRole     @default(USER)
   phone         String?
+  resetToken    String?
+  resetTokenExpiry DateTime?
 
   orders        Order[]
   addresses     Address[]

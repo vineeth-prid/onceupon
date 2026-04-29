@@ -279,16 +279,17 @@ export function LoginPage() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={labelStyle}>Password</label>
-                    <span style={{
+                    <Link to="/forgot-password" style={{
                       fontSize: '0.78rem',
                       color: '#E86B4A',
                       cursor: 'pointer',
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 500,
                       marginBottom: 8,
+                      textDecoration: 'none',
                     }}>
                       Forgot password?
-                    </span>
+                    </Link>
                   </div>
                   <div style={{ position: 'relative' }}>
                     <input

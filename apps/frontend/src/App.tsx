@@ -23,11 +23,23 @@ import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
 import { CartProvider } from './context/CartContext';
+import { PromoBanner } from './components/PromoBanner';
 
 function ConditionalNavBar() {
   const location = useLocation();
   if (location.pathname.startsWith('/admin')) return null;
   return <NavBar />;
+}
+
+function ConditionalPromoBanner() {
+  const location = useLocation();
+  const hide =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/preview') ||
+    location.pathname.startsWith('/progress') ||
+    location.pathname === '/login';
+  if (hide) return null;
+  return <PromoBanner />;
 }
 
 
@@ -55,6 +67,7 @@ export function App() {
         <CartProvider>
           <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
           <ConditionalNavBar />
+          <ConditionalPromoBanner />
           <main>
             <Routes>
               <Route path="/" element={<LandingPage />} />

@@ -73,6 +73,11 @@ export async function validateCoupon(code: string, amount: number) {
   return data;
 }
 
+export async function fetchActiveCoupons() {
+  const { data } = await api.get('/coupons/active');
+  return data;
+}
+
 export async function verifyRazorpayPayment(payload: {
   orderId: string;
   razorpayOrderId: string;

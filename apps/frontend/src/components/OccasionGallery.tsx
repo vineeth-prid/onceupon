@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useRef } from 'react';
 
 const occasions = [
   {
@@ -60,6 +61,19 @@ const occasions = [
 ];
 
 export default function OccasionGallery() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { current } = scrollRef;
+      const scrollAmount = 320; // Approximate card width + gap
+      current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <section style={{ padding: '80px 0' }}>
       <style>{`
@@ -94,16 +108,41 @@ export default function OccasionGallery() {
               <em style={{ color: '#6F6F6F' }}>perfect format</em>
             </h2>
           </div>
-          <p
-            className="font-body hidden sm:block"
-            style={{ fontSize: 13, color: '#6F6F6F', whiteSpace: 'nowrap', marginBottom: 4 }}
-          >
-            Scroll to explore &rarr;
-          </p>
+          <div className="hidden sm:flex items-center gap-4">
+            <p
+              className="font-body"
+              style={{ fontSize: 13, color: '#6F6F6F', whiteSpace: 'nowrap', marginBottom: 0 }}
+            >
+              Scroll to explore
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => scroll('left')}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%', border: '1px solid #E0E0E0',
+                  background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                aria-label="Scroll left"
+              >
+                &larr;
+              </button>
+              <button
+                onClick={() => scroll('right')}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%', border: '1px solid #E0E0E0',
+                  background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                aria-label="Scroll right"
+              >
+                &rarr;
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div
+        ref={scrollRef}
         className="occasion-scroll"
         style={{
           display: 'flex',
@@ -113,6 +152,7 @@ export default function OccasionGallery() {
           paddingRight: 24,
           paddingBottom: 8,
           scrollbarWidth: 'none',
+          alignItems: 'stretch',
         }}
       >
         {occasions.map((item) => (
@@ -121,13 +161,15 @@ export default function OccasionGallery() {
             key={item.title}
             className="occasion-card liquid-glass"
             style={{
-              display: 'block',
+              display: 'flex',
+              flexDirection: 'column',
               flexShrink: 0,
               width: 300,
               borderRadius: 20,
               overflow: 'hidden',
               textDecoration: 'none',
               color: 'inherit',
+              height: 'auto',
             }}
           >
             {/* Image area */}
@@ -152,7 +194,7 @@ export default function OccasionGallery() {
             </div>
 
             {/* Text area */}
-            <div style={{ padding: '20px 24px 24px' }}>
+            <div style={{ padding: '20px 24px 24px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
               <p
                 className="font-body"
                 style={{
@@ -174,7 +216,7 @@ export default function OccasionGallery() {
               </h3>
               <p
                 className="font-body"
-                style={{ fontSize: 14, lineHeight: 1.5, color: '#6F6F6F', margin: '0 0 16px' }}
+                style={{ fontSize: 14, lineHeight: 1.5, color: '#6F6F6F', margin: '0 0 16px', flexGrow: 1 }}
               >
                 {item.description}
               </p>

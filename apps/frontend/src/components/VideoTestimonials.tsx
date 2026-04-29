@@ -147,29 +147,25 @@ export default function VideoTestimonials() {
         .video-testi-scroll::-webkit-scrollbar { display: none; }
         .video-testi-card {
           flex-shrink: 0;
-          width: min(360px, 80vw);
-          height: min(560px, 75vh);
+          width: 300px;
+          height: 480px;
           border-radius: 20px;
           overflow: hidden;
           position: relative;
           scroll-snap-align: center;
+          display: flex;
+          flex-direction: column;
         }
-        @media (min-width: 768px) {
+        @media (max-width: 480px) {
           .video-testi-card {
-            width: 380px;
-            height: 600px;
-          }
-        }
-        @media (min-width: 1024px) {
-          .video-testi-card {
-            width: 400px;
-            height: 640px;
+            width: 260px;
+            height: 420px;
           }
         }
       `}</style>
 
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 40, padding: "0 24px" }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: "center", marginBottom: 40, padding: "0 24px" }}>
         <h2
           className="font-display"
           style={{
@@ -245,12 +241,15 @@ export default function VideoTestimonials() {
           onScroll={handleScroll}
           style={{
             display: "flex",
-            gap: 16,
+            gap: 20,
             overflowX: "auto",
             scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
-            padding: "0 24px",
+            paddingLeft: 'max(24px, calc((100vw - 1200px) / 2 + 24px))',
+            paddingRight: 24,
             justifyContent: "start",
+            alignItems: "flex-start",
+            minHeight: 500,
           }}
         >
           {TESTIMONIALS.map((t, i) => (

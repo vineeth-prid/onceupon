@@ -412,17 +412,12 @@ export function FamilyPhotoUploader({ accent, onFamilyData }: Props) {
               setAllUploaded(false);
               setError('');
             }}
+            className="btn-secondary"
             style={{
-              background: 'none',
-              border: `1px solid ${accent}`,
-              color: accent,
-              borderRadius: 10,
-              padding: '0.4rem 1rem',
-              cursor: 'pointer',
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 600,
+              padding: '0.4rem 1.2rem',
               fontSize: '0.85rem',
               marginBottom: '1rem',
+              borderRadius: 10,
             }}
           >
             Change photo
@@ -545,17 +540,12 @@ export function FamilyPhotoUploader({ accent, onFamilyData }: Props) {
                 <button
                   type="button"
                   onClick={handleUploadFaces}
+                  className="btn-primary"
                   style={{
                     width: '100%',
-                    padding: '0.7rem',
+                    padding: '0.8rem',
                     fontSize: '0.95rem',
-                    fontWeight: 700,
-                    fontFamily: "'Nunito', sans-serif",
-                    background: `linear-gradient(135deg, ${accent}, ${accent}CC)`,
-                    border: 'none',
                     borderRadius: 12,
-                    cursor: 'pointer',
-                    color: '#fff',
                     marginTop: '0.5rem',
                   }}
                 >

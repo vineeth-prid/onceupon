@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
@@ -811,8 +811,57 @@ function AuditTab() {
 
 export function AdminPage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const avatarRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updateMenuPosition = useCallback(() => {
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, []);
+
+  const handleAvatarClick = useCallback(() => {
+    if (!avatarMenuOpen) {
+      updateMenuPosition();
+    }
+    setAvatarMenuOpen((prev) => !prev);
+  }, [avatarMenuOpen, updateMenuPosition]);
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(e.target as Node)
+      ) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [avatarMenuOpen]);
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handleReposition = () => updateMenuPosition();
+    window.addEventListener('scroll', handleReposition, { passive: true });
+    window.addEventListener('resize', handleReposition, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleReposition);
+      window.removeEventListener('resize', handleReposition);
+    };
+  }, [avatarMenuOpen, updateMenuPosition]);
 
   const [stats, setStats] = useState<any>({ totalOrders: 0, revenue: 0, totalUsers: 0, booksGenerated: 0 });
   const [orders, setOrders] = useState<any[]>([]);
@@ -945,18 +994,123 @@ export function AdminPage() {
             <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 4px' }}>{tabTitles[activeTab].title}</h2>
             <p style={{ margin: 0, fontSize: 14, color: '#8a8578' }}>{tabTitles[activeTab].subtitle}</p>
           </div>
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: '#1a1814',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-          }}>{user?.firstName?.[0] || 'A'}</div>
+          <button
+            ref={avatarRef}
+            onClick={handleAvatarClick}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: '#1a1814',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          >
+            {user?.firstName?.[0]?.toUpperCase() || 'A'}
+          </button>
         </header>
+
+        {avatarMenuOpen && menuPos && (
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: menuPos.top,
+              right: menuPos.right,
+              minWidth: 180,
+              background: '#fff',
+              borderRadius: 12,
+              padding: '8px 0',
+              zIndex: 9999,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          >
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1814' }}>
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div style={{ fontSize: 12, color: '#8a8578' }}>
+                {user?.email}
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                navigate('/');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#1a1814',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              Back to Website
+            </button>
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                navigate('/profile');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#1a1814',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              My Profile
+            </button>
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                logout();
+                navigate('/login');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#e74c3c',
+                borderTop: '1px solid rgba(0,0,0,0.06)',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#fcf0f0')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              Log Out
+            </button>
+          </div>
+        )}
+
         {renderTab()}
       </main>
     </div>

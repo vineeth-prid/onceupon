@@ -108,7 +108,7 @@ export function CheckoutPage() {
     if (appliedCoupon) {
       applyPromo();
     }
-  }, [format, delivery, addons, appliedCoupon]);
+  }, [format, delivery, addons, appliedCoupon, FORMATS, DELIVERY_OPTIONS]);
 
   const [card, setCard] = useState({
     number: '', expiry: '', cvv: '', name: '',
@@ -155,7 +155,7 @@ export function CheckoutPage() {
     const total = Math.max(0, subtotal - discount);
     
     return { bookPrice, printPrice: 0, deliveryPrice, addonTotal, subtotal, discount, total };
-  }, [format, delivery, addons, discountAmount, isPrint]);
+  }, [format, delivery, addons, discountAmount, isPrint, FORMATS, DELIVERY_OPTIONS]);
 
   const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 

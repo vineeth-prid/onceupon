@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../api/client';
+import { useForm, ValidationError } from '@formspree/react';
 
 type Topic = 'Book Creation' | 'Order & Delivery' | 'Printing Quality' | 'Payments' | 'Other';
 
@@ -18,38 +18,8 @@ export function ContactPage() {
   const [orderNumber, setOrderNumber] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [message, setMessage] = useState('');
-  const [submitted, setSubmitted] = useState(false);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTopic) {
-      setErrorMsg('Please select a topic');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMsg('');
-
-    try {
-      await api.post('/contact', {
-        firstName,
-        lastName,
-        email,
-        orderNumber: orderNumber || undefined,
-        topic: selectedTopic,
-        message,
-      });
-      setSubmitted(true);
-    } catch (error: any) {
-      console.error('Failed to submit contact message', error);
-      setErrorMsg(error.response?.data?.message || 'Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const [state, handleSubmit] = useForm('mlgzjolo');
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -71,6 +41,13 @@ export function ContactPage() {
     fontWeight: 500,
     color: '#000',
     marginBottom: 6,
+  };
+
+  const errorStyle: React.CSSProperties = {
+    color: '#dc2626',
+    fontSize: '0.75rem',
+    marginTop: 4,
+    display: 'block',
   };
 
   return (
@@ -145,6 +122,35 @@ export function ContactPage() {
 
           {/* Contact Info Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Email */}
+            <div
+              style={{
+                border: '1px solid #E5E5E5',
+                borderRadius: 12,
+                padding: '20px 24px',
+              }}
+            >
+              <div
+                className="font-body"
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  textTransform: 'uppercase' as const,
+                  letterSpacing: '0.06em',
+                  color: '#6F6F6F',
+                  marginBottom: 6,
+                }}
+              >
+                Email
+              </div>
+              <div
+                className="font-body"
+                style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
+              >
+                hello@onceuponatym.com
+              </div>
+            </div>
+
             {/* Live Chat */}
             <div
               style={{
@@ -170,7 +176,7 @@ export function ContactPage() {
                 className="font-body"
                 style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
               >
-                Mon&ndash;Fri, 9:00&ndash;18:00
+                Mon&ndash;Fri, 9am&ndash;6pm
               </div>
             </div>
 
@@ -199,42 +205,7 @@ export function ContactPage() {
                 className="font-body"
                 style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
               >
-                +91 80890 00123
-              </div>
-            </div>
-
-            {/* Grievance Officer */}
-            <div
-              style={{
-                border: '1px solid #E5E5E5',
-                borderRadius: 12,
-                padding: '20px 24px',
-              }}
-            >
-              <div
-                className="font-body"
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  textTransform: 'uppercase' as const,
-                  letterSpacing: '0.06em',
-                  color: '#6F6F6F',
-                  marginBottom: 6,
-                }}
-              >
-                Grievance Officer
-              </div>
-              <div
-                className="font-body"
-                style={{ fontSize: '1rem', color: '#000', fontWeight: 500, lineHeight: 1.5 }}
-              >
-                Rakesh V Gopi &middot; Creative Head
-              </div>
-              <div
-                className="font-body"
-                style={{ fontSize: '0.875rem', color: '#6F6F6F', marginTop: 4, lineHeight: 1.5 }}
-              >
-                Prestige Cube, Koramangala, Bengaluru, Karnataka, India.
+                +44 20 0000 0000
               </div>
             </div>
           </div>
@@ -271,7 +242,7 @@ export function ContactPage() {
             padding: 36,
           }}
         >
-          {submitted ? (
+          {state.succeeded ? (
             <div
               style={{
                 textAlign: 'center',
@@ -339,10 +310,12 @@ export function ContactPage() {
                 }}
               >
                 <div>
-                  <label className="font-body" style={labelStyle}>
+                  <label className="font-body" htmlFor="firstName" style={labelStyle}>
                     First name
                   </label>
                   <input
+                    id="firstName"
+                    name="firstName"
                     type="text"
                     required
                     value={firstName}
@@ -351,12 +324,15 @@ export function ContactPage() {
                     style={inputStyle}
                     placeholder="Jane"
                   />
+                  <ValidationError prefix="First Name" field="firstName" errors={state.errors} style={errorStyle} />
                 </div>
                 <div>
-                  <label className="font-body" style={labelStyle}>
+                  <label className="font-body" htmlFor="lastName" style={labelStyle}>
                     Last name
                   </label>
                   <input
+                    id="lastName"
+                    name="lastName"
                     type="text"
                     required
                     value={lastName}
@@ -365,15 +341,18 @@ export function ContactPage() {
                     style={inputStyle}
                     placeholder="Doe"
                   />
+                  <ValidationError prefix="Last Name" field="lastName" errors={state.errors} style={errorStyle} />
                 </div>
               </div>
 
               {/* Email */}
               <div style={{ marginBottom: 20 }}>
-                <label className="font-body" style={labelStyle}>
+                <label className="font-body" htmlFor="email" style={labelStyle}>
                   Email address
                 </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   required
                   value={email}
@@ -382,17 +361,20 @@ export function ContactPage() {
                   style={inputStyle}
                   placeholder="jane@example.com"
                 />
+                <ValidationError prefix="Email" field="email" errors={state.errors} style={errorStyle} />
               </div>
 
               {/* Order Number */}
               <div style={{ marginBottom: 20 }}>
-                <label className="font-body" style={labelStyle}>
+                <label className="font-body" htmlFor="orderNumber" style={labelStyle}>
                   Order number{' '}
                   <span style={{ fontWeight: 400, color: '#6F6F6F' }}>
                     (optional)
                   </span>
                 </label>
                 <input
+                  id="orderNumber"
+                  name="orderNumber"
                   type="text"
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
@@ -400,6 +382,7 @@ export function ContactPage() {
                   style={inputStyle}
                   placeholder="#OUA-00000"
                 />
+                <ValidationError prefix="Order Number" field="orderNumber" errors={state.errors} style={errorStyle} />
               </div>
 
               {/* Topic Selector */}
@@ -407,6 +390,7 @@ export function ContactPage() {
                 <label className="font-body" style={labelStyle}>
                   Topic
                 </label>
+                <input type="hidden" name="topic" value={selectedTopic || ''} />
                 <div
                   style={{
                     display: 'flex',
@@ -437,14 +421,17 @@ export function ContactPage() {
                     </button>
                   ))}
                 </div>
+                <ValidationError prefix="Topic" field="topic" errors={state.errors} style={errorStyle} />
               </div>
 
               {/* Message */}
               <div style={{ marginBottom: 28 }}>
-                <label className="font-body" style={labelStyle}>
+                <label className="font-body" htmlFor="message" style={labelStyle}>
                   Message
                 </label>
                 <textarea
+                  id="message"
+                  name="message"
                   required
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -456,29 +443,26 @@ export function ContactPage() {
                   }}
                   placeholder="Tell us how we can help..."
                 />
+                <ValidationError prefix="Message" field="message" errors={state.errors} style={errorStyle} />
               </div>
-
-              {/* Error Message */}
-              {errorMsg && (
-                <div style={{ color: '#c47560', marginBottom: 16, fontSize: '0.875rem', fontWeight: 500 }}>
-                  {errorMsg}
-                </div>
-              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.submitting}
                 className="btn-primary"
                 style={{
                   width: '100%',
                   padding: '14px 32px',
                   borderRadius: 999,
                   fontSize: '0.9375rem',
+                  opacity: state.submitting ? 0.7 : 1,
+                  cursor: state.submitting ? 'not-allowed' : 'pointer',
                 }}
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {state.submitting ? 'Sending...' : 'Send Message'}
               </button>
+              <ValidationError errors={state.errors} style={errorStyle} />
             </form>
           )}
         </div>

@@ -251,7 +251,7 @@ export function ContactPage() {
                   width: 56,
                   height: 56,
                   borderRadius: '50%',
-                  background: '#000',
+                  background: '#16a34a',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -392,7 +392,7 @@ export function ContactPage() {
                         borderRadius: 999,
                         border: '1px solid #000',
                         background:
-                          selectedTopic === topic ? '#000' : '#FAFAFA',
+                          selectedTopic === topic ? '#16a34a' : '#FAFAFA',
                         color: selectedTopic === topic ? '#FFF' : '#000',
                         fontSize: '0.8125rem',
                         fontWeight: 500,
@@ -428,18 +428,12 @@ export function ContactPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="font-body"
+                className="btn-primary"
                 style={{
                   width: '100%',
                   padding: '14px 32px',
-                  background: '#000',
-                  color: '#FFF',
-                  border: 'none',
                   borderRadius: 999,
                   fontSize: '0.9375rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s ease',
                 }}
               >
                 Send Message

@@ -166,7 +166,7 @@ export class PdfService {
           doc.save();
           doc.opacity(0.3);
           doc.font(this.getFont('body')).fontSize(8).fillColor('#FFFFFF')
-            .text(`${page.pageNumber} / ${pages.length}`, 0, A4_HEIGHT - 25, {
+            .text(`${pages.indexOf(page) + 1} / ${pages.length}`, 0, A4_HEIGHT - 25, {
               align: 'center',
               width: A4_WIDTH,
             });

@@ -44,7 +44,7 @@ export function ProfilePage() {
             {/* Avatar */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
               <div style={{
-                width: 72, height: 72, borderRadius: '50%', background: '#000',
+                width: 72, height: 72, borderRadius: '50%', background: '#16a34a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#FFF', fontSize: 28, fontWeight: 600, marginBottom: 12,
               }}>
@@ -65,7 +65,7 @@ export function ProfilePage() {
                   style={{
                     padding: '10px 16px', borderRadius: 8, border: 'none', textAlign: 'left',
                     fontSize: 14, fontWeight: 500, cursor: 'pointer',
-                    background: activeTab === tab.key ? '#000' : 'transparent',
+                    background: activeTab === tab.key ? '#16a34a' : 'transparent',
                     color: activeTab === tab.key ? '#FFF' : '#000',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
@@ -167,7 +167,7 @@ function BooksTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
             onClick={() => navigate('/create')}
             style={{
               padding: '12px 32px', borderRadius: 8, border: 'none',
-              background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              background: '#16a34a', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
             }}
           >
             Create Your First Book
@@ -248,8 +248,9 @@ function BooksTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
                 </div>
                 <div style={{
                   display: 'inline-block', padding: '4px 14px', borderRadius: 50,
-                  background: isHovered ? '#000' : '#f0f0f0',
-                  color: isHovered ? '#fff' : '#000',
+                  background: isHovered ? '#16a34a' : '#FFF',
+                  color: isHovered ? '#FFF' : '#000',
+                  border: `1px solid ${isHovered ? '#16a34a' : '#E0E0E0'}`,
                   fontWeight: 600, fontSize: 12, transition: 'all 0.3s ease',
                 }}>
                   Read Book
@@ -398,7 +399,7 @@ function CartTab({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
           onClick={() => navigate('/templates')}
           style={{
             padding: '14px 32px', borderRadius: 12, border: 'none',
-            background: '#000', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+            background: '#16a34a', color: '#FFF', fontSize: 15, fontWeight: 600, cursor: 'pointer',
           }}
         >
           Personalise & Checkout
@@ -675,6 +676,10 @@ function DetailsTab({ user }: { user: any }) {
   const [saveMsg, setSaveMsg] = useState('');
 
   const handleSave = async () => {
+    if (phone && !/^\d{12}$/.test(phone)) {
+      setSaveMsg('Phone number must be exactly 12 digits (including country code, e.g., 919876543210)');
+      return;
+    }
     setSaving(true);
     setSaveMsg('');
     try {
@@ -687,9 +692,9 @@ function DetailsTab({ user }: { user: any }) {
       setUser(res.data);
       setSaveMsg('Profile updated successfully!');
       setTimeout(() => setSaveMsg(''), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update profile:', err);
-      setSaveMsg('Failed to update profile.');
+      setSaveMsg(err.response?.data?.message || 'Failed to update profile.');
     } finally {
       setSaving(false);
     }
@@ -716,7 +721,13 @@ function DetailsTab({ user }: { user: any }) {
           <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field label="Phone" style={{ marginBottom: 16 }}>
-          <input style={inputStyle} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
+          <input 
+            style={inputStyle} 
+            type="tel" 
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 12))} 
+            placeholder="12 digits (e.g. 919876543210)" 
+          />
         </Field>
         <Field label="New Password" style={{ marginBottom: 28 }}>
           <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Leave blank to keep current" />
@@ -736,7 +747,7 @@ function DetailsTab({ user }: { user: any }) {
           disabled={saving}
           style={{
             padding: '12px 32px', borderRadius: 8, border: 'none',
-            background: '#000', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            background: '#16a34a', color: '#FFF', fontSize: 14, fontWeight: 500, cursor: 'pointer',
             opacity: saving ? 0.7 : 1,
           }}
         >
@@ -930,17 +941,30 @@ function AddressModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     phone: '',
     isDefault: false,
   });
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!/^\d{6}$/.test(formData.postalCode)) {
+      setError('Postal code must be exactly 6 digits.');
+      return;
+    }
+    if (!/^\d{12}$/.test(formData.phone)) {
+      setError('Phone number must be exactly 12 digits (including country code, e.g., 919876543210).');
+      return;
+    }
+
     setSaving(true);
     try {
       await api.post('/users/addresses', formData);
       onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save address:', err);
-      alert('Failed to save address. Please try again.');
+      setError(err.response?.data?.message || 'Failed to save address. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -975,10 +999,28 @@ function AddressModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
             <input placeholder="State" required style={inputStyle} value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <input placeholder="Postal Code" required style={inputStyle} value={formData.postalCode} onChange={e => setFormData({...formData, postalCode: e.target.value})} />
+            <input 
+              placeholder="Postal Code (6 digits)" 
+              required 
+              style={inputStyle} 
+              value={formData.postalCode} 
+              onChange={e => setFormData({...formData, postalCode: e.target.value.replace(/\D/g, '').slice(0, 6)})} 
+            />
             <input placeholder="Country" required style={inputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
           </div>
-          <input placeholder="Phone" required style={inputStyle} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+          <input 
+            placeholder="Phone (12 digits including country code)" 
+            required 
+            style={inputStyle} 
+            value={formData.phone} 
+            onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 12)})} 
+          />
+          
+          {error && (
+            <div style={{ color: '#C62828', fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
+              {error}
+            </div>
+          )}
           
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 24 }}>
             <input type="checkbox" checked={formData.isDefault} onChange={e => setFormData({...formData, isDefault: e.target.checked})} />

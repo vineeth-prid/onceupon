@@ -94,6 +94,9 @@ export class OrdersController {
       updateData.shippingPostal = shipping.postcode;
       updateData.shippingCountry = shipping.country;
       updateData.shippingPhone = shipping.phone;
+      if (shipping.email) {
+        updateData.email = shipping.email;
+      }
     }
     
     if (couponId) {

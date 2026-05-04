@@ -1,15 +1,13 @@
 import { Controller, Get, Put, Delete, UseGuards, Req, Param, Body, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
-import { UserRole } from '@prisma/client';
-
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'))
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   private checkAdmin(req: any) {
-    if (req.user?.role !== UserRole.ADMIN) {
+    if (req.user?.role !== 'ADMIN') {
       throw new ForbiddenException('Admin access only');
     }
   }

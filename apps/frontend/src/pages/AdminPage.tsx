@@ -151,20 +151,33 @@ const selectStyle: React.CSSProperties = {
 
 function badge(status: string): React.CSSProperties {
   const map: Record<string, { bg: string; color: string }> = {
-    PAID: { bg: '#6e997310', color: '#3a7048' },
-    ORDER_CONFIRMED: { bg: '#6e997310', color: '#3a7048' },
-    PRINTING: { bg: '#4a90d910', color: '#2a6cb8' },
-    SHIPPED: { bg: '#5bc0de10', color: '#31708f' },
-    DELIVERED: { bg: '#6e997310', color: '#3a7048' },
-    FAILED: { bg: '#c4756010', color: '#c47560' },
-    CREATED: { bg: '#c8a45c10', color: '#9a7020' },
-    STORY_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
-    IMAGES_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
-    PDF_GENERATING: { bg: '#c8a45c10', color: '#9a7020' },
-    PREVIEW_READY: { bg: '#6e997310', color: '#3a7048' },
-    Active: { bg: '#6e997310', color: '#3a7048' },
-    Pending: { bg: '#c8a45c10', color: '#9a7020' },
-    Suspended: { bg: '#c4756010', color: '#c47560' },
+    // Paid / fulfilled statuses — green
+    PAID: { bg: '#dcfce7', color: '#166534' },
+    ORDER_CONFIRMED: { bg: '#dcfce7', color: '#166534' },
+    DELIVERED: { bg: '#dcfce7', color: '#166534' },
+    // In-transit statuses — blue
+    PRINTING: { bg: '#dbeafe', color: '#1e40af' },
+    SHIPPED: { bg: '#e0f2fe', color: '#0c4a6e' },
+    // Failed — red
+    FAILED: { bg: '#fee2e2', color: '#991b1b' },
+    // Generation / processing — amber
+    CREATED: { bg: '#fef3c7', color: '#92400e' },
+    STORY_GENERATING: { bg: '#fef3c7', color: '#92400e' },
+    STORY_COMPLETE: { bg: '#fef3c7', color: '#92400e' },
+    IMAGES_GENERATING: { bg: '#fef3c7', color: '#92400e' },
+    IMAGES_COMPLETE: { bg: '#fef3c7', color: '#92400e' },
+    PDF_GENERATING: { bg: '#fef3c7', color: '#92400e' },
+    // Preview ready — purple/indigo (distinct from paid green)
+    PREVIEW_READY: { bg: '#e8e0f0', color: '#5b21b6' },
+    PAYMENT_PENDING: { bg: '#fef3c7', color: '#92400e' },
+    // Order type badges
+    Purchased: { bg: '#dcfce7', color: '#166534' },
+    'Preview Only': { bg: '#ede9fe', color: '#6d28d9' },
+    Processing: { bg: '#fef3c7', color: '#92400e' },
+    // Other badges used elsewhere
+    Active: { bg: '#dcfce7', color: '#166534' },
+    Pending: { bg: '#fef3c7', color: '#92400e' },
+    Suspended: { bg: '#fee2e2', color: '#991b1b' },
     ADMIN: { bg: '#c8a45c20', color: '#c8a45c' },
     USER: { bg: '#f0ede8', color: '#8a8578' },
   };
@@ -178,6 +191,26 @@ function badge(status: string): React.CSSProperties {
     background: c.bg,
     color: c.color,
   };
+}
+
+/** Classify an order as Purchased, Preview Only, Processing, or Failed */
+function getOrderType(order: any): string {
+  // If the order has been paid (has a paymentId or amountPaid > 0)
+  const paidStatuses = ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'];
+  if (paidStatuses.includes(order.status) || order.paymentId || (order.amountPaid && order.amountPaid > 0)) {
+    return 'Purchased';
+  }
+  // If the order failed
+  if (order.status === 'FAILED') {
+    return 'Failed';
+  }
+  // If the order is still generating
+  const processingStatuses = ['CREATED', 'STORY_GENERATING', 'STORY_COMPLETE', 'IMAGES_GENERATING', 'IMAGES_COMPLETE', 'PDF_GENERATING'];
+  if (processingStatuses.includes(order.status)) {
+    return 'Processing';
+  }
+  // PREVIEW_READY or PAYMENT_PENDING without payment
+  return 'Preview Only';
 }
 
 /* ── Polling interval in milliseconds ── */
@@ -241,14 +274,66 @@ function DashboardTab({ stats }: { stats: any }) {
 }
 
 function OrdersTab({ orders }: { orders: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL');
+
+  // All possible order statuses from the schema
+  const allStatuses = [
+    'CREATED', 'STORY_GENERATING', 'STORY_COMPLETE',
+    'IMAGES_GENERATING', 'IMAGES_COMPLETE', 'PDF_GENERATING',
+    'PREVIEW_READY', 'PAYMENT_PENDING', 'PAID',
+    'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED',
+  ];
+
+  const orderTypeOptions = ['Purchased', 'Preview Only', 'Processing', 'Failed'];
+
+  // Client-side filtering: search + status filter + type filter
+  const filteredOrders = orders.filter((o) => {
+    // Status filter
+    if (statusFilter !== 'ALL' && o.status !== statusFilter) return false;
+
+    // Order type filter
+    if (typeFilter !== 'ALL' && getOrderType(o) !== typeFilter) return false;
+
+    // Search filter — match against id, customer name, child name, theme, email
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const searchableFields = [
+        o.id,
+        o.user?.firstName,
+        o.user?.lastName,
+        o.user?.email,
+        o.childName,
+        o.theme,
+        o.email,
+      ];
+      const matches = searchableFields.some(
+        (field) => field && String(field).toLowerCase().includes(q)
+      );
+      if (!matches) return false;
+    }
+
+    return true;
+  });
+
+  // Summary counts for quick-glance stats
+  const typeCounts = {
+    purchased: orders.filter((o) => getOrderType(o) === 'Purchased').length,
+    preview: orders.filter((o) => getOrderType(o) === 'Preview Only').length,
+    processing: orders.filter((o) => getOrderType(o) === 'Processing').length,
+    failed: orders.filter((o) => getOrderType(o) === 'Failed').length,
+  };
+
   const exportOrdersCSV = () => {
-    const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)'];
-    const rows = orders.map((o) => [
+    const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Type', 'Status', 'Amount (₹)'];
+    const rows = filteredOrders.map((o) => [
       o.id,
       new Date(o.createdAt).toLocaleDateString(),
       o.user?.firstName || 'Guest',
       o.childName,
       o.theme,
+      getOrderType(o),
       o.status,
       o.amountPaid ? (o.amountPaid / 100).toString() : '0',
     ]);
@@ -273,20 +358,85 @@ function OrdersTab({ orders }: { orders: any[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {[
+          { label: 'Purchased', count: typeCounts.purchased, emoji: '✅', filterVal: 'Purchased' },
+          { label: 'Preview Only', count: typeCounts.preview, emoji: '👁️', filterVal: 'Preview Only' },
+          { label: 'Processing', count: typeCounts.processing, emoji: '⏳', filterVal: 'Processing' },
+          { label: 'Failed', count: typeCounts.failed, emoji: '❌', filterVal: 'Failed' },
+        ].map((s) => (
+          <div
+            key={s.label}
+            onClick={() => setTypeFilter(typeFilter === s.filterVal ? 'ALL' : s.filterVal)}
+            style={{
+              ...cardStyle,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '14px 18px',
+              border: typeFilter === s.filterVal ? '2px solid #c8a45c' : '1px solid #e8e4de',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <span style={{ fontSize: 22 }}>{s.emoji}</span>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1814' }}>{s.count}</div>
+              <div style={{ fontSize: 11, color: '#8a8578' }}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Search & filter bar */}
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search orders..." />
-        <select style={selectStyle}>
-          <option>All Statuses</option>
-          <option>PAID</option>
-          <option>ORDER_CONFIRMED</option>
-          <option>PRINTING</option>
-          <option>SHIPPED</option>
-          <option>DELIVERED</option>
-          <option>FAILED</option>
+        <input
+          id="admin-order-search"
+          style={{ ...inputStyle, flex: 1, minWidth: 180 }}
+          placeholder="Search by ID, customer, child, theme, email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select
+          id="admin-order-type-filter"
+          style={selectStyle}
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+        >
+          <option value="ALL">All Types</option>
+          {orderTypeOptions.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </select>
+        <select
+          id="admin-order-status-filter"
+          style={selectStyle}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="ALL">All Statuses</option>
+          {allStatuses.map((s) => (
+            <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+          ))}
+        </select>
+        {(searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL') && (
+          <>
+            <span style={{ fontSize: 12, color: '#8a8578' }}>
+              {filteredOrders.length} of {orders.length} orders
+            </span>
+            <button
+              style={{ ...btnOutline, padding: '6px 12px', fontSize: 11 }}
+              onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); setTypeFilter('ALL'); }}
+            >
+              Clear Filters
+            </button>
+          </>
+        )}
         <button style={btnPrimary} onClick={exportOrdersCSV}>Export CSV</button>
       </div>
 
+      {/* Orders table */}
       <div style={cardStyle}>
         <table style={tableStyle}>
           <thead>
@@ -296,29 +446,36 @@ function OrdersTab({ orders }: { orders: any[] }) {
               <th style={thStyle}>Customer</th>
               <th style={thStyle}>Child</th>
               <th style={thStyle}>Theme</th>
+              <th style={thStyle}>Type</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Amount</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {orders.length === 0 ? (
-              <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No orders found</td></tr>
+            {filteredOrders.length === 0 ? (
+              <tr><td colSpan={9} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>
+                {orders.length === 0 ? 'No orders found' : 'No orders match your search or filter'}
+              </td></tr>
             ) : (
-              orders.map((o) => (
-                <tr key={o.id}>
-                  <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{o.id.slice(0, 8)}...</td>
-                  <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
-                  <td style={tdStyle}>{o.user?.firstName || 'Guest'}</td>
-                  <td style={tdStyle}>{o.childName}</td>
-                  <td style={tdStyle}>{o.theme}</td>
-                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
-                  <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '₹0'}</td>
-                  <td style={tdStyle}>
-                    <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>
-                  </td>
-                </tr>
-              ))
+              filteredOrders.map((o) => {
+                const orderType = getOrderType(o);
+                return (
+                  <tr key={o.id}>
+                    <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{o.id.slice(0, 8)}...</td>
+                    <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                    <td style={tdStyle}>{o.user?.firstName || 'Guest'}</td>
+                    <td style={tdStyle}>{o.childName}</td>
+                    <td style={tdStyle}>{o.theme}</td>
+                    <td style={tdStyle}><span style={badge(orderType)}>{orderType}</span></td>
+                    <td style={tdStyle}><span style={badge(o.status)}>{o.status.replace(/_/g, ' ')}</span></td>
+                    <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '—'}</td>
+                    <td style={tdStyle}>
+                      <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

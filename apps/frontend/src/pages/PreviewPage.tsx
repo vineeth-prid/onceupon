@@ -35,7 +35,8 @@ const StoryPage = forwardRef<HTMLDivElement, {
   page: { text: string; imageUrl: string | null; pageNumber: number };
   childName: string;
   totalPages: number;
-}>(({ page, childName, totalPages }, ref) => {
+  displayPageNumber: number;
+}>(({ page, childName, totalPages, displayPageNumber }, ref) => {
   return (
     <div ref={ref} style={{
       width: '100%', height: '100%', position: 'relative', overflow: 'hidden',
@@ -88,7 +89,7 @@ const StoryPage = forwardRef<HTMLDivElement, {
         fontFamily: FONT_UI,
         fontWeight: 600,
       }}>
-        {page.pageNumber} / {totalPages}
+        {displayPageNumber} / {totalPages}
       </div>
     </div>
   );
@@ -322,7 +323,8 @@ export function PreviewPage() {
   const completedPages = pages.filter((p: any) => p.status === 'COMPLETE').length;
   const generationProgress = totalStoryPages > 0 ? Math.round((completedPages / totalStoryPages) * 100) : 0;
 
-  const totalBookPages = pages.length + 2;
+  const filteredPages = pages.filter((p: any) => p.layout !== 'chapter-title');
+  const totalBookPages = filteredPages.length + 2;
 
   // Derive book visual phase
   const bookPhase: 'closed-front' | 'open' | 'closed-back' = !useSpread
@@ -596,6 +598,42 @@ export function PreviewPage() {
         }
       `}</style>
 
+      {/* Home Button */}
+      <button
+        onClick={() => navigate('/')}
+        title="Go to Home"
+        style={{
+          position: 'absolute',
+          top: '1.2rem',
+          left: '1.2rem',
+          zIndex: 100,
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '12px',
+          padding: '0.6rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </button>
+
       {/* Background stars */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
         {[...Array(30)].map((_, i) => (
@@ -712,12 +750,13 @@ export function PreviewPage() {
               disableFlipByClick={false}
             >
               <CoverPage title={title} childName={childName} coverImageUrl={coverImageUrl} />
-              {pages.map((page) => (
+              {filteredPages.map((page, idx) => (
                 <StoryPage
                   key={page.pageNumber}
                   page={page}
                   childName={childName}
-                  totalPages={pages.length}
+                  totalPages={filteredPages.length}
+                  displayPageNumber={idx + 1}
                 />
               ))}
               <BackCover coverImageUrl={coverImageUrl} />

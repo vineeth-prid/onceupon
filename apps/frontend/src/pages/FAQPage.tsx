@@ -196,7 +196,7 @@ export function FAQPage() {
                 padding: '8px 20px',
                 borderRadius: 999,
                 border: '1px solid #000',
-                background: activeTab === tab.key ? '#000' : '#FAFAFA',
+                background: activeTab === tab.key ? '#16a34a' : '#FAFAFA',
                 color: activeTab === tab.key ? '#FFF' : '#000',
                 fontSize: '0.875rem',
                 fontWeight: 500,
@@ -349,7 +349,7 @@ export function FAQPage() {
           style={{
             display: 'inline-block',
             padding: '14px 36px',
-            background: '#000',
+            background: '#16a34a',
             color: '#FFF',
             borderRadius: 999,
             textDecoration: 'none',

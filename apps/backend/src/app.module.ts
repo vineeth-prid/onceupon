@@ -8,6 +8,7 @@ import { QueueModule } from './queue/queue.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ReviewModule } from './reviews/review.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ReviewModule } from './reviews/review.module';
     }),
     DatabaseModule,
     AuthModule,
+    UsersModule,
     UploadModule,
     OrdersModule,
     QueueModule,

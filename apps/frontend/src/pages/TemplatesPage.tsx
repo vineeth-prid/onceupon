@@ -424,23 +424,16 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
         {/* Add to Cart button */}
         <button
           onClick={handleAddToCart}
-          className="font-body"
+          className={`font-body transition-all duration-300 flex items-center justify-center gap-2 w-full py-3 rounded-xl border ${
+            addedToCart 
+              ? 'bg-[#16a34a] text-white border-[#16a34a]' 
+              : 'bg-white text-[#111] border-[rgba(0,0,0,0.1)] hover:bg-[#f9f9f9]'
+          }`}
           style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: 10,
-            border: 'none',
-            background: addedToCart ? '#16a34a' : '#111',
-            color: '#fff',
             fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
-            transition: 'background 0.3s, transform 0.2s',
             transform: addedToCart ? 'scale(0.97)' : 'scale(1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
           }}
         >
           {addedToCart ? (

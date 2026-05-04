@@ -125,7 +125,7 @@ export function CreatePage() {
               lineHeight: 1.6,
               color: '#333',
             }}
-            onFocus={(e) => e.currentTarget.style.borderColor = '#43A047'}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#16a34a'}
             onBlur={(e) => e.currentTarget.style.borderColor = '#eee'}
           />
           <div style={{
@@ -159,7 +159,7 @@ export function CreatePage() {
             <button
               onClick={() => setCustomPrompt('A magical family adventure at an enchanted park. The father carries the child on his shoulders while the mother points at singing flowers. They discover a cloud playground, skip stones at a glowing lake, and walk through a firefly meadow at sunset. The father is a tall strong man and the mother is a graceful woman. The whole family dances together under the stars before heading home for a cozy bedtime.')}
               style={{
-                background: 'linear-gradient(135deg, #43A047, #AB47BC)',
+                background: 'linear-gradient(135deg, #16a34a, #AB47BC)',
                 border: 'none',
                 borderRadius: 10,
                 padding: '0.5rem 1rem',
@@ -207,9 +207,9 @@ export function CreatePage() {
                     transition: 'all 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#43A04715';
-                    e.currentTarget.style.borderColor = '#43A047';
-                    e.currentTarget.style.color = '#43A047';
+                    e.currentTarget.style.background = '#16a34a15';
+                    e.currentTarget.style.borderColor = '#16a34a';
+                    e.currentTarget.style.color = '#16a34a';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = '#f5f5f5';
@@ -226,22 +226,14 @@ export function CreatePage() {
           <button
             onClick={() => navigate('/personalize/custom', { state: { customStoryPrompt: customPrompt } })}
             disabled={customPrompt.trim().length < 10}
+            className="btn-primary"
             style={{
               width: '100%',
               padding: '0.9rem',
               fontSize: '1.05rem',
-              fontWeight: 600,
-              fontFamily: "'Inter', sans-serif",
-              background: customPrompt.trim().length < 10
-                ? '#ccc'
-                : 'linear-gradient(135deg, #43A047, #66BB6A)',
-              border: 'none',
               borderRadius: 14,
-              cursor: customPrompt.trim().length < 10 ? 'not-allowed' : 'pointer',
-              color: '#fff',
-              boxShadow: customPrompt.trim().length < 10 ? 'none' : '0 4px 15px rgba(67, 160, 71, 0.3)',
-              transition: 'all 0.2s',
               letterSpacing: '0.3px',
+              opacity: customPrompt.trim().length < 10 ? 0.6 : 1,
             }}
           >
             Continue to Personalize &#8594;

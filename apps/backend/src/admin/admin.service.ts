@@ -16,28 +16,67 @@ export class AdminService {
   ) {}
 
   async getStats() {
+    // Revenue: count all orders where payment was actually received
+    // (amountPaid > 0), regardless of status
+    const paidFilter = { amountPaid: { not: null, gt: 0 } } as any;
+
+    // Statuses that indicate book generation has completed (at least images done)
+    const bookCompletedStatuses = [
+      'IMAGES_COMPLETE', 'PDF_GENERATING', 'PREVIEW_READY',
+      'PAYMENT_PENDING', 'PAID', 'PRINTING', 'SHIPPED', 'DELIVERED',
+    ];
+
     const [ordersCount, totalRevenue, usersCount, booksCount] = await Promise.all([
       this.prisma.order.count(),
       this.prisma.order.aggregate({
         _sum: { amountPaid: true },
-        where: { status: 'PAID' },
+        where: paidFilter,
       }),
       this.prisma.user.count(),
-      this.prisma.order.count({ where: { status: 'IMAGES_COMPLETE' } }), // Roughly books generated
+      this.prisma.order.count({
+        where: { status: { in: bookCompletedStatuses as any } },
+      }),
     ]);
+
+    // Calculate 30-day deltas for real trend data (from main branch — functionally better)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    const [recentOrders, previousOrders, recentRevenue, previousRevenue] = await Promise.all([
+      this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      this.prisma.order.count({ where: { createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } } }),
+      this.prisma.order.aggregate({
+        _sum: { amountPaid: true },
+        where: { ...paidFilter, createdAt: { gte: thirtyDaysAgo } },
+      }),
+      this.prisma.order.aggregate({
+        _sum: { amountPaid: true },
+        where: { ...paidFilter, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
+      }),
+    ]);
+
+    const calcDelta = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? '+100%' : '+0%';
+      const pct = ((current - previous) / previous) * 100;
+      return `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`;
+    };
 
     return {
       totalOrders: ordersCount,
-      revenue: (totalRevenue._sum.amountPaid || 0) / 100, // Convert paise to INR
+      revenue: (totalRevenue._sum.amountPaid || 0) / 100,
       totalUsers: usersCount,
       booksGenerated: booksCount,
-      // For a demo, we can just hardcode deltas or calculate them if we had timestamps
       deltas: {
-        orders: '+12%',
-        revenue: '+8%',
-        users: '+5%',
-        books: '+20%',
-      }
+        orders: calcDelta(recentOrders, previousOrders),
+        revenue: calcDelta(
+          recentRevenue._sum.amountPaid || 0,
+          previousRevenue._sum.amountPaid || 0,
+        ),
+        users: '+0%',
+        books: '+0%',
+      },
     };
   }
 
@@ -51,10 +90,48 @@ export class AdminService {
   }
 
   async getAllUsers() {
+    // Enhanced from main branch — includes order data per user
     return this.prisma.user.findMany({
+      include: {
+        orders: {
+          select: { id: true, amountPaid: true, status: true, createdAt: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  // ── New from main: individual user management ──
+
+  async getUserById(id: string) {
+    return this.prisma.user.findUniqueOrThrow({
+      where: { id },
+      include: {
+        orders: {
+          include: {
+            pages: { select: { id: true, pageNumber: true, imageUrl: true, status: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        addresses: true,
+      },
+    });
+  }
+
+  async updateUserRole(id: string, role: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { role: role as any },
+    });
+  }
+
+  async deleteUser(id: string) {
+    // Delete user's orders first (cascade should handle pages), then user
+    await this.prisma.order.deleteMany({ where: { userId: id } });
+    return this.prisma.user.delete({ where: { id } });
+  }
+
+  // ── Preserved from our branch: Quick Action methods ──
 
   /**
    * Process Pending Orders: finds orders stuck in early pipeline stages
@@ -75,7 +152,6 @@ export class AdminService {
 
     for (const order of pendingOrders) {
       try {
-        // Re-queue the order for processing
         await this.queue.add(
           JobName.PROCESS_ORDER,
           { orderId: order.id },
@@ -106,14 +182,11 @@ export class AdminService {
 
     for (const order of failedOrders) {
       try {
-        // Reset failed pages to PENDING so the processor retries them
         await this.prisma.page.updateMany({
           where: { orderId: order.id, status: 'FAILED' },
           data: { status: 'PENDING' },
         });
 
-        // Reset order status to allow re-processing
-        // If the order was paid, re-run the COMPLETE flow; otherwise the PROCESS flow
         const jobName = order.paymentId ? JobName.COMPLETE_ORDER : JobName.PROCESS_ORDER;
 
         await this.prisma.order.update({
@@ -139,7 +212,7 @@ export class AdminService {
 
   /**
    * Send Bulk Notification: sends book-ready emails to all users
-   * with completed orders (ORDER_CONFIRMED, DELIVERED, etc.) who have an email.
+   * with completed orders who have an email.
    */
   async sendBulkNotification(): Promise<{ sent: number; failed: number }> {
     const completedOrders = await this.prisma.order.findMany({

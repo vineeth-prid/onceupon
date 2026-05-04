@@ -21,7 +21,7 @@ export function ConfirmationPage() {
 
         {/* Success icon */}
         <div style={{
-          width: 80, height: 80, borderRadius: '50%', background: '#000',
+          width: 80, height: 80, borderRadius: '50%', background: '#16a34a',
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32,
         }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -68,7 +68,7 @@ export function ConfirmationPage() {
                   {/* Circle */}
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%',
-                    background: step.done ? '#000' : step.current ? '#000' : '#E0E0E0',
+                    background: step.done ? '#16a34a' : step.current ? '#16a34a' : '#E0E0E0',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     animation: step.current ? 'pulse 2s infinite' : undefined,
                   }}>
@@ -91,7 +91,7 @@ export function ConfirmationPage() {
                 {/* Connecting line */}
                 {i < steps.length - 1 && (
                   <div style={{
-                    width: 40, height: 2, background: step.done ? '#000' : '#E0E0E0',
+                    width: 40, height: 2, background: step.done ? '#16a34a' : '#E0E0E0',
                     marginTop: -16, flexShrink: 0,
                   }} />
                 )}
@@ -162,7 +162,7 @@ function ActionButton({ label, onClick, primary }: { label: string; onClick: () 
       style={{
         padding: '12px 28px', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer',
         border: primary ? 'none' : '1px solid #000',
-        background: primary ? '#000' : '#FFF',
+        background: primary ? '#16a34a' : '#FFF',
         color: primary ? '#FFF' : '#000',
       }}
     >

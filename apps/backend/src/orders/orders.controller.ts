@@ -74,6 +74,13 @@ export class OrdersController {
       if (missing.length > 0) {
         throw new BadRequestException(`Missing required shipping fields: ${missing.join(', ')}`);
       }
+
+      if (shipping.postcode && !/^\d{6}$/.test(shipping.postcode)) {
+        throw new BadRequestException('Postal code must be exactly 6 digits');
+      }
+      if (shipping.phone && !/^\d{12}$/.test(shipping.phone)) {
+        throw new BadRequestException('Phone number must be exactly 12 digits (including country code)');
+      }
     }
     
     // Update shipping and coupon details if provided

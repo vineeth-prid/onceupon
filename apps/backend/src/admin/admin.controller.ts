@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Req, Res, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Post, UseGuards, Req, Res, Param, Body, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { UserRole } from '@prisma/client';
@@ -32,6 +32,32 @@ export class AdminController {
     this.checkAdmin(req);
     return this.adminService.getAllUsers();
   }
+
+  // ── New from main: individual user management ──
+
+  @Get('users/:id')
+  async getUser(@Req() req: any, @Param('id') id: string) {
+    this.checkAdmin(req);
+    return this.adminService.getUserById(id);
+  }
+
+  @Put('users/:id/role')
+  async updateUserRole(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body('role') role: string,
+  ) {
+    this.checkAdmin(req);
+    return this.adminService.updateUserRole(id, role);
+  }
+
+  @Delete('users/:id')
+  async deleteUser(@Req() req: any, @Param('id') id: string) {
+    this.checkAdmin(req);
+    return this.adminService.deleteUser(id);
+  }
+
+  // ── Preserved from our branch: Quick Action endpoints ──
 
   @Post('actions/process-pending')
   async processPending(@Req() req: any) {

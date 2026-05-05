@@ -452,7 +452,7 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     // Disney style via style_name param), then swap ALL faces via Easel.
     const genderTag = primaryGender === 'boy' ? 'boy' : primaryGender === 'girl' ? 'girl' : 'child';
 
-    let scenePrompt = imagePrompt
+    const scenePrompt = imagePrompt
       .replace(/\b(crowd|group of people|strangers)\b/gi, '')
       .replace(/\s{2,}/g, ' ')
       .trim();

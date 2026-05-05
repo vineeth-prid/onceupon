@@ -28,7 +28,8 @@ export class PdfService {
       .filter((p) => p.layout !== 'chapter-title')
       .sort((a, b) => a.pageNumber - b.pageNumber);
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      void (async () => {
       try {
         const doc = new PDFDocument({
           size: 'A4',
@@ -216,6 +217,7 @@ export class PdfService {
       } catch (error) {
         reject(error);
       }
+      })();
     });
   }
 

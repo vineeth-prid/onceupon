@@ -52,16 +52,10 @@ export class OrdersController {
     let couponId: string | null = null;
 
     if (couponCode) {
-      try {
-        const validation = await this.couponsService.validateCoupon(couponCode, amount * 100, order.userId);
-        discountAmount = validation.discountAmount; // in paise
-        amount = Math.max(0, amount - (discountAmount / 100)); // amount is in INR
-        couponId = validation.coupon.id;
-      } catch (error) {
-        // If coupon is invalid, we can either throw error or just log it
-        // Depending on UX requirements. Let's throw for now so user knows.
-        throw error;
-      }
+      const validation = await this.couponsService.validateCoupon(couponCode, amount * 100, order.userId);
+      discountAmount = validation.discountAmount; // in paise
+      amount = Math.max(0, amount - (discountAmount / 100)); // amount is in INR
+      couponId = validation.coupon.id;
     }
     
     // Validate shipping if it's a print order (amount >= 1000 INR)

@@ -88,7 +88,7 @@ export class CouponsService {
       }
     }
 
-    let discount = 0;
+    let discount: number;
     if (coupon.type === 'percentage') {
       discount = Math.round((orderAmount * coupon.value) / 100);
       if (coupon.maxDiscount && discount > coupon.maxDiscount) {

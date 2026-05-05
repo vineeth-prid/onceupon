@@ -1,5 +1,7 @@
 {
+  "premadeStartingPrice": 499,
+  "customStartingPrice": 599,
   "ebookPrice": 501,
   "physicalPrice": 1300,
-  "shippingPrice": 101
+  "shippingPrice": 98
 }

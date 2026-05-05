@@ -3,6 +3,10 @@
  *
  * Each book's `slug` maps to a BOOK_TEMPLATES entry in @bookmagic/shared
  * and a static story builder in the backend.
+ *
+ * Pricing is NOT stored per-book — all pre-made books share the
+ * `premadeStartingPrice` value configured by admin, sourced from the
+ * PricingContext at render time.
  */
 
 export interface CatalogBook {
@@ -10,8 +14,6 @@ export interface CatalogBook {
   title: string;
   subtitle: string;
   thumbnail: string;        // relative to /public
-  price: number;            // cents / paise
-  priceFormatted: string;
   category: CatalogCategory;
   slug: string;             // maps to BOOK_TEMPLATES id → static story theme
   gender: 'boy' | 'girl' | 'neutral';
@@ -39,8 +41,6 @@ export const BOOK_CATALOG: CatalogBook[] = [
     title: 'The Boy and the Cosmic Journey',
     subtitle: 'Blast off through stars and galaxies',
     thumbnail: `${T}/the-boy-and-the-cosmic-journey.webp`,
-    price: 2499,
-    priceFormatted: '$24.99',
     category: 'Adventure',
     slug: 'cosmic-journey',
     gender: 'boy',
@@ -51,8 +51,6 @@ export const BOOK_CATALOG: CatalogBook[] = [
     title: 'The Girl and the Tooth Fairy',
     subtitle: "A magical secret hidden among the stars",
     thumbnail: `${T}/the-girl-and-the-tooth-fairy.webp`,
-    price: 2499,
-    priceFormatted: '$24.99',
     category: 'Fantasy',
     slug: 'tooth-fairy',
     gender: 'girl',

@@ -14,11 +14,7 @@ export class PricingController {
 
   @Put()
   @UseGuards(AuthGuard('jwt'), AdminGuard)
-  savePricing(@Body() body: PricingConfig): PricingConfig {
-    return this.pricingService.savePricing({
-      ebookPrice: Number(body.ebookPrice),
-      physicalPrice: Number(body.physicalPrice),
-      shippingPrice: Number(body.shippingPrice),
-    });
+  savePricing(@Body() body: Partial<PricingConfig>): PricingConfig {
+    return this.pricingService.savePricing(body);
   }
 }

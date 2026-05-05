@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { BOOK_CATALOG } from '../data/bookCatalog';
 import { getBookGallery } from '../data/bookAssets';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { usePricing } from '../context/PricingContext';
+import { formatINR } from '../utils/currency';
 import { StarRating } from '../components/reviews/StarRating';
 import { ReviewList } from '../components/reviews/ReviewList';
 import { ReviewForm } from '../components/reviews/ReviewForm';
@@ -37,8 +38,7 @@ export function BookDetailPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [addedToCart, setAddedToCart] = useState(false);
-  const { addToCart } = useCart();
+  const { pricing } = usePricing();
 
   // Reviews State
   const [reviews, setReviews] = useState<any[]>([]);
@@ -364,7 +364,7 @@ export function BookDetailPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 24 }}>
             <span className="font-body" style={{ fontSize: 16, color: '#6b7280' }}>From</span>
             <span className="font-body" style={{ fontSize: 28, fontWeight: 700, color: '#111' }}>
-              {book.priceFormatted}
+              {formatINR(pricing.premadeStartingPrice)}
             </span>
           </div>
 
@@ -381,38 +381,6 @@ export function BookDetailPage() {
             }}
           >
             Personalise my book
-          </button>
-
-          {/* Add to Cart */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              if (book) addToCart(book);
-              setAddedToCart(true);
-              setTimeout(() => setAddedToCart(false), 1500);
-            }}
-            className={`font-body transition-all duration-300 flex items-center justify-center gap-2 w-full py-4 rounded-xl border-2 mt-3 ${
-              addedToCart 
-                ? 'bg-[#16a34a] text-white border-[#16a34a]' 
-                : 'bg-white text-[#111] border-[#111] hover:bg-[#f9f9f9]'
-            }`}
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            {addedToCart ? (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                Added to Cart!
-              </>
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                Add to Cart
-              </>
-            )}
           </button>
 
         </div>

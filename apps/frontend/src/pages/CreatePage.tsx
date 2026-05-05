@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePricing } from '../context/PricingContext';
+import { formatINR } from '../utils/currency';
 
 export function CreatePage() {
   const navigate = useNavigate();
   const [customPrompt, setCustomPrompt] = useState('');
+  const { pricing } = usePricing();
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff' }}>
@@ -83,11 +86,34 @@ export function CreatePage() {
           textAlign: 'center',
           color: '#6F6F6F',
           fontFamily: "'Inter', sans-serif",
-          marginBottom: '2rem',
+          marginBottom: '1rem',
           fontSize: '1rem',
         }}>
           Describe the story you'd like us to create for your child
         </p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '2rem',
+        }}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '6px 14px',
+            borderRadius: 999,
+            background: 'linear-gradient(135deg, #E8F5E9, #F3E5F5)',
+            border: '1px solid #C8E6C9',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            color: '#2E7D32',
+            letterSpacing: '0.02em',
+          }}>
+            <span style={{ fontSize: '0.95rem' }}>{'✨'}</span>
+            Starting from {formatINR(pricing.customStartingPrice)}
+          </span>
+        </div>
 
         <div style={{
           background: '#fff',

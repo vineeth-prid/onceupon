@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
+import { usePricing } from '../context/PricingContext';
+import { formatINR } from '../utils/currency';
 
 type Occasion = {
   id: string;
@@ -79,6 +81,7 @@ function OccasionImage({ src, gradient, alt }: { src: string; gradient: string; 
 
 export default function OccasionGallery() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { pricing } = usePricing();
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -219,19 +222,36 @@ export default function OccasionGallery() {
               >
                 {item.description}
               </p>
-              <span
-                className="font-body"
-                style={{
-                  display: 'inline-block',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: '#000',
-                }}
-              >
-                Create Yours &rarr;
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span
+                  className="font-body"
+                  style={{
+                    display: 'inline-block',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: '#000',
+                  }}
+                >
+                  Create Yours &rarr;
+                </span>
+                <span
+                  className="font-body"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: '#374151',
+                    background: 'rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: 999,
+                    padding: '3px 10px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  From {formatINR(pricing.customStartingPrice)}
+                </span>
+              </div>
             </div>
           </Link>
         ))}

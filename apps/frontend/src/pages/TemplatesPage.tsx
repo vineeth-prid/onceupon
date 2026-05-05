@@ -6,7 +6,8 @@ import {
   type CatalogBook,
   type CatalogCategory,
 } from '../data/bookCatalog';
-import { useCart } from '../context/CartContext';
+import { usePricing } from '../context/PricingContext';
+import { formatINR } from '../utils/currency';
 
 type GenderFilter = 'all' | 'boy' | 'girl';
 
@@ -287,8 +288,8 @@ export function TemplatesPage() {
 function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
+  const { pricing } = usePricing();
 
   const categoryColors: Record<string, string> = {
     Adventure: '#f97316',
@@ -299,11 +300,9 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
 
   const color = categoryColors[book.category] || '#6b7280';
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handlePersonalise = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(book);
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 1500);
+    navigate(`/personalize/${book.slug}`);
   };
 
   return (
@@ -402,7 +401,7 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
           }}
         >
           <span className="font-body" style={{ fontSize: 16, fontWeight: 700, color: '#111' }}>
-            From {book.priceFormatted}
+            From {formatINR(pricing.premadeStartingPrice)}
           </span>
           <span
             className="font-body"
@@ -421,32 +420,21 @@ function BookCard({ book, onClick }: { book: CatalogBook; onClick: () => void })
             {book.category}
           </span>
         </div>
-        {/* Add to Cart button */}
+        {/* Personalise Now button */}
         <button
-          onClick={handleAddToCart}
-          className={`font-body transition-all duration-300 flex items-center justify-center gap-2 w-full py-3 rounded-xl border ${
-            addedToCart 
-              ? 'bg-[#16a34a] text-white border-[#16a34a]' 
-              : 'bg-white text-[#111] border-[rgba(0,0,0,0.1)] hover:bg-[#f9f9f9]'
-          }`}
+          onClick={handlePersonalise}
+          className="btn-primary font-body transition-all duration-300 flex items-center justify-center gap-2 w-full py-3 rounded-xl"
           style={{
             fontSize: 14,
             fontWeight: 600,
             cursor: 'pointer',
-            transform: addedToCart ? 'scale(0.97)' : 'scale(1)',
+            letterSpacing: 0.3,
           }}
         >
-          {addedToCart ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-              Added!
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-              Add to Cart
-            </>
-          )}
+          Personalise Now
+          <span style={{ display: 'inline-block', transform: hovered ? 'translateX(3px)' : 'translateX(0)', transition: 'transform 0.25s ease' }}>
+            &rarr;
+          </span>
         </button>
       </div>
 

@@ -1,13 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 
 export function NavBar() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const { cartCount } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -127,30 +124,6 @@ export function NavBar() {
 
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {/* Cart Icon */}
-                <button
-                  onClick={() => navigate('/profile?tab=cart')}
-                  style={{
-                    position: 'relative', background: 'none', border: 'none',
-                    cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center',
-                  }}
-                  aria-label="My Cart"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.8">
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <path d="M16 10a4 4 0 01-8 0"/>
-                  </svg>
-                  {cartCount > 0 && (
-                    <span style={{
-                      position: 'absolute', top: -4, right: -4,
-                      background: '#ef4444', color: '#fff',
-                      borderRadius: '50%', width: 16, height: 16,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700,
-                    }}>{cartCount}</span>
-                  )}
-                </button>
                 {/* Avatar button */}
                 <button
                   ref={avatarRef}
@@ -241,22 +214,6 @@ export function NavBar() {
             onClick={() => setAvatarMenuOpen(false)}
           >
             My Books
-          </Link>
-          <Link
-            to="/profile?tab=cart"
-            className="block no-underline font-body text-sm px-4 py-2 transition-colors"
-            style={{ color: '#000', display: 'flex', alignItems: 'center', gap: 6 }}
-            onClick={() => setAvatarMenuOpen(false)}
-          >
-            My Cart
-            {cartCount > 0 && (
-              <span style={{
-                background: '#ef4444', color: '#fff',
-                borderRadius: '50%', width: 16, height: 16,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 700,
-              }}>{cartCount}</span>
-            )}
           </Link>
           {user?.role === 'ADMIN' && (
             <Link

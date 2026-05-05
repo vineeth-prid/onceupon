@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon, fetchActiveCoupons } from '../api/orders';
 import { api } from '../api/client';
+import { usePricing } from '../context/PricingContext';
+import { formatINR } from '../utils/currency';
 
 type Format = 'ebook' | 'print';
 type DeliverySpeed = 'standard' | 'express' | 'priority';
@@ -25,16 +27,27 @@ const ADDONS = [
   { id: 'bookmark', label: 'Bookmark Set', price: 149 },
 ];
 
-function formatPrice(paise: number) {
-  return `\u20B9${paise.toLocaleString('en-IN')}`;
-}
+const formatPrice = formatINR;
 
 export function CheckoutPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { pricing } = usePricing();
 
   const [FORMATS, setFORMATS] = useState(DEFAULT_FORMATS);
   const [DELIVERY_OPTIONS, setDELIVERY_OPTIONS] = useState(DEFAULT_DELIVERY);
+
+  // Sync admin-configured pricing into the FORMATS/DELIVERY shape this page is built around.
+  useEffect(() => {
+    setFORMATS(prev => prev.map(f => {
+      if (f.id === 'ebook') return { ...f, price: pricing.ebookPrice };
+      if (f.id === 'print') return { ...f, price: pricing.physicalPrice };
+      return f;
+    }));
+    setDELIVERY_OPTIONS(prev => prev.map(d =>
+      d.id === 'standard' ? { ...d, price: pricing.shippingPrice } : d,
+    ));
+  }, [pricing.ebookPrice, pricing.physicalPrice, pricing.shippingPrice]);
 
   const [format, setFormat] = useState<Format>('ebook');
   const [delivery, setDelivery] = useState<DeliverySpeed>('standard');
@@ -67,21 +80,7 @@ export function CheckoutPage() {
       });
     }
 
-    // Fetch dynamic pricing from Admin configuration
-    fetch('/api/pricing')
-      .then(r => r.json())
-      .then(data => {
-        if (data.ebookPrice) {
-          setFORMATS(prev => prev.map(f => f.id === 'ebook' ? { ...f, price: data.ebookPrice } : f));
-        }
-        if (data.physicalPrice) {
-          setFORMATS(prev => prev.map(f => f.id === 'print' ? { ...f, price: data.physicalPrice } : f));
-        }
-        if (data.shippingPrice) {
-          setDELIVERY_OPTIONS(prev => prev.map(d => d.id === 'standard' ? { ...d, price: data.shippingPrice } : d));
-        }
-      })
-      .catch(err => console.error('Failed to fetch pricing:', err));
+    // Pricing is now sourced from PricingContext above (single fetch on app load).
 
     // Fetch available coupons for discovery
     fetchActiveCoupons()

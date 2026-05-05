@@ -24,7 +24,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
-import { CartProvider } from './context/CartContext';
+import { PricingProvider } from './context/PricingContext';
 import { PromoBanner } from './components/PromoBanner';
 
 function ConditionalNavBar() {
@@ -68,7 +68,7 @@ export function App() {
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
-        <CartProvider>
+        <PricingProvider>
           <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
           <ConditionalNavBar />
           <ConditionalPromoBanner />
@@ -112,7 +112,7 @@ export function App() {
           </main>
           <GlobalSections />
           </div>
-        </CartProvider>
+        </PricingProvider>
       </AuthProvider>
     </BrowserRouter>
   );

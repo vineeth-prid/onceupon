@@ -583,103 +583,237 @@ function OrdersTab({ orders }: { orders: any[] }) {
   );
 }
 
+type PricingField = {
+  label: string;
+  key: 'premadeStartingPrice' | 'customStartingPrice' | 'ebookPrice' | 'physicalPrice' | 'shippingPrice';
+  hint: string;
+};
+
+type PricingSection = {
+  title: string;
+  emoji: string;
+  description: string;
+  fields: PricingField[];
+};
+
+const PRICING_SECTIONS: PricingSection[] = [
+  {
+    title: 'Catalog Starting Prices',
+    emoji: '\u{1F3F7}\ufe0f',
+    description: 'Lowest "From \u20b9X" price shown on storefront cards. Updates reflect instantly on every book listing.',
+    fields: [
+      {
+        label: 'Pre-made Books',
+        key: 'premadeStartingPrice',
+        hint: 'Shown on /templates book cards & detail pages.',
+      },
+      {
+        label: 'Custom Creation',
+        key: 'customStartingPrice',
+        hint: 'Shown on /create and the Occasion Gallery cards.',
+      },
+    ],
+  },
+  {
+    title: 'After-Generation Pricing',
+    emoji: '\u{1F4DA}',
+    description: 'Charged after the book is generated, when the customer chooses how to receive it.',
+    fields: [
+      {
+        label: 'eBook Download',
+        key: 'ebookPrice',
+        hint: 'Unlock the digital PDF on the preview page.',
+      },
+      {
+        label: 'Physical Book',
+        key: 'physicalPrice',
+        hint: 'Print + ship a hardcover copy.',
+      },
+    ],
+  },
+  {
+    title: 'Shipping & Tax',
+    emoji: '\u{1F69A}',
+    description: 'Delivery and applicable taxes added to the order total.',
+    fields: [
+      {
+        label: 'Standard Shipping',
+        key: 'shippingPrice',
+        hint: 'Default shipping fee at checkout.',
+      },
+    ],
+  },
+];
+
+function PricingNumberInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'stretch' }}>
+      <span
+        style={{
+          padding: '0 12px',
+          display: 'flex',
+          alignItems: 'center',
+          background: '#f0ede8',
+          border: '1px solid #d5d0c8',
+          borderRight: 'none',
+          borderRadius: '10px 0 0 10px',
+          fontSize: 14,
+          fontWeight: 600,
+          color: '#5b554c',
+        }}
+      >
+        {'\u20b9'}
+      </span>
+      <input
+        style={{
+          ...inputStyle,
+          borderRadius: '0 10px 10px 0',
+          width: 130,
+          fontSize: 14,
+          fontWeight: 600,
+          textAlign: 'right',
+          padding: '10px 14px',
+        }}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        type="number"
+        min={0}
+      />
+    </div>
+  );
+}
+
 function PricingTab() {
-  const [pricing, setPricing] = useState({ ebookPrice: 499, physicalPrice: 1299, shippingPrice: 99 });
+  const [pricing, setPricing] = useState({
+    premadeStartingPrice: 499,
+    customStartingPrice: 499,
+    ebookPrice: 499,
+    physicalPrice: 1299,
+    shippingPrice: 99,
+  });
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
+  const [saveMsg, setSaveMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get('/pricing').then(res => {
-      setPricing(res.data);
+      setPricing((p) => ({ ...p, ...res.data }));
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
   const handleSavePricing = async () => {
     setSaving(true);
-    setSaveMsg('');
+    setSaveMsg(null);
     try {
-      await api.put('/pricing', pricing);
-      setSaveMsg('Pricing saved successfully!');
+      const res = await api.put('/pricing', pricing);
+      setPricing((p) => ({ ...p, ...res.data }));
+      setSaveMsg({ kind: 'success', text: 'Pricing saved \u2014 all storefront prices updated.' });
     } catch (error) {
       console.error('Failed to save pricing:', error);
-      setSaveMsg('Failed to save pricing.');
+      setSaveMsg({ kind: 'error', text: 'Failed to save pricing. Please try again.' });
     }
     setSaving(false);
-    setTimeout(() => setSaveMsg(''), 3000);
+    setTimeout(() => setSaveMsg(null), 4000);
   };
 
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+  if (loading) {
+    return (
       <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Product Pricing</h3>
-        {loading ? (
-          <div style={{ fontSize: 13, color: '#8a8578' }}>Loading...</div>
-        ) : (
-          <>
-            {[
-              { label: 'eBook Price', key: 'ebookPrice' as const },
-              { label: 'Physical Book Price', key: 'physicalPrice' as const },
-            ].map((f) => (
-              <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>{f.label}</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                  <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{'\u20b9'}</span>
-                  <input
-                    style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }}
-                    value={pricing[f.key]}
-                    onChange={(e) => setPricing({ ...pricing, [f.key]: Number(e.target.value) })}
-                    type="number"
-                    min={0}
-                  />
-                </div>
-              </div>
-            ))}
-            {saveMsg && (
-              <div style={{ fontSize: 12, color: saveMsg.includes('success') ? '#3a7048' : '#c47560', marginBottom: 8 }}>
-                {saveMsg}
-              </div>
-            )}
-            <button
-              style={{ ...btnPrimary, marginTop: 8, width: '100%', opacity: saving ? 0.7 : 1 }}
-              onClick={handleSavePricing}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Pricing'}
-            </button>
-          </>
-        )}
+        <div style={{ fontSize: 13, color: '#8a8578' }}>Loading pricing\u2026</div>
       </div>
+    );
+  }
 
-      <div style={cardStyle}>
-        <h3 style={{ margin: '0 0 20px', fontSize: 15, fontWeight: 600 }}>Shipping &amp; Tax</h3>
-        {loading ? (
-          <div style={{ fontSize: 13, color: '#8a8578' }}>Loading...</div>
-        ) : (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-              <label style={{ flex: 1, fontSize: 13, color: '#1a1814' }}>Standard Shipping</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                <span style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #d5d0c8', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: 13, color: '#8a8578' }}>{'\u20b9'}</span>
-                <input
-                  style={{ ...inputStyle, borderRadius: '0 8px 8px 0', width: 100 }}
-                  value={pricing.shippingPrice}
-                  onChange={(e) => setPricing({ ...pricing, shippingPrice: Number(e.target.value) })}
-                  type="number"
-                  min={0}
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 880 }}>
+      {PRICING_SECTIONS.map((section) => (
+        <div key={section.title} style={cardStyle}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 18 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: '#f7f4ee',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              {section.emoji}
+            </div>
+            <div>
+              <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 600, color: '#1a1814' }}>
+                {section.title}
+              </h3>
+              <p style={{ margin: 0, fontSize: 12.5, color: '#8a8578', lineHeight: 1.5 }}>
+                {section.description}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {section.fields.map((field) => (
+              <div
+                key={field.key}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 16,
+                  padding: '12px 14px',
+                  background: '#fbfaf7',
+                  border: '1px solid #efebe3',
+                  borderRadius: 10,
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1a1814', marginBottom: 2 }}>
+                    {field.label}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#8a8578' }}>{field.hint}</div>
+                </div>
+                <PricingNumberInput
+                  value={pricing[field.key]}
+                  onChange={(n) => setPricing({ ...pricing, [field.key]: n })}
                 />
               </div>
-            </div>
-            <button
-              style={{ ...btnPrimary, marginTop: 8, width: '100%', opacity: saving ? 0.7 : 1 }}
-              onClick={handleSavePricing}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Shipping & Tax'}
-            </button>
-          </>
-        )}
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div
+        style={{
+          ...cardStyle,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          position: 'sticky',
+          bottom: 16,
+          background: '#fff',
+        }}
+      >
+        <div style={{ fontSize: 13, color: saveMsg?.kind === 'error' ? '#c47560' : '#3a7048', minHeight: 18 }}>
+          {saveMsg?.text || ''}
+        </div>
+        <button
+          style={{ ...btnPrimary, padding: '12px 28px', fontSize: 14, opacity: saving ? 0.7 : 1 }}
+          onClick={handleSavePricing}
+          disabled={saving}
+        >
+          {saving ? 'Saving\u2026' : 'Save All Pricing'}
+        </button>
       </div>
     </div>
   );

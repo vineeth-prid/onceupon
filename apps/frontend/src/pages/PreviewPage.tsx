@@ -4,6 +4,7 @@ import HTMLFlipBook from 'react-pageflip';
 import { getOrder, downloadPdf, createRazorpayOrder, verifyRazorpayPayment, completeOrder } from '../api/orders';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { usePricing } from '../context/PricingContext';
 
 const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -298,7 +299,8 @@ export function PreviewPage() {
   const [paying, setPaying] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [useSpread, setUseSpread] = useState(window.innerWidth >= 860);
-  const [ebookPrice, setEbookPrice] = useState(499);
+  const { pricing } = usePricing();
+  const ebookPrice = pricing.ebookPrice;
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const pagesWithImages = pages.filter((p: any) => p.imageUrl);
@@ -396,14 +398,7 @@ export function PreviewPage() {
     };
   }, [isGenerating, fetchOrder]);
 
-  useEffect(() => {
-    fetch('/api/pricing')
-      .then(r => r.json())
-      .then(data => {
-        if (data.ebookPrice) setEbookPrice(data.ebookPrice);
-      })
-      .catch(err => console.error('Failed to fetch pricing:', err));
-  }, []);
+  // Pricing comes from PricingContext (single fetch on app load).
 
   const handlePayment = async () => {
     if (!orderId) return;

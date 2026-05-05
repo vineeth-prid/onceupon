@@ -82,3 +82,28 @@ export interface PaymentSessionDto {
   sessionId: string;
   provider: 'razorpay';
 }
+
+/**
+ * Site-wide pricing configuration. All values are stored as INR rupees
+ * (whole-rupee integers) to match the existing pricing.json on disk.
+ */
+export interface PricingConfig {
+  /** Lowest "From ₹X" price shown on pre-made book cards & detail pages. */
+  premadeStartingPrice: number;
+  /** "Starting from ₹X" price shown on Custom + occasion creation flows. */
+  customStartingPrice: number;
+  /** eBook download price after a book is generated. */
+  ebookPrice: number;
+  /** Physical book order price after a book is generated. */
+  physicalPrice: number;
+  /** Standard shipping fee. */
+  shippingPrice: number;
+}
+
+export const DEFAULT_PRICING: PricingConfig = {
+  premadeStartingPrice: 499,
+  customStartingPrice: 499,
+  ebookPrice: 499,
+  physicalPrice: 1299,
+  shippingPrice: 99,
+};

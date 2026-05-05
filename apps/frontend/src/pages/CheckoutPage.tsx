@@ -50,6 +50,7 @@ export function CheckoutPage() {
   const [shipping, setShipping] = useState({
     firstName: '', lastName: '', address1: '', address2: '',
     city: '', state: '', postcode: '', country: 'IN', phone: '',
+    email: '',
   });
   const [saveForLater, setSaveForLater] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -103,6 +104,7 @@ export function CheckoutPage() {
           postcode: def.postalCode,
           country: def.country === 'India' ? 'IN' : def.country,
           phone: def.phone || '',
+          email: def.user?.email || '',
         });
       }
     }).catch(() => {});
@@ -170,7 +172,7 @@ export function CheckoutPage() {
 
     // Validate shipping if print is selected
     if (isPrint) {
-      const required = ['firstName', 'lastName', 'address1', 'city', 'state', 'postcode', 'phone'];
+      const required = ['firstName', 'lastName', 'address1', 'city', 'state', 'postcode', 'phone', 'email'];
       const missing = required.filter(f => !shipping[f as keyof typeof shipping]?.trim());
       
       if (missing.length > 0) {
@@ -185,6 +187,11 @@ export function CheckoutPage() {
 
       if (!/^\d{12}$/.test(shipping.phone)) {
         alert('Phone number must be exactly 12 digits (including country code, e.g., 919876543210).');
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shipping.email)) {
+        alert('Please enter a valid email address.');
         return;
       }
     }
@@ -249,7 +256,7 @@ export function CheckoutPage() {
         },
         prefill: {
           name: `${shipping.firstName} ${shipping.lastName}`.trim(),
-          email: '',
+          email: shipping.email,
           contact: shipping.phone
         },
         theme: {
@@ -402,6 +409,7 @@ export function CheckoutPage() {
                             postcode: addr.postalCode,
                             country: addr.country === 'India' ? 'IN' : addr.country,
                             phone: addr.phone || '',
+                            email: addr.email || '',
                           });
                         }}
                         style={{
@@ -423,7 +431,7 @@ export function CheckoutPage() {
                         setSelectedAddressId('new');
                         setShipping({
                           firstName: '', lastName: '', address1: '', address2: '',
-                          city: '', state: '', postcode: '', country: 'IN', phone: '',
+                          city: '', state: '', postcode: '', country: 'IN', phone: '', email: '',
                         });
                       }}
                       style={{
@@ -522,6 +530,16 @@ export function CheckoutPage() {
                     value={shipping.phone}
                     onChange={e => setShipping(s => ({ ...s, phone: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
                     placeholder="12 digits"
+                  />
+                </div>
+                <div>
+                  <label style={label}>Email *</label>
+                  <input
+                    style={input}
+                    type="email"
+                    value={shipping.email}
+                    onChange={e => setShipping(s => ({ ...s, email: e.target.value }))}
+                    placeholder="For shipping updates"
                   />
                 </div>
               </div>

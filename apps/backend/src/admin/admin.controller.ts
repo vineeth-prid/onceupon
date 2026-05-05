@@ -10,7 +10,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   private checkAdmin(req: any) {
-    if (req.user?.role !== UserRole.ADMIN) {
+    if (req.user?.role !== 'ADMIN') {
       throw new ForbiddenException('Admin access only');
     }
   }

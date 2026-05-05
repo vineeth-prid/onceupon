@@ -369,11 +369,10 @@ const ALL_ORDER_STATUSES = [
 function OrdersTab({ orders }: { orders: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   const filteredOrders = orders.filter((o) => {
-    // Status filter
     if (statusFilter && o.status !== statusFilter) return false;
-    // Search filter (case-insensitive match on ID, customer, child name, theme)
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const match =
@@ -388,7 +387,11 @@ function OrdersTab({ orders }: { orders: any[] }) {
   });
 
   const exportOrdersCSV = () => {
-    const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)'];
+    const headers = [
+      'Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)',
+      'Shipping Name', 'Shipping Email', 'Shipping Phone',
+      'Address Line 1', 'Address Line 2', 'City', 'State', 'Postcode', 'Country'
+    ];
     const rows = filteredOrders.map((o) => [
       o.id,
       new Date(o.createdAt).toLocaleDateString(),
@@ -397,6 +400,15 @@ function OrdersTab({ orders }: { orders: any[] }) {
       o.theme,
       statusLabel(o.status),
       o.amountPaid ? (o.amountPaid / 100).toString() : '0',
+      o.shippingName || '',
+      o.email || '',
+      o.shippingPhone || '',
+      o.shippingLine1 || '',
+      o.shippingLine2 || '',
+      o.shippingCity || '',
+      o.shippingState || '',
+      o.shippingPostal || '',
+      o.shippingCountry || ''
     ]);
 
     const csvContent = [
@@ -419,6 +431,94 @@ function OrdersTab({ orders }: { orders: any[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {selectedOrder && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={() => setSelectedOrder(null)}>
+          <div style={{
+            ...cardStyle, width: '90%', maxWidth: 600, maxHeight: '80vh',
+            overflow: 'auto', position: 'relative',
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8a8578' }}
+              onClick={() => setSelectedOrder(null)}
+            >✕</button>
+            
+            <h3 style={{ margin: '0 0 20px', fontSize: 18, fontWeight: 700 }}>Order Details</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', display: 'block', marginBottom: 4 }}>Order ID</label>
+                <div style={{ fontSize: 14 }}>{selectedOrder.id}</div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', display: 'block', marginBottom: 4 }}>Status</label>
+                <div><span style={badge(selectedOrder.status)}>{selectedOrder.status}</span></div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', display: 'block', marginBottom: 4 }}>Date</label>
+                <div style={{ fontSize: 14 }}>{new Date(selectedOrder.createdAt).toLocaleString()}</div>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', display: 'block', marginBottom: 4 }}>Amount</label>
+                <div style={{ fontSize: 14 }}>₹{selectedOrder.amountPaid ? selectedOrder.amountPaid / 100 : 0}</div>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid #f0ede8', paddingTop: 20, marginBottom: 24 }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600 }}>Shipping Information</h4>
+              {!selectedOrder.shippingName ? (
+                <div style={{ fontSize: 13, color: '#8a8578', fontStyle: 'italic' }}>No shipping information provided (Digital only)</div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: '#8a8578' }}>Name</label>
+                    <div style={{ fontSize: 13 }}>{selectedOrder.shippingName}</div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: '#8a8578' }}>Phone</label>
+                    <div style={{ fontSize: 13 }}>{selectedOrder.shippingPhone}</div>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 11, color: '#8a8578' }}>Email</label>
+                    <div style={{ fontSize: 13 }}>{selectedOrder.email || '—'}</div>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: 11, color: '#8a8578' }}>Address</label>
+                    <div style={{ fontSize: 13 }}>
+                      {selectedOrder.shippingLine1}<br />
+                      {selectedOrder.shippingLine2 && <>{selectedOrder.shippingLine2}<br /></>}
+                      {selectedOrder.shippingCity}, {selectedOrder.shippingState} {selectedOrder.shippingPostal}<br />
+                      {selectedOrder.shippingCountry}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ borderTop: '1px solid #f0ede8', paddingTop: 20 }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600 }}>Book Details</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: '#8a8578' }}>Child Name</label>
+                  <div style={{ fontSize: 13 }}>{selectedOrder.childName} ({selectedOrder.childAge}y, {selectedOrder.childGender})</div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: '#8a8578' }}>Theme</label>
+                  <div style={{ fontSize: 13 }}>{selectedOrder.theme}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 10, marginTop: 30 }}>
+              <button style={btnPrimary} onClick={() => window.open(`/preview/${selectedOrder.id}`, '_blank')}>Open Book Preview</button>
+              <button style={btnOutline} onClick={() => setSelectedOrder(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           style={{ ...inputStyle, flex: 1, minWidth: 180 }}
@@ -467,7 +567,7 @@ function OrdersTab({ orders }: { orders: any[] }) {
                   <td style={tdStyle}><span style={badge(o.status)}>{statusLabel(o.status)}</span></td>
                   <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '₹0'}</td>
                   <td style={tdStyle}>
-                    <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>
+                    <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={() => setSelectedOrder(o)}>Details</button>
                   </td>
                 </tr>
               ))

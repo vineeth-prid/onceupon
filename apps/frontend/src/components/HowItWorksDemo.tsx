@@ -316,9 +316,7 @@ export function HowItWorksDemo() {
 /* ── Step 1: Choose a Book ── */
 function StepChooseBook() {
   const books = [
-    { title: 'The Portugal\'s New Legend', cat: 'Sports', color: '#14b8a6', thumb: '/thumbnails/the-portugals-new-legend.webp', selected: false },
-    { title: 'Super Boy and the Dragon', cat: 'Fantasy', color: '#a855f7', thumb: '/thumbnails/super-boy-and-the-dragon.webp', selected: true },
-    { title: 'The Boy & Cosmic Journey', cat: 'Adventure', color: '#f97316', thumb: '/thumbnails/the-boy-and-the-cosmic-journey.webp', selected: false },
+    { title: 'The Boy & Cosmic Journey', cat: 'Adventure', color: '#f97316', thumb: '/thumbnails/the-boy-and-the-cosmic-journey.webp', selected: true },
   ];
   return (
     <div>

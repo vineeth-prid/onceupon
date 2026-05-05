@@ -1,64 +1,81 @@
 import { Link } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
-const occasions = [
+type Occasion = {
+  id: string;
+  title: string;
+  tag: string;
+  description: string;
+  image: string;
+  gradient: string;
+};
+
+const occasions: Occasion[] = [
   {
-    title: 'Super Boy and the Dragon',
-    tag: 'Fantasy',
-    description: 'A brave child befriends a lonely dragon in this heartwarming tale of courage.',
-    image: '/thumbnails/super-boy-and-the-dragon.webp',
-    id: 'super-dragon',
+    id: 'wedding',
+    title: 'Wedding & Anniversary',
+    tag: 'Wedding',
+    description: 'Turn your love story into a keepsake storybook — from the first meet to the big day.',
+    image: '/occasions/wedding.webp',
+    gradient: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%)',
   },
   {
-    title: 'Girl Saves the Arctic Kingdom',
-    tag: 'Adventure',
-    description: 'An icy adventure powered by care and courage to save the kingdom.',
-    image: '/thumbnails/girl-saves-the-arctic-kingdom.webp',
-    id: 'arctic-rescue',
+    id: 'first-born',
+    title: 'Welcoming the First-Born',
+    tag: 'Newborn',
+    description: "Capture those magical first months — baby's arrival, tiny hands, and unforgettable moments.",
+    image: '/occasions/first-born.webp',
+    gradient: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%)',
   },
   {
-    title: 'Girl and the Lost Fairy Wings',
-    tag: 'Fantasy',
-    description: 'A magical quest to find the legendary fairy wings in an enchanted realm.',
-    image: '/thumbnails/girl-and-the-lost-fairy-wings.webp',
-    id: 'lost-fairy-wings',
+    id: 'graduation',
+    title: 'Graduation Day',
+    tag: 'Graduation',
+    description: 'Celebrate the cap-and-gown moment with a personalised story of years of hard work.',
+    image: '/occasions/graduation.webp',
+    gradient: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
   },
   {
-    title: 'The Boy and the Cosmic Journey',
-    tag: 'Adventure',
-    description: 'Blast off through stars, planets, and galaxies on an epic space adventure.',
-    image: '/thumbnails/the-boy-and-the-cosmic-journey.webp',
-    id: 'cosmic-journey',
+    id: 'birthday',
+    title: 'Birthday Celebration',
+    tag: 'Birthday',
+    description: "A custom storybook that makes the birthday star the hero of their own magical year.",
+    image: '/occasions/birthday.webp',
+    gradient: 'linear-gradient(135deg, #fed7aa 0%, #fdba74 50%, #fb923c 100%)',
   },
   {
-    title: 'Vroom Vroom, The Boy Wins the Race',
-    tag: 'Adventure',
-    description: "A child's magical race to believe, try, and win against all odds.",
-    image: '/thumbnails/vroom-vroom-the-boy-wins-the-race.webp',
-    id: 'vroom-vroom-race',
+    id: 'family-memories',
+    title: 'Family Memories',
+    tag: 'Family',
+    description: 'Reunions, holidays, road trips — turn your favourite family chapters into a book.',
+    image: '/occasions/family-memories.webp',
+    gradient: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #6ee7b7 100%)',
   },
   {
-    title: 'Boy Explores the Zoo',
-    tag: 'Animals',
-    description: 'A fun-filled day discovering amazing animals at the zoo.',
-    image: '/thumbnails/boy-explores-the-zoo.webp',
-    id: 'zoo-adventure-boy',
-  },
-  {
-    title: "The Portugal's New Legend",
-    tag: 'Sports',
-    description: 'For champions with red and green at heart — a legendary sports story.',
-    image: '/thumbnails/the-portugals-new-legend.webp',
-    id: 'portugals-legend',
-  },
-  {
-    title: 'The Boy Who Could Talk to Animals',
-    tag: 'Animals',
-    description: 'A magical gift that lets a child hear what animals truly have to say.',
-    image: '/thumbnails/the-boy-who-could-talk-to-animals.webp',
-    id: 'talk-to-animals',
+    id: 'milestone',
+    title: 'Life Milestones',
+    tag: 'Milestone',
+    description: 'New home, new job, retirement — every milestone deserves its own story.',
+    image: '/occasions/milestone.webp',
+    gradient: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 50%, #c4b5fd 100%)',
   },
 ];
+
+function OccasionImage({ src, gradient, alt }: { src: string; gradient: string; alt: string }) {
+  const [errored, setErrored] = useState(false);
+  if (errored) {
+    return <div style={{ width: '100%', height: '100%', background: gradient }} />;
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setErrored(true)}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+    />
+  );
+}
 
 export default function OccasionGallery() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -66,10 +83,10 @@ export default function OccasionGallery() {
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const { current } = scrollRef;
-      const scrollAmount = 320; // Approximate card width + gap
+      const scrollAmount = 320;
       current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   };
@@ -157,8 +174,8 @@ export default function OccasionGallery() {
       >
         {occasions.map((item) => (
           <Link
-            to={`/books/${item.id}`}
-            key={item.title}
+            to={`/create?occasion=${item.id}`}
+            key={item.id}
             className="occasion-card liquid-glass"
             style={{
               display: 'flex',
@@ -172,28 +189,10 @@ export default function OccasionGallery() {
               height: 'auto',
             }}
           >
-            {/* Image area */}
-            <div
-              style={{
-                height: 220,
-                overflow: 'hidden',
-                position: 'relative',
-              }}
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                loading="lazy"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
+            <div style={{ height: 220, overflow: 'hidden', position: 'relative' }}>
+              <OccasionImage src={item.image} gradient={item.gradient} alt={item.title} />
             </div>
 
-            {/* Text area */}
             <div style={{ padding: '20px 24px 24px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
               <p
                 className="font-body"

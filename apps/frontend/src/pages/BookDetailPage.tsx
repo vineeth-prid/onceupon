@@ -10,24 +10,8 @@ import { ReviewForm } from '../components/reviews/ReviewForm';
 /* ─── Per-book descriptions ──────────────────────────────────────────── */
 
 const BOOK_DESCRIPTIONS: Record<string, string> = {
-  'portugals-new-legend':
-    "Step onto the pitch and become a legend! In this personalised adventure, your child discovers a magical football that glows with golden light. Guided by the spirits of legendary players, they train in an enchanted stadium, learn the power of teamwork, and score the winning goal in a tournament that will be remembered forever.",
-  'girl-saves-arctic':
-    "When the Arctic Kingdom freezes over in an eternal blizzard, only one brave child can save it. Your little one befriends a wise snow fox, crosses glittering ice bridges, and discovers the warmth that lies within the Northern Lights. A story about courage, kindness, and the magic of believing in yourself.",
-  'vroom-vroom-boy':
-    "Rev those engines! Your child builds a magical race car from pure imagination and enters the most extraordinary race ever — through candy canyons, across cloud highways, and under the sea. But the real lesson? Winning isn't about being fastest; it's about being the cleverest and kindest racer on the track.",
-  'super-boy-dragon':
-    "Deep in an enchanted forest, your child discovers a tiny baby dragon who's lost and afraid. Together, they explore crystal caves, mushroom meadows, and a hidden cloud castle. When a storm threatens the dragon's egg siblings, your little hero must find the courage to save them all.",
-  'girl-lost-fairy-wings':
-    "The fairy realm is in trouble — a mysterious spell has stolen every fairy's wings! Your child embarks on a magical quest to collect four enchanted ingredients: a moonlit dewdrop, a singing flower petal, starlight dust, and a crystal tear. Can they break the spell and restore the magic?",
   'boy-cosmic-journey':
     "3, 2, 1... Blast off! Your child builds a rocket from pure imagination and soars into the cosmos. They explore candy-coloured nebulae, befriend a tiny alien on a crystal planet, and navigate asteroid fields. The most beautiful discovery? Earth, shining like a blue jewel when seen from the stars.",
-  'boy-explores-zoo':
-    "Welcome to the most magical zoo on Earth! Your child discovers that every animal glows with a colourful aura that shows their feelings. From a lonely elephant with a blue glow to playful monkeys sparkling gold, this heartwarming story teaches empathy, kindness, and the joy of helping others.",
-  'girl-explores-zoo':
-    "Welcome to the most magical zoo on Earth! Your child discovers that every animal glows with a colourful aura that shows their feelings. From a lonely elephant with a blue glow to playful dolphins sparkling turquoise, this heartwarming story teaches empathy, kindness, and the joy of helping others.",
-  'boy-talk-to-animals':
-    "When your child finds a mysterious ancient amulet in the garden, they discover an incredible gift — they can understand every animal's language! A wise old owl, a chatty squirrel, and a council of forest creatures all need help. Their ancient tree is sick, and only by listening to every animal can the cure be found.",
 };
 
 const BOOK_FEATURES: Record<string, { icon: string; text: string }[]> = {
@@ -109,7 +93,7 @@ export function BookDetailPage() {
     );
   }
 
-  const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['super-boy-dragon']!;
+  const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['boy-cosmic-journey']!;
   const features = BOOK_FEATURES.default;
   const activeItem = GALLERY_ITEMS[activeIndex];
   const isVideo = activeItem.type === 'video';

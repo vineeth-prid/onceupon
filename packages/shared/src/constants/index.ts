@@ -53,15 +53,7 @@ export const BOOK_TEMPLATES = [
   { id: 'pizza-adventure', categoryId: 'cook' as CategoryId, name: 'Pizza Adventure', description: 'Create the world\'s most amazing pizza' },
   { id: 'fruit-forest', categoryId: 'cook' as CategoryId, name: 'Fruit Forest', description: 'Pick magical fruits to make a special recipe' },
   // Pre-made books (static stories)
-  { id: 'portugals-legend', categoryId: 'sports' as CategoryId, name: "Portugal's New Legend", description: 'For champions with red and green at heart' },
-  { id: 'arctic-rescue', categoryId: 'adventure' as CategoryId, name: 'Arctic Kingdom Rescue', description: 'An icy adventure powered by care and courage' },
-  { id: 'vroom-vroom-race', categoryId: 'adventure' as CategoryId, name: 'Vroom Vroom Race', description: "A child's race to believe, try, and win" },
-  { id: 'super-dragon', categoryId: 'fantasy' as CategoryId, name: 'Super Boy and the Dragon', description: 'A fearless hero meets a fiery friend' },
-  { id: 'lost-fairy-wings', categoryId: 'fantasy' as CategoryId, name: 'Lost Fairy Wings', description: 'A magical quest to restore the fairy realm' },
   { id: 'cosmic-journey', categoryId: 'adventure' as CategoryId, name: 'Cosmic Journey', description: 'Blast off through stars and galaxies' },
-  { id: 'zoo-adventure-boy', categoryId: 'animals' as CategoryId, name: 'Zoo Adventure (Boy)', description: 'A wild day meeting amazing animals' },
-  { id: 'zoo-adventure-girl', categoryId: 'animals' as CategoryId, name: 'Zoo Adventure (Girl)', description: 'A wild day meeting amazing animals' },
-  { id: 'talk-to-animals', categoryId: 'animals' as CategoryId, name: 'Talk to Animals', description: 'A gift that changes everything' },
   // Family mode test story
   { id: 'family-park-adventure', categoryId: 'nurture' as CategoryId, name: 'Family Park Adventure', description: 'A magical day at the park with the whole family' },
   // Custom story (user-provided prompt)

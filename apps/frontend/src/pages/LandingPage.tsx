@@ -55,7 +55,7 @@ export function LandingPage() {
       {/* Video Testimonials */}
       <VideoTestimonials />
 
-      {/* Occasion Gallery */}
+      {/* Occasion Gallery — sells custom stories for weddings, first-borns, graduations, etc. */}
       <OccasionGallery />
 
       {/* Footer */}

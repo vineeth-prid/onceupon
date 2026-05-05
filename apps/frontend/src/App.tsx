@@ -6,6 +6,8 @@ import { ProgressPage } from './pages/ProgressPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { CreatePage } from './pages/CreatePage';
 import { LoginPage } from './pages/LoginPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { TemplatesPage } from './pages/TemplatesPage';
 import { BookDetailPage } from './pages/BookDetailPage';
@@ -23,6 +25,7 @@ import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
 import { CartProvider } from './context/CartContext';
+import { PromoBanner } from './components/PromoBanner';
 
 function ConditionalNavBar() {
   const location = useLocation();
@@ -30,12 +33,25 @@ function ConditionalNavBar() {
   return <NavBar />;
 }
 
+function ConditionalPromoBanner() {
+  const location = useLocation();
+  const hide =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/preview') ||
+    location.pathname.startsWith('/progress') ||
+    location.pathname === '/login' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password';
+  if (hide) return null;
+  return <PromoBanner />;
+}
+
 
 function GlobalSections() {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isPreview = location.pathname.startsWith('/preview');
-  const isLogin = location.pathname === '/login';
+  const isLogin = location.pathname === '/login' || location.pathname === '/forgot-password' || location.pathname === '/reset-password';
   const isAdmin = location.pathname.startsWith('/admin');
 
   if (isHome || isPreview || isLogin || isAdmin) return null;
@@ -55,10 +71,13 @@ export function App() {
         <CartProvider>
           <div className="font-body" style={{ minHeight: '100vh', background: '#FFFFFF' }}>
           <ConditionalNavBar />
+          <ConditionalPromoBanner />
           <main>
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/templates" element={<TemplatesPage />} />
               <Route path="/books/:slug" element={<BookDetailPage />} />
               <Route path="/faq" element={<FAQPage />} />

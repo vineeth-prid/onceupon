@@ -134,4 +134,57 @@ export class EmailService {
       // Don't throw — email failure should not break the book generation flow
     }
   }
+
+  async sendPasswordResetEmail(params: { to: string; resetUrl: string }): Promise<void> {
+    const { to, resetUrl } = params;
+    const fromName = this.config.get('SMTP_FROM_NAME', 'Once Upon a Time');
+    const fromEmail = this.config.get('SMTP_FROM_EMAIL', this.config.get('SMTP_USER', 'noreply@onceuponatime.com'));
+
+    const subject = 'Password Reset Request';
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="font-family:sans-serif;background-color:#faf9f7;padding:20px;">
+  <div style="max-width:600px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+    <h2 style="color:#1a1814;">Reset Your Password</h2>
+    <p style="color:#6F6F6F;font-size:16px;line-height:1.6;">
+      We received a request to reset your password. Click the button below to choose a new one. This link will expire in 1 hour.
+    </p>
+    <a href="${resetUrl}" style="display:inline-block;background:#1a1814;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;margin-top:20px;">
+      Reset Password
+    </a>
+    <p style="color:#8a8578;font-size:13px;margin-top:30px;">
+      If you didn't request this, you can safely ignore this email.
+    </p>
+  </div>
+</body>
+</html>`;
+
+    const text = `Reset Your Password\n\nClick the link below to choose a new password:\n${resetUrl}\n\nIf you didn't request this, ignore this email.`;
+
+    try {
+      const smtpConfigured = this.config.get('SMTP_HOST');
+      if (!smtpConfigured) {
+        this.logger.log(`[EMAIL NOT SENT - SMTP not configured] To: ${to}, Subject: ${subject}`);
+        this.logger.log(`Reset URL: ${resetUrl}`);
+        return;
+      }
+
+      await this.transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to,
+        subject,
+        text,
+        html,
+      });
+
+      this.logger.log(`Password reset email sent to ${to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send reset email to ${to}: ${(error as Error).message}`);
+    }
+  }
 }

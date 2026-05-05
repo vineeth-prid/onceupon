@@ -186,7 +186,9 @@ const POLL_INTERVAL_MS = 30_000;
 
 /* ── Tab Components ── */
 
-function DashboardTab({ stats }: { stats: any }) {
+function DashboardTab({ stats, onNavigate }: { stats: any; onNavigate?: (tab: Tab) => void }) {
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
   const displayStats = [
     { emoji: '📦', label: 'Total Orders', value: stats?.totalOrders?.toString() || '0', delta: stats?.deltas?.orders || '+0%', up: true },
     { emoji: '💰', label: 'Total Revenue', value: stats?.revenue ? `₹${stats.revenue.toLocaleString()}` : '₹0', delta: stats?.deltas?.revenue || '+0%', up: true },
@@ -196,13 +198,98 @@ function DashboardTab({ stats }: { stats: any }) {
     { emoji: '📈', label: 'Conversion Rate', value: '23.4%', delta: '-1.2%', up: false },
   ];
 
-  const quickActions = [
-    '📦 Process Pending Orders',
-    '🔄 Retry Failed Generations',
-    '📧 Send Bulk Notification',
-    '💰 Update Pricing',
-    '🎟️ Create Coupon Code',
-    '📊 Export Monthly Report',
+  const handleProcessPending = async () => {
+    setLoadingAction('process');
+    try {
+      const res = await api.post('/admin/actions/process-pending');
+      const { processed, orderIds } = res.data;
+      if (processed === 0) {
+        toast.success('No pending orders to process');
+      } else {
+        toast.success(`Queued ${processed} pending order${processed > 1 ? 's' : ''} for processing`);
+      }
+      console.log('Processed order IDs:', orderIds);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to process pending orders');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleRetryFailed = async () => {
+    setLoadingAction('retry');
+    try {
+      const res = await api.post('/admin/actions/retry-failed');
+      const { retried, orderIds } = res.data;
+      if (retried === 0) {
+        toast.success('No failed orders to retry');
+      } else {
+        toast.success(`Retrying ${retried} failed order${retried > 1 ? 's' : ''}`);
+      }
+      console.log('Retried order IDs:', orderIds);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to retry failed generations');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleSendBulkNotification = async () => {
+    if (!confirm('Send book-ready notification emails to all users with completed orders?')) return;
+    setLoadingAction('notify');
+    try {
+      const res = await api.post('/admin/actions/send-bulk-notification');
+      const { sent, failed } = res.data;
+      if (sent === 0 && failed === 0) {
+        toast.success('No completed orders with emails to notify');
+      } else {
+        toast.success(`Sent ${sent} notification${sent !== 1 ? 's' : ''}${failed > 0 ? `, ${failed} failed` : ''}`);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send bulk notifications');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleUpdatePricing = () => {
+    onNavigate?.('pricing');
+  };
+
+  const handleCreateCoupon = () => {
+    onNavigate?.('coupons');
+  };
+
+  const handleExportReport = async () => {
+    setLoadingAction('export');
+    try {
+      const res = await api.get('/admin/actions/export-report', {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `monthly_report_${new Date().toISOString().slice(0, 7)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Monthly report exported successfully');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to export report');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const quickActions: { key: string; label: string; handler: () => void }[] = [
+    { key: 'process', label: '📦 Process Pending Orders', handler: handleProcessPending },
+    { key: 'retry', label: '🔄 Retry Failed Generations', handler: handleRetryFailed },
+    { key: 'notify', label: '📧 Send Bulk Notification', handler: handleSendBulkNotification },
+    { key: 'pricing', label: '💰 Update Pricing', handler: handleUpdatePricing },
+    { key: 'coupons', label: '🎟️ Create Coupon Code', handler: handleCreateCoupon },
+    { key: 'export', label: '📊 Export Monthly Report', handler: handleExportReport },
   ];
 
   return (
@@ -231,7 +318,20 @@ function DashboardTab({ stats }: { stats: any }) {
           <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {quickActions.map((a) => (
-              <button key={a} style={{ ...btnOutline, textAlign: 'left', padding: '10px 14px' }}>{a}</button>
+              <button
+                key={a.key}
+                onClick={a.handler}
+                disabled={loadingAction !== null}
+                style={{
+                  ...btnOutline,
+                  textAlign: 'left',
+                  padding: '10px 14px',
+                  opacity: loadingAction !== null && loadingAction !== a.key ? 0.5 : 1,
+                  cursor: loadingAction !== null ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {loadingAction === a.key ? `⏳ ${a.label.slice(2)}...` : a.label}
+              </button>
             ))}
           </div>
         </div>
@@ -240,16 +340,62 @@ function DashboardTab({ stats }: { stats: any }) {
   );
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  CREATED: 'Created',
+  STORY_GENERATING: 'Story Generating',
+  STORY_COMPLETE: 'Story Complete',
+  IMAGES_GENERATING: 'Images Generating',
+  IMAGES_COMPLETE: 'Images Complete',
+  PDF_GENERATING: 'PDF Generating',
+  PREVIEW_READY: 'Preview Ready',
+  PAID: 'Paid',
+  ORDER_CONFIRMED: 'Order Confirmed',
+  PRINTING: 'Printing',
+  SHIPPED: 'Shipped',
+  DELIVERED: 'Delivered',
+  FAILED: 'Failed',
+};
+
+function statusLabel(status: string): string {
+  return STATUS_LABELS[status] || status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+const ALL_ORDER_STATUSES = [
+  'CREATED', 'STORY_GENERATING', 'STORY_COMPLETE', 'IMAGES_GENERATING',
+  'IMAGES_COMPLETE', 'PDF_GENERATING', 'PREVIEW_READY', 'PAID',
+  'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED',
+];
+
 function OrdersTab({ orders }: { orders: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const filteredOrders = orders.filter((o) => {
+    // Status filter
+    if (statusFilter && o.status !== statusFilter) return false;
+    // Search filter (case-insensitive match on ID, customer, child name, theme)
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        o.id.toLowerCase().includes(q) ||
+        (o.user?.firstName || '').toLowerCase().includes(q) ||
+        (o.user?.lastName || '').toLowerCase().includes(q) ||
+        (o.childName || '').toLowerCase().includes(q) ||
+        (o.theme || '').toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
+
   const exportOrdersCSV = () => {
     const headers = ['Order ID', 'Date', 'Customer', 'Child', 'Theme', 'Status', 'Amount (₹)'];
-    const rows = orders.map((o) => [
+    const rows = filteredOrders.map((o) => [
       o.id,
       new Date(o.createdAt).toLocaleDateString(),
       o.user?.firstName || 'Guest',
       o.childName,
       o.theme,
-      o.status,
+      statusLabel(o.status),
       o.amountPaid ? (o.amountPaid / 100).toString() : '0',
     ]);
 
@@ -274,15 +420,21 @@ function OrdersTab({ orders }: { orders: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input style={{ ...inputStyle, flex: 1, minWidth: 180 }} placeholder="Search orders..." />
-        <select style={selectStyle}>
-          <option>All Statuses</option>
-          <option>PAID</option>
-          <option>ORDER_CONFIRMED</option>
-          <option>PRINTING</option>
-          <option>SHIPPED</option>
-          <option>DELIVERED</option>
-          <option>FAILED</option>
+        <input
+          style={{ ...inputStyle, flex: 1, minWidth: 180 }}
+          placeholder="Search orders..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select
+          style={selectStyle}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">All Statuses</option>
+          {ALL_ORDER_STATUSES.map((s) => (
+            <option key={s} value={s}>{statusLabel(s)}</option>
+          ))}
         </select>
         <button style={btnPrimary} onClick={exportOrdersCSV}>Export CSV</button>
       </div>
@@ -302,17 +454,17 @@ function OrdersTab({ orders }: { orders: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {orders.length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No orders found</td></tr>
             ) : (
-              orders.map((o) => (
+              filteredOrders.map((o) => (
                 <tr key={o.id}>
                   <td style={{ ...tdStyle, fontWeight: 600, fontSize: 11 }}>{o.id.slice(0, 8)}...</td>
                   <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td style={tdStyle}>{o.user?.firstName || 'Guest'}</td>
                   <td style={tdStyle}>{o.childName}</td>
                   <td style={tdStyle}>{o.theme}</td>
-                  <td style={tdStyle}><span style={badge(o.status)}>{o.status}</span></td>
+                  <td style={tdStyle}><span style={badge(o.status)}>{statusLabel(o.status)}</span></td>
                   <td style={tdStyle}>{o.amountPaid ? `₹${o.amountPaid/100}` : '₹0'}</td>
                   <td style={tdStyle}>
                     <button style={btnOutline} onClick={() => window.open(`/preview/${o.id}`, '_blank')}>View</button>
@@ -834,8 +986,57 @@ function AuditTab() {
 
 export function AdminPage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const avatarRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const updateMenuPosition = useCallback(() => {
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, []);
+
+  const handleAvatarClick = useCallback(() => {
+    if (!avatarMenuOpen) {
+      updateMenuPosition();
+    }
+    setAvatarMenuOpen((prev) => !prev);
+  }, [avatarMenuOpen, updateMenuPosition]);
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(e.target as Node)
+      ) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [avatarMenuOpen]);
+
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handleReposition = () => updateMenuPosition();
+    window.addEventListener('scroll', handleReposition, { passive: true });
+    window.addEventListener('resize', handleReposition, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleReposition);
+      window.removeEventListener('resize', handleReposition);
+    };
+  }, [avatarMenuOpen, updateMenuPosition]);
 
   const [stats, setStats] = useState<any>({ totalOrders: 0, revenue: 0, totalUsers: 0, booksGenerated: 0 });
   const [orders, setOrders] = useState<any[]>([]);
@@ -912,7 +1113,7 @@ export function AdminPage() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardTab stats={stats} />;
+      case 'dashboard': return <DashboardTab stats={stats} onNavigate={setActiveTab} />;
       case 'orders': return <OrdersTab orders={orders} />;
       case 'pricing': return <PricingTab />;
       case 'coupons': return <CouponsTab />;
@@ -985,18 +1186,123 @@ export function AdminPage() {
             <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 4px' }}>{tabTitles[activeTab].title}</h2>
             <p style={{ margin: 0, fontSize: 14, color: '#8a8578' }}>{tabTitles[activeTab].subtitle}</p>
           </div>
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: '#1a1814',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-          }}>{user?.firstName?.[0] || 'A'}</div>
+          <button
+            ref={avatarRef}
+            onClick={handleAvatarClick}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: '#1a1814',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          >
+            {user?.firstName?.[0]?.toUpperCase() || 'A'}
+          </button>
         </header>
+
+        {avatarMenuOpen && menuPos && (
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: menuPos.top,
+              right: menuPos.right,
+              minWidth: 180,
+              background: '#fff',
+              borderRadius: 12,
+              padding: '8px 0',
+              zIndex: 9999,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.05)',
+            }}
+          >
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1814' }}>
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div style={{ fontSize: 12, color: '#8a8578' }}>
+                {user?.email}
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                navigate('/');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#1a1814',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              Back to Website
+            </button>
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                navigate('/profile');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#1a1814',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              My Profile
+            </button>
+            <button
+              onClick={() => {
+                setAvatarMenuOpen(false);
+                logout();
+                navigate('/login');
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#e74c3c',
+                borderTop: '1px solid rgba(0,0,0,0.06)',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = '#fcf0f0')}
+              onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              Log Out
+            </button>
+          </div>
+        )}
+
         {renderTab()}
       </main>
     </div>

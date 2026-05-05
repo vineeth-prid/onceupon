@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon } from '../api/orders';
+import { completeOrder, createRazorpayOrder, verifyRazorpayPayment, getOrder, validateCoupon, fetchActiveCoupons } from '../api/orders';
 import { api } from '../api/client';
 
 type Format = 'ebook' | 'print';
@@ -57,6 +57,7 @@ export function CheckoutPage() {
 
   const [childName, setChildName] = useState('');
   const [paying, setPaying] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
 
   useEffect(() => {
     if (orderId) {
@@ -80,6 +81,11 @@ export function CheckoutPage() {
         }
       })
       .catch(err => console.error('Failed to fetch pricing:', err));
+
+    // Fetch available coupons for discovery
+    fetchActiveCoupons()
+      .then(data => setAvailableCoupons(data || []))
+      .catch(() => {});
 
     // Fetch saved addresses
     api.get('/users/addresses').then(res => {
@@ -592,6 +598,128 @@ export function CheckoutPage() {
             {promoApplied === 'error' && (
               <p style={{ fontSize: 13, color: '#C62828', marginTop: 8 }}>{promoMessage}</p>
             )}
+
+            {/* Available Coupons — dynamic discovery chips */}
+            {availableCoupons.length > 0 && !appliedCoupon && (
+              <div style={{ marginTop: 16 }}>
+                <p style={{ fontSize: 12, color: '#6F6F6F', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+                  Available Offers
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {availableCoupons.map(c => {
+                    const desc = c.type === 'percentage'
+                      ? `${c.value}% OFF${c.maxDiscount ? ` (up to ₹${(c.maxDiscount / 100).toLocaleString('en-IN')})` : ''}`
+                      : `₹${c.value.toLocaleString('en-IN')} OFF`;
+                    const minText = c.minAmount ? `Min. ₹${(c.minAmount / 100).toLocaleString('en-IN')}` : null;
+                    return (
+                      <div
+                        key={c.code}
+                        onClick={() => {
+                          setPromo(c.code);
+                          setPromoApplied(null);
+                          // Auto-apply after setting the code
+                          setTimeout(() => {
+                            const codeToApply = c.code;
+                            const chosen = FORMATS.find(f => f.id === format)!;
+                            const deliveryPrice = isPrint ? DELIVERY_OPTIONS.find(d => d.id === delivery)!.price : 0;
+                            const addonTotal = ADDONS.reduce((sum, a) => sum + (addons[a.id] ? a.price : 0), 0);
+                            const subtotal = (chosen.price + deliveryPrice + addonTotal) * 100;
+                            validateCoupon(codeToApply, subtotal)
+                              .then(result => {
+                                setAppliedCoupon(result.coupon);
+                                setDiscountPct(result.coupon.type === 'percentage' ? result.coupon.value : 0);
+                                setDiscountAmount(result.discountAmount);
+                                setPromoApplied('success');
+                                setPromoMessage(`${result.coupon.code} applied!`);
+                              })
+                              .catch((err: any) => {
+                                setPromoApplied('error');
+                                setPromoMessage(err.response?.data?.message || 'Could not apply this coupon');
+                              });
+                          }, 50);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 14px',
+                          border: '1px dashed #ccc',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          background: '#FEFEF9',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLDivElement).style.borderColor = '#000';
+                          (e.currentTarget as HTMLDivElement).style.background = '#F5F5F0';
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLDivElement).style.borderColor = '#ccc';
+                          (e.currentTarget as HTMLDivElement).style.background = '#FEFEF9';
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: '#000',
+                            color: '#FFD700',
+                            fontWeight: 700,
+                            fontSize: 11,
+                            letterSpacing: '0.08em',
+                            padding: '4px 10px',
+                            borderRadius: 4,
+                            fontFamily: '"Inter", monospace',
+                          }}>
+                            {c.code}
+                          </span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#000' }}>{desc}</div>
+                            {minText && <div style={{ fontSize: 11, color: '#6F6F6F', marginTop: 1 }}>{minText}</div>}
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#2E7D32',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          TAP TO APPLY
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Remove applied coupon button */}
+            {appliedCoupon && (
+              <button
+                onClick={() => {
+                  setAppliedCoupon(null);
+                  setDiscountPct(0);
+                  setDiscountAmount(0);
+                  setPromo('');
+                  setPromoApplied(null);
+                  setPromoMessage('');
+                }}
+                style={{
+                  marginTop: 8,
+                  background: 'none',
+                  border: 'none',
+                  color: '#C62828',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: 0,
+                  fontFamily: '"Inter", sans-serif',
+                }}
+              >
+                Remove coupon
+              </button>
+            )}
           </section>
 
           <section style={{ marginBottom: 36 }}>
@@ -673,7 +801,24 @@ export function CheckoutPage() {
 
               {breakdown.discount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2E7D32' }}>
-                  <span>Discount {discountPct > 0 ? `(${discountPct}%)` : ''}</span>
+                  <span>
+                    Discount
+                    {appliedCoupon && (
+                      <span style={{
+                        marginLeft: 6,
+                        background: '#E8F5E9',
+                        color: '#2E7D32',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        borderRadius: 3,
+                        letterSpacing: '0.04em',
+                      }}>
+                        {appliedCoupon.code}
+                      </span>
+                    )}
+                    {discountPct > 0 ? ` (${discountPct}%)` : ''}
+                  </span>
                   <span>-{formatPrice(breakdown.discount)}</span>
                 </div>
               )}

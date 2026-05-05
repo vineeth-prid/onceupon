@@ -35,6 +35,11 @@ export class CouponsController {
     return this.couponsService.getAllCoupons();
   }
 
+  @Get('active')
+  async findActive() {
+    return this.couponsService.getActiveCoupons();
+  }
+
   @Get(':code')
   async findByCode(@Param('code') code: string) {
     return this.couponsService.getByCode(code);

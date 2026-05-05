@@ -24,4 +24,7 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   console.log(`Server running on http://127.0.0.1:${port}`);
 }
-bootstrap();
+bootstrap().catch(err => {
+  console.error('Failed to start backend server:', err);
+  process.exit(1);
+});

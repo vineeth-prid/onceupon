@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -11,6 +11,9 @@ export function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const avatarRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isPreview = location.pathname.startsWith('/preview');
 
@@ -24,6 +27,57 @@ export function NavBar() {
     setMobileOpen(false);
     setAvatarMenuOpen(false);
   }, [location.pathname]);
+
+  // Calculate dropdown position from avatar button rect
+  const updateMenuPosition = useCallback(() => {
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, []);
+
+  // Toggle avatar menu + calculate position
+  const handleAvatarClick = useCallback(() => {
+    if (!avatarMenuOpen) {
+      updateMenuPosition();
+    }
+    setAvatarMenuOpen((prev) => !prev);
+  }, [avatarMenuOpen, updateMenuPosition]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(e.target as Node)
+      ) {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [avatarMenuOpen]);
+
+  // Recalculate position on scroll/resize while menu is open
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+
+    const handleReposition = () => updateMenuPosition();
+    window.addEventListener('scroll', handleReposition, { passive: true });
+    window.addEventListener('resize', handleReposition, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleReposition);
+      window.removeEventListener('resize', handleReposition);
+    };
+  }, [avatarMenuOpen, updateMenuPosition]);
 
   if (isPreview) return null;
 
@@ -45,6 +99,7 @@ export function NavBar() {
           backgroundColor: scrolled ? undefined : 'transparent',
           borderBottom: scrolled ? 'none' : '1px solid transparent',
           padding: scrolled ? '0.75rem 0' : '1.1rem 0',
+          overflow: 'visible',
         }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-8">
@@ -96,10 +151,10 @@ export function NavBar() {
                     }}>{cartCount}</span>
                   )}
                 </button>
-                {/* Avatar dropdown */}
-                <div className="relative">
+                {/* Avatar button */}
                 <button
-                  onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                  ref={avatarRef}
+                  onClick={handleAvatarClick}
                   className="flex items-center justify-center rounded-full transition-transform hover:scale-105 liquid-glass"
                   style={{
                     width: 36,
@@ -109,80 +164,12 @@ export function NavBar() {
                     fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
+                    overflow: 'visible',
                   }}
                 >
                   {user?.firstName?.[0]?.toUpperCase() || 'U'}
                 </button>
-                {avatarMenuOpen && (
-                  <div
-                    className="absolute right-0 mt-2 rounded-xl liquid-glass-strong"
-                    style={{
-                      minWidth: 180,
-                      padding: '0.5rem 0',
-                      zIndex: 100,
-                    }}
-                  >
-                    <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                      <div className="font-body text-sm font-medium" style={{ color: '#000' }}>
-                        {user?.firstName} {user?.lastName}
-                      </div>
-                      <div className="font-body text-xs" style={{ color: '#6F6F6F' }}>
-                        {user?.email}
-                      </div>
-                    </div>
-                    <Link
-                      to="/profile"
-                      className="block no-underline font-body text-sm px-4 py-2 transition-colors"
-                      style={{ color: '#000' }}
-                      onClick={() => setAvatarMenuOpen(false)}
-                    >
-                      My Profile
-                    </Link>
-                    <Link
-                      to="/profile?tab=books"
-                      className="block no-underline font-body text-sm px-4 py-2 transition-colors"
-                      style={{ color: '#000' }}
-                      onClick={() => setAvatarMenuOpen(false)}
-                    >
-                      My Books
-                    </Link>
-                    <Link
-                      to="/profile?tab=cart"
-                      className="block no-underline font-body text-sm px-4 py-2 transition-colors"
-                      style={{ color: '#000', display: 'flex', alignItems: 'center', gap: 6 }}
-                      onClick={() => setAvatarMenuOpen(false)}
-                    >
-                      My Cart
-                      {cartCount > 0 && (
-                        <span style={{
-                          background: '#ef4444', color: '#fff',
-                          borderRadius: '50%', width: 16, height: 16,
-                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 10, fontWeight: 700,
-                        }}>{cartCount}</span>
-                      )}
-                    </Link>
-                    {user?.role === 'ADMIN' && (
-                      <Link
-                        to="/admin"
-                        className="block no-underline font-body text-sm px-4 py-2 transition-colors"
-                        style={{ color: '#000', borderTop: '1px solid rgba(0,0,0,0.06)' }}
-                        onClick={() => setAvatarMenuOpen(false)}
-                      >
-                        Admin Portal
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => { logout(); setAvatarMenuOpen(false); }}
-                      className="block w-full text-left font-body text-sm px-4 py-2 transition-colors border-none bg-transparent cursor-pointer"
-                      style={{ color: '#6F6F6F', borderTop: '1px solid rgba(0,0,0,0.06)' }}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
             ) : (
               <>
                 <Link
@@ -215,6 +202,81 @@ export function NavBar() {
           </button>
         </div>
       </header>
+
+      {/* Avatar Dropdown Menu — rendered as fixed portal outside header to avoid overflow clipping */}
+      {avatarMenuOpen && menuPos && (
+        <div
+          ref={menuRef}
+          className="rounded-xl liquid-glass-strong"
+          style={{
+            position: 'fixed',
+            top: menuPos.top,
+            right: menuPos.right,
+            minWidth: 180,
+            padding: '0.5rem 0',
+            zIndex: 9999,
+            overflow: 'visible',
+          }}
+        >
+          <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+            <div className="font-body text-sm font-medium" style={{ color: '#000' }}>
+              {user?.firstName} {user?.lastName}
+            </div>
+            <div className="font-body text-xs" style={{ color: '#6F6F6F' }}>
+              {user?.email}
+            </div>
+          </div>
+          <Link
+            to="/profile"
+            className="block no-underline font-body text-sm px-4 py-2 transition-colors"
+            style={{ color: '#000' }}
+            onClick={() => setAvatarMenuOpen(false)}
+          >
+            My Profile
+          </Link>
+          <Link
+            to="/profile?tab=books"
+            className="block no-underline font-body text-sm px-4 py-2 transition-colors"
+            style={{ color: '#000' }}
+            onClick={() => setAvatarMenuOpen(false)}
+          >
+            My Books
+          </Link>
+          <Link
+            to="/profile?tab=cart"
+            className="block no-underline font-body text-sm px-4 py-2 transition-colors"
+            style={{ color: '#000', display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={() => setAvatarMenuOpen(false)}
+          >
+            My Cart
+            {cartCount > 0 && (
+              <span style={{
+                background: '#ef4444', color: '#fff',
+                borderRadius: '50%', width: 16, height: 16,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 700,
+              }}>{cartCount}</span>
+            )}
+          </Link>
+          {user?.role === 'ADMIN' && (
+            <Link
+              to="/admin"
+              className="block no-underline font-body text-sm px-4 py-2 transition-colors"
+              style={{ color: '#000', borderTop: '1px solid rgba(0,0,0,0.06)' }}
+              onClick={() => setAvatarMenuOpen(false)}
+            >
+              Admin Portal
+            </Link>
+          )}
+          <button
+            onClick={() => { logout(); setAvatarMenuOpen(false); }}
+            className="block w-full text-left font-body text-sm px-4 py-2 transition-colors border-none bg-transparent cursor-pointer"
+            style={{ color: '#6F6F6F', borderTop: '1px solid rgba(0,0,0,0.06)' }}
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
 
       {/* Spacer */}
       <div style={{ height: scrolled ? 60 : 72 }} />
@@ -290,3 +352,4 @@ export function NavBar() {
     </>
   );
 }
+

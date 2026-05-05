@@ -110,6 +110,38 @@ export class CouponsService {
     });
   }
 
+  /**
+   * Returns only active, non-expired coupons that still have remaining usage.
+   * Exposes only public-safe fields (no internal IDs, usage counts, etc.).
+   */
+  async getActiveCoupons() {
+    const now = new Date();
+    const coupons = await this.prisma.coupon.findMany({
+      where: {
+        active: true,
+        validFrom: { lte: now },
+        OR: [
+          { validTill: null },
+          { validTill: { gt: now } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Filter out coupons that have hit their usage limit
+    return coupons
+      .filter(c => !c.usageLimit || c.usageCount < c.usageLimit)
+      .map(c => ({
+        code: c.code,
+        name: c.name,
+        type: c.type,
+        value: c.value,
+        maxDiscount: c.maxDiscount,
+        minAmount: c.minAmount,
+        validTill: c.validTill,
+      }));
+  }
+
   async getByCode(code: string) {
     const coupon = await this.prisma.coupon.findUnique({
       where: { code: code.toUpperCase() },

@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getDragonFriendStory(childName: string, _childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Baby Dragon`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Baby Dragon`,
+        imagePrompt: 'A decorative storybook title page with curling green vines and tiny golden dragon scales forming an elegant border, a small friendly green baby dragon with bright orange wings curled at the bottom corner, distant misty mountains and a tiny crystal castle in the background, glowing fireflies and golden sparkles scattered around the edges, soft warm sunset lighting, vibrant fantasy storybook colors',
+        sceneDescription: 'Title page with dragon-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with vines, scales, and a small baby dragon',
+      },
+      {
+        pageNumber: 2,
+        text: `Every morning, ${childName} put on ${possessive} bright red cape and stood on the village hilltop, watching the misty mountains in the distance. ${Pronoun} dreamed of finding a real dragon someday — not a scary one, but a friendly little one who needed a friend.`,
+        imagePrompt: 'A peaceful storybook village hilltop at sunrise, cobblestone path winding down to small thatched-roof cottages with curling chimney smoke, distant misty blue mountains with snow-capped peaks, the child standing on the hilltop wearing a bright red flowing superhero cape and a sky blue shirt with brown shorts, golden morning sunlight streaming across rolling green meadows, wildflowers swaying in the breeze, soft fluffy clouds in a pale orange sky, fantasy storybook setting',
+        sceneDescription: `${childName} dreams of meeting a dragon`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, soft meadow at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `One sunny afternoon, while exploring the edge of the enchanted forest, ${childName} heard a tiny squeaky cry. "Eep! Eep!" It was coming from a hollow log covered in moss. ${Pronoun} crept closer, ${possessive} red cape rustling softly.`,
+        imagePrompt: 'The mysterious edge of an enchanted forest with towering ancient oak trees, soft golden afternoon sunbeams breaking through the green canopy, a large hollow mossy log lying on a bed of fallen leaves and tiny purple mushrooms, glowing fireflies dancing around the log entrance, ferns and curling vines growing nearby, dappled light pattern on the forest floor, magical and inviting atmosphere, vibrant green tones',
+        sceneDescription: `${childName} finds a mossy hollow log in the forest`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subject on the LEFT side, leave right side as soft background for text',
+      },
+      {
+        pageNumber: 4,
+        text: `Out of the log peeked a tiny green dragon with bright orange wings and big amber eyes! ${Pronoun} sneezed — *PFFT!* — and a tiny puff of green flame popped out. ${childName} laughed. "I'll call you Spark!"`,
+        imagePrompt: 'A small adorable baby dragon with shiny emerald green scales, bright orange membrane wings folded at his back, a long curving tail with a soft tuft at the tip, big round amber eyes (the dragon has amber eyes — the child does NOT), a tiny round snout with whiskers of smoke, four small clawed feet, sitting on a mossy hollow log, a tiny puff of glowing green flame floating from his nose, sparkles surrounding him, bright forest light, the child crouching beside the log wearing a red cape and blue shirt, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, charmed expression, vibrant fantasy storybook style',
+        sceneDescription: `${childName} meets Spark the baby dragon`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, soft mossy ground at bottom for text',
+      },
+      {
+        pageNumber: 5,
+        text: `Spark hopped onto ${childName}'s shoulder and pointed his little nose toward the deep forest. "Are you lost, Spark? Do you want me to help you?" Spark nodded so hard his whole body wiggled. Together, they stepped into the enchanted woods.`,
+        imagePrompt: 'A breathtaking enchanted forest path lit by streams of golden afternoon sunlight, towering ancient trees with twisted gnarled trunks and glowing moss, magical floating dandelion seeds drifting in the air, glowing blue mushrooms along the path, a winding cobblestone path leading deeper into the woods, vibrant ferns and ivy curling everywhere, a small green dragon with orange wings perched on the child shoulder, the child wearing a red cape and blue shirt walking forward bravely, the child has dark brown eyes and dark brown hair (NOT green like the dragon), warm brown skin, sparkles of magic around them, lush vibrant fantasy colors',
+        sceneDescription: `${childName} and Spark enter the enchanted forest`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep main subject in lower two-thirds, glowing canopy at top for text',
+      },
+      {
+        pageNumber: 6,
+        text: `Soon they came to a glittering crystal river. The water sparkled like a thousand diamonds, and tiny rainbow fish leapt above the surface. "How will we cross?" wondered ${childName}. Spark flapped ${possessive === 'his' ? 'his' : 'his'} little wings happily.`,
+        imagePrompt: 'A magical crystal river with glittering turquoise water that sparkles like liquid diamonds, smooth river stones in soft pinks and purples along the banks, tiny rainbow-scaled fish leaping above the water creating splashes of color, lush green ferns and tall reeds along the banks, a small wooden footbridge in the distance, golden sunlight streaming through the forest canopy creating dancing light reflections on the water, the small green dragon with orange wings flapping excitedly, the child in a red cape and blue shirt looking at the river in wonder, magical sparkle particles in the air',
+        sceneDescription: `${childName} and Spark reach a sparkling crystal river`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, soft riverbank at bottom for text',
+      },
+      {
+        pageNumber: 7,
+        text: `Suddenly, three glowing pixies fluttered out from behind a giant flower! They were no bigger than acorns, with shimmering silver wings. "We can help you cross," they sang. "But first — can you guess our riddle?"`,
+        imagePrompt: 'Three tiny glowing pixies with shimmering silver iridescent dragonfly wings hovering in the air, each pixie no bigger than an acorn with soft blue glowing bodies and tiny twinkling sparkles trailing behind them, emerging from behind giant cup-shaped magical pink and purple flowers as tall as the child, lush enchanted forest clearing background with golden light beams, glowing magical orbs floating around, the small green dragon with orange wings looking curious, the child in a red cape and blue shirt smiling in amazement, vibrant fantasy colors and dreamlike atmosphere',
+        sceneDescription: `${childName} meets three tiny forest pixies`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place pixies and flower on the RIGHT side, soft glowing forest on left for text',
+      },
+      {
+        pageNumber: 8,
+        text: `${childName} answered the riddle correctly! The pixies giggled and sprinkled fairy dust over the river. A bridge of golden light shimmered into the air. "Hurry across, brave one — your friend's mother is waiting!"`,
+        imagePrompt: 'A magnificent shimmering bridge of pure golden light arching gracefully across a sparkling crystal river, glittering golden fairy dust swirling all around, three tiny silver-winged pixies flitting beside the bridge sprinkling more dust, the river below glowing with reflected light, ancient enchanted forest trees framing the scene, beams of warm sunlight breaking through the canopy, the child stepping onto the glowing bridge with face turned slightly toward the camera, the child wearing a red cape and blue shirt, the child has dark brown eyes and dark brown hair (NOT golden, NOT green), warm brown skin, the small green orange-winged dragon perched on his shoulder, magical sparkles everywhere, vibrant fantasy storybook style',
+        sceneDescription: `${childName} crosses a magical bridge of light`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and bridge in upper two-thirds, soft riverbank at bottom for text, child face must be clearly visible',
+      },
+      {
+        pageNumber: 9,
+        text: `On the other side, they found a clearing — and a HUGE problem! A giant fallen tree pinned a beautiful mother dragon to the ground. Her emerald scales matched Spark's exactly. "Mama!" Spark cried, fluttering around her gently.`,
+        imagePrompt: 'A sun-dappled forest clearing with a massive enormous fallen ancient oak tree lying across the mossy ground, a magnificent large emerald green mother dragon with shimmering scales identical to her baby, long curving tail, beautiful folded orange and gold membrane wings, gentle amber eyes (only the dragon has amber eyes), lying gently pinned beneath the heavy tree branches, the small baby dragon Spark with matching green scales and orange wings fluttering around her with worry, the child in a red cape and blue shirt rushing in from the side with face clearly visible to the camera, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, golden sunbeams highlighting the scene, vibrant fantasy storybook colors, emotional rescue moment',
+        sceneDescription: `${childName} finds Spark's mother trapped under a fallen tree`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep dragons and tree in upper two-thirds, soft clearing floor at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `${childName} thought hard. "Spark — can you melt the branches with your fire?" Spark puffed out ${possessive === 'his' ? 'his' : 'his'} chest and breathed gentle green flames onto the wood, while ${childName} pushed with all ${possessive} might using ${possessive} cape as a sling.`,
+        imagePrompt: 'A dramatic forest rescue scene with the small green baby dragon Spark breathing a stream of soft glowing emerald green magical flames onto the thick fallen tree branches, the wood beginning to soften and crumble into golden embers, the child in a flowing red superhero cape and blue shirt heaving with all his strength, using the bright red cape twisted into a sling around a heavy branch, the child has dark brown eyes and dark brown hair (NOT green like the flames), warm brown skin, determined expression, sweat glistening on his brow, face clearly visible to the camera, the large mother dragon watching gratefully in the background, golden sunbeams streaming through the trees, dust and tiny green fire sparks swirling in the air, vibrant heroic fantasy storybook style',
+        sceneDescription: `${childName} and Spark work together to free the mother dragon`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place subjects on the LEFT side, leave right side as softer forest for text',
+      },
+      {
+        pageNumber: 11,
+        text: `With one last push — KAA-RUMBLE! — the tree rolled away. The mother dragon stood up, stretched her great wings, and bowed low. "Thank you, brave little one. Please — accept this gift." She gave ${childName} a tiny glowing scale.`,
+        imagePrompt: 'A close-up moment in a sun-dappled forest clearing: the child kneeling in the foreground with face turned three-quarter toward the camera receiving a small glowing emerald green dragon scale resting in his open palm, the child wearing a red superhero cape and blue shirt, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, gentle reverent smile, the magnificent mother dragon visible in the background bowing her great green head low with one large amber eye partly visible, her orange and gold wings folded behind her like a halo, the small baby dragon Spark perched on the child shoulder, broken tree branches scattered around the mossy ground, golden sunbeams streaming through the canopy, magical sparkles around the glowing scale, vibrant emotional fantasy storybook style',
+        sceneDescription: `The mother dragon thanks ${childName} with a magical scale`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'child face dominant in upper two-thirds with the dragon framed behind, soft mossy ground at bottom for text',
+      },
+      {
+        pageNumber: 12,
+        text: `"Now climb on," the mother dragon said with a warm smile. "Let me take you home." ${childName} clambered onto her broad back, holding tight to Spark, and with one mighty whoosh of her wings, they soared into the golden sky!`,
+        imagePrompt: 'A cinematic close-up of the child riding bravely on the mother dragon back, the child centered in the frame with face turned three-quarter toward the camera, smiling with joyful excitement, the child wearing a flowing red superhero cape billowing in the wind and a blue shirt, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, the small baby dragon Spark with green scales and orange wings perched on his shoulder, the great emerald green back and orange-gold wings of the mother dragon visible beneath and behind, fluffy white and pink clouds drifting around, the golden setting sun glowing in the background sky, sparkling rays of light, vibrant fantasy storybook style, breathtaking flight moment, hero shot of the child',
+        sceneDescription: `${childName} flies on the mother dragon back home`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'child face large and centered in upper two-thirds, dragon body and clouds frame the child, soft cloudy bottom for text',
+      },
+      {
+        pageNumber: 13,
+        text: `They landed gently in the village square as the sun set. Tiny silhouettes waved from cottage windows in wonder. The mother dragon nuzzled ${childName} softly. "Spark may stay, if he wishes — you have shown a true friend's heart."`,
+        imagePrompt: 'A charming storybook village square at golden sunset, cobblestone ground, small thatched-roof cottages with warmly glowing yellow windows showing tiny dark silhouetted figures waving from inside, a stone fountain in the center with flowers, the magnificent emerald green mother dragon kneeling gently on the cobblestones with folded orange wings, her amber eyes warm and gentle (only the dragon has amber eyes), nuzzling tenderly, the small baby dragon Spark hovering happily beside her, the child in a red cape and blue shirt smiling brightly with face turned toward the camera, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, both hands raised in joy, the orange-pink sunset sky behind, sparkles in the air, NO PEOPLE in foreground, vibrant fantasy storybook style',
+        sceneDescription: `${childName} returns to the village with Spark`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep dragons and child in upper two-thirds, soft cobblestone at bottom for text',
+      },
+      {
+        pageNumber: 14,
+        text: `Spark turned to his mother and gave her a tiny dragon hug, then flew straight onto ${childName}'s shoulder. From that day on, wherever ${childName} went, the little green dragon went too — best friends forever.`,
+        imagePrompt: 'A heartwarming sunset moment in the village square, the small adorable baby dragon Spark with shimmering emerald green scales and bright orange wings perched proudly on the child shoulder, his long curving tail wrapped gently around the child neck, his big amber eyes (the dragon has amber eyes) sparkling with happiness, the child in a flowing red superhero cape and blue shirt smiling brightly with face turned toward the camera, the child has dark brown eyes and dark brown hair (NOT green, NOT amber), warm brown skin, the magnificent mother dragon visible in the background gracefully lifting off into the orange-pink sunset sky, golden magical sparkles trailing in the air, soft warm cottages with glowing windows behind, vibrant emotional fantasy storybook style',
+        sceneDescription: `Spark chooses to stay with ${childName}`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place subjects on the RIGHT side, soft sunset village on left for text',
+      },
+      {
+        pageNumber: 15,
+        text: `That night, ${childName} tucked Spark under a soft warm blanket at the foot of ${possessive} bed. The little dragon yawned, blew one tiny green flame goodnight, and curled up. ${Pronoun} had finally found ${possessive} dragon friend.`,
+        imagePrompt: 'A cozy storybook bedroom at night, the child sitting up in bed in the foreground with face turned to camera, the child wearing soft cream and blue striped pajamas, the child has dark brown eyes and dark brown hair, warm brown skin, gentle sleepy smile, the child face clearly the focal point of the frame, a fluffy bed covered in a soft star-patterned quilt, warm amber lamplight from a brass bedside lamp casting golden glow on the child face, a window showing a deep blue starry sky with a glowing crescent moon, the small baby dragon Spark curled up in a tiny ball at the foot of the bed wrapped in a soft mini blanket, the dragon has shimmering scales and folded wings off to the side of the frame, a tiny puff of magical sparkle floating from his nose, golden warm peaceful atmosphere, the red superhero cape hanging on a chair nearby, vibrant fantasy storybook style',
+        sceneDescription: `Spark sleeps at the foot of ${childName}'s bed`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, soft floor at bottom for text',
+      },
+      {
+        pageNumber: 16,
+        text: `On the bedside table, the tiny dragon scale glowed softly all night long — a reminder that the bravest hearts always find the truest friends. The End.`,
+        imagePrompt: 'A peaceful close-up scene of a beautiful wooden bedside table at night, a single small glowing emerald green dragon scale resting on the table sparkling with magical inner light, casting a soft warm green glow on the wood, an open storybook beside it with golden pages, a tiny vase of forest wildflowers, the red superhero cape draped softly nearby, moonlight streaming through a window above, the small baby dragon Spark just visible curled asleep on the bed in the background, magical sparkles drifting in the moonlit air, vibrant emotional fantasy storybook style, a gentle storybook ending',
+        sceneDescription: 'The dragon scale glows softly on the bedside table',
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep glowing scale and table in upper two-thirds, soft surface at bottom for text',
+      },
+    ],
+  };
+}

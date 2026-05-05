@@ -2,7 +2,7 @@ import type { StoryOutputInput } from '@bookmagic/shared';
 import { getDinosaurStory } from './dinosaur';
 import { getToothFairyStory } from './tooth-fairy';
 import { getMoonPrincessStory } from './moon-princess';
-import { getCosmicJourneyStory } from './cosmic-journey';
+import { getDragonFriendStory } from './dragon-friend';
 import { getFamilyParkAdventureStory } from './family-park-adventure';
 
 const staticStoryBuilders: Record<string, (childName: string, childAge: number, childGender: string) => StoryOutputInput> = {
@@ -11,7 +11,7 @@ const staticStoryBuilders: Record<string, (childName: string, childAge: number, 
   'tooth-fairy': getToothFairyStory,
   'moon-princess': getMoonPrincessStory,
   // Pre-made book templates
-  'cosmic-journey': getCosmicJourneyStory,
+  'dragon-friend': getDragonFriendStory,
   'family-park-adventure': getFamilyParkAdventureStory,
 };
 

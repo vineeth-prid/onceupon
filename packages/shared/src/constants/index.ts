@@ -1,5 +1,5 @@
 export const NEGATIVE_PROMPT =
-  'multiple people, two people, two children, two kids, second child, another child, duplicate person, twin, siblings, crowd, group, adult, woman, man, couple, extra person, human face on animal, animal face on human, human-animal hybrid, chimera, centaur, horns on child, tail on child, animal ears on child, scales on child, fur on child, snout on child, claws on child, wings on child, child merged with animal, child fused with dinosaur, animal body parts on human, scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame, gender swap, wrong gender';
+  'multiple people, two people, two children, two kids, second child, another child, duplicate person, twin, siblings, crowd, group, adult, woman, man, couple, extra person, human face on animal, animal face on human, human face on dragon, dragon face on human, human head on dragon body, dragon head on human body, dragon-bodied child, human-bodied dragon, child as dragon, child becoming dragon, child transforming into dragon, child with dragon wings, child with dragon tail, child with dragon scales, child with horns, dragon-headed child, child morphed with dragon, human-animal hybrid, chimera, centaur, horns on child, tail on child, animal ears on child, scales on child, fur on child, snout on child, claws on child, wings on child, child merged with animal, child fused with dinosaur, animal body parts on human, scary, dark, violent, blood, horror, realistic photo, photorealistic, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, extra hands, extra arms, extra fingers, mutated hands, fused fingers, merged bodies, fused characters, body horror, conjoined, disfigured, malformed limbs, missing fingers, too many fingers, cropped head, out of frame, gender swap, wrong gender, wrong eye color, wrong skin color, wrong hair color, inconsistent character, different child, different face';
 
 // Negative prompt for multi-person scenes — allows multiple people but keeps quality/safety guards
 export const MULTI_PERSON_NEGATIVE_PROMPT =
@@ -53,7 +53,6 @@ export const BOOK_TEMPLATES = [
   { id: 'pizza-adventure', categoryId: 'cook' as CategoryId, name: 'Pizza Adventure', description: 'Create the world\'s most amazing pizza' },
   { id: 'fruit-forest', categoryId: 'cook' as CategoryId, name: 'Fruit Forest', description: 'Pick magical fruits to make a special recipe' },
   // Pre-made books (static stories)
-  { id: 'cosmic-journey', categoryId: 'adventure' as CategoryId, name: 'Cosmic Journey', description: 'Blast off through stars and galaxies' },
   { id: 'tooth-fairy', categoryId: 'fantasy' as CategoryId, name: 'The Girl and the Tooth Fairy', description: 'A magical encounter with a pixie in the night sky' },
   // Family mode test story
   { id: 'family-park-adventure', categoryId: 'nurture' as CategoryId, name: 'Family Park Adventure', description: 'A magical day at the park with the whole family' },
@@ -78,6 +77,14 @@ export const ILLUSTRATION_STYLES = [
     photoMakerStyleName: 'Disney Charactor',
     promptSuffix: '3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors',
     description: 'Classic Disney & Pixar 3D animation look',
+  },
+  {
+    id: 'kontext-disney',
+    name: 'Disney / Pixar (Kontext)',
+    icon: '\u2728',
+    replicateModel: 'black-forest-labs/flux-kontext-pro',
+    promptSuffix: '3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors',
+    description: 'Disney/Pixar look with FLUX.1 Kontext \u2014 stronger character consistency on multi-creature scenes',
   },
   {
     id: '3d-animation',
@@ -147,7 +154,11 @@ export const TOTAL_PAGES = 16;
 
 export const IMAGE_GEN_CONFIG = {
   model: 'tencentarc/photomaker-style:467d062309da518648ba89d226490e02b8ed09b5abc15026e54e31c5a8cd0769',
-  styleStrengthRatio: 40,
+  // Lower = stronger face identity preservation. 40 was bleeding scene colors
+  // (e.g. emerald dragons → green eyes on the child). 30 holds the Disney
+  // stylization while anchoring features (eye color, hair, skin) to the
+  // reference photo on every page including dragon-heavy close-ups.
+  styleStrengthRatio: 30,
   numSteps: 30,
   guidanceScale: 5,
   numOutputs: 1,

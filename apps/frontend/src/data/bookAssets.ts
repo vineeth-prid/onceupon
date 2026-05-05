@@ -30,17 +30,17 @@ export interface BookAssetSet {
 }
 
 export const BOOK_ASSETS: Record<string, BookAssetSet> = {
-  'cosmic-journey': {
+  'dragon-friend': {
     video: {
-      src: '/books/cosmic-journey/preview.mp4',
-      thumb: '/books/cosmic-journey/video-thumb.webp',
+      src: '/books/dragon-friend/preview.mp4',
+      thumb: '/books/dragon-friend/video-thumb.webp',
     },
     images: [
-      '/books/cosmic-journey/image-1.webp',
-      '/books/cosmic-journey/image-2.webp',
-      '/books/cosmic-journey/image-3.webp',
-      '/books/cosmic-journey/image-4.webp',
-      '/books/cosmic-journey/image-5.webp',
+      '/books/dragon-friend/image-1.webp',
+      '/books/dragon-friend/image-2.webp',
+      '/books/dragon-friend/image-3.webp',
+      '/books/dragon-friend/image-4.webp',
+      '/books/dragon-friend/image-5.webp',
     ],
   },
   'tooth-fairy': {

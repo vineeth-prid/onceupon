@@ -37,12 +37,12 @@ const T = '/thumbnails'; // base path
 
 export const BOOK_CATALOG: CatalogBook[] = [
   {
-    id: 'boy-cosmic-journey',
-    title: 'The Boy and the Cosmic Journey',
-    subtitle: 'Blast off through stars and galaxies',
-    thumbnail: `${T}/the-boy-and-the-cosmic-journey.webp`,
-    category: 'Adventure',
-    slug: 'cosmic-journey',
+    id: 'boy-dragon-friend',
+    title: 'The Boy and the Baby Dragon',
+    subtitle: 'A baby dragon, an enchanted forest, and a brave new friendship',
+    thumbnail: `${T}/the-boy-and-the-dragon-friend.webp`,
+    category: 'Fantasy',
+    slug: 'dragon-friend',
     gender: 'boy',
     ageRange: '4-8',
   },

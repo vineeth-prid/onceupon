@@ -12,8 +12,8 @@ import { ReviewForm } from '../components/reviews/ReviewForm';
 /* ─── Per-book descriptions ──────────────────────────────────────────── */
 
 const BOOK_DESCRIPTIONS: Record<string, string> = {
-  'boy-cosmic-journey':
-    "3, 2, 1... Blast off! Your child builds a rocket from pure imagination and soars into the cosmos. They explore candy-coloured nebulae, befriend a tiny alien on a crystal planet, and navigate asteroid fields. The most beautiful discovery? Earth, shining like a blue jewel when seen from the stars.",
+  'boy-dragon-friend':
+    "Strap on your cape and step into the enchanted forest! Your child meets Spark, a tiny green baby dragon with bright orange wings, and together they cross a crystal river, outwit pixies, and rescue Spark's mother from a fallen ancient tree. A heartwarming tale of bravery, teamwork, and an unbreakable friendship between a brave little hero and a baby dragon.",
   'girl-tooth-fairy':
     "When your child loses her first tooth and tucks it under the pillow, a tiny pixie named Twinkle appears in a swirl of golden sparkles. Together they fly past clouds and stars to a crystal castle in the sky, where she discovers the magical secret of where every lost tooth goes — a gentle bedtime tale about wonder, courage, and the magic hiding in everyday moments.",
 };
@@ -92,7 +92,7 @@ export function BookDetailPage() {
     );
   }
 
-  const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['boy-cosmic-journey']!;
+  const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['boy-dragon-friend']!;
   const features = BOOK_FEATURES.default;
   const activeItem = galleryItems[activeIndex] ?? galleryItems[0]!;
   const isVideo = activeItem.type === 'video';

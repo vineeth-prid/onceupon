@@ -110,7 +110,7 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
 - The identity tag will be repeated in EVERY image prompt to ensure the character looks the same across all 16 pages`;
 
     const response = await this.genai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: [{
         role: 'user',
         parts: [
@@ -179,6 +179,14 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
       .replace(/\s{2,}/g, ' ')
       .trim();
 
+    // Color-bleed sanitizer: when a single non-skin/non-hair color appears
+    // many times in the scene (e.g. "emerald green dragon, green wings, green
+    // flame, green scales"), the diffuser overweights it and bleeds it into
+    // the child's face. Cap each color at 3 mentions; downstream tokens get
+    // softened. Only runs against scene-color tokens — not the child's own
+    // identity descriptors which are passed separately via identityTag.
+    scenePrompt = this.dampenColorBleed(scenePrompt);
+
     // Parse character description into identity tag + full description
     let identityTag = '';
     let fullDescription = '';
@@ -191,6 +199,12 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
         identityTag = characterDescription.substring(0, 80);
         fullDescription = characterDescription;
       }
+    }
+
+    // Gender reinforcement: if identity tag doesn't already include the gender
+    // word, append it so PhotoMaker can't drift to the wrong gender.
+    if (genderTag !== 'child' && identityTag && !identityTag.toLowerCase().includes(genderTag)) {
+      identityTag = `${identityTag}, clearly a ${genderTag}`;
     }
 
     const isPhotoMaker = !style.replicateModel || style.replicateModel.includes('photomaker');
@@ -206,9 +220,26 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
       fullPrompt = `${fullPrompt}. Composition: ${imageComposition}`;
     }
 
-    // Prioritize style by moving suffix to the beginning if it exists
+    // Style suffix at the END (matches f41bf6d/Riya-era PhotoMaker recipe)
     if (style.promptSuffix) {
-      fullPrompt = `${style.promptSuffix}, ${fullPrompt}`;
+      fullPrompt = `${fullPrompt}, ${style.promptSuffix}`;
+    }
+
+    // Identity anchor — appended LAST so the diffuser's most-attended tokens
+    // are the child's features, not the scene's color palette. Fixes a
+    // documented failure where dragons/creatures with strong emerald/amber
+    // tones bled their eye-and-hair colors into the child on close-up pages.
+    if (identityTag) {
+      const childEye = this.extractEyeColor(identityTag, fullDescription);
+      const childHair = this.extractHairColor(identityTag, fullDescription);
+      const sceneColors = this.detectSceneColors(scenePrompt);
+      const conflictingColors = sceneColors.filter(
+        (c) => c !== childEye && c !== childHair,
+      );
+      const exclusion = conflictingColors.length > 0
+        ? ` The ${genderTag}'s eyes are ${childEye || 'dark brown'} (NOT ${conflictingColors.join(', NOT ')}); the ${genderTag}'s hair is ${childHair || 'dark brown'} (NOT ${conflictingColors.join(', NOT ')}).`
+        : '';
+      fullPrompt = `${fullPrompt}. The ${genderTag}'s face must match the reference photo exactly — ${identityTag} — these facial features take priority over any creature or scene color in the image.${exclusion}`;
     }
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
@@ -242,6 +273,9 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     } else if (styleObj.replicateModel?.includes('flux-pulid')) {
       this.logger.log(`Routing to FluxPuLID with model: ${styleObj.replicateModel}`);
       imageUrl = await this.runFluxPuLID(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
+    } else if (styleObj.replicateModel?.includes('flux-kontext')) {
+      this.logger.log(`Routing to FLUX.1 Kontext with model: ${styleObj.replicateModel}`);
+      imageUrl = await this.runFluxKontext(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
     } else {
       // Fallback to default PhotoMaker
       this.logger.log(`Fallback to PhotoMaker default style: ${styleObj.photoMakerStyleName || '(No style)'}`);
@@ -255,6 +289,96 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
 
   private async runFluxWatercolor(faceImageUrl: string, prompt: string): Promise<string> {
     return this.runImageToImage(faceImageUrl, prompt, "lucataco/flux-watercolor:ec079237c95a092c25390c50ca601b69f6fd7d5e4a83a152d192c7336e1cda6d");
+  }
+
+  /**
+   * Pull the child's eye color from the Gemini identity tag / description.
+   * Returns the bare color word (e.g. "brown", "blue") or '' if not found.
+   * Used by the identity anchor to forbid conflicting scene colors from
+   * bleeding into the child's eyes.
+   */
+  private extractEyeColor(identityTag: string, fullDescription: string): string {
+    const haystack = `${identityTag} ${fullDescription}`.toLowerCase();
+    const m = haystack.match(/\b(brown|dark brown|hazel|black|blue|green|grey|gray|amber|honey)\s+eyes?\b/);
+    return m ? m[1].replace(/^dark\s+/, '') : '';
+  }
+
+  /**
+   * Pull the child's hair color from the Gemini identity tag / description.
+   */
+  private extractHairColor(identityTag: string, fullDescription: string): string {
+    const haystack = `${identityTag} ${fullDescription}`.toLowerCase();
+    const m = haystack.match(/\b(black|dark brown|brown|blonde|blond|red|auburn|grey|gray|white|chestnut)\s+hair\b/);
+    return m ? m[1].replace(/^dark\s+/, '') : '';
+  }
+
+  /**
+   * Find the dominant non-neutral colors in the scene prompt. Used to
+   * discover what could potentially bleed into the child's face.
+   * Excludes neutral environment tones (gold, silver, white) which rarely
+   * cause facial drift.
+   */
+  private detectSceneColors(scenePrompt: string): string[] {
+    const colors = ['emerald', 'green', 'red', 'orange', 'amber', 'yellow', 'pink', 'purple', 'violet', 'blue', 'turquoise'];
+    const lower = scenePrompt.toLowerCase();
+    const found = colors.filter((c) => {
+      const matches = lower.match(new RegExp(`\\b${c}\\b`, 'g'));
+      return matches && matches.length >= 2;
+    });
+    // Normalize "emerald" → "green" for cleaner exclusion text.
+    return Array.from(new Set(found.map((c) => (c === 'emerald' ? 'green' : c))));
+  }
+
+  /**
+   * Cap how many times the same color appears in a scene prompt. PhotoMaker
+   * weights repeated tokens heavily, so "emerald green dragon, green wings,
+   * green flame, green scales" causes color bleed onto the child's face.
+   * After this pass, each color appears at most `maxMentions` times.
+   */
+  private dampenColorBleed(scenePrompt: string, maxMentions: number = 3): string {
+    const colors = ['emerald green', 'emerald', 'bright green', 'glowing green', 'green', 'amber', 'orange', 'red', 'pink', 'purple', 'blue', 'turquoise', 'yellow'];
+    let result = scenePrompt;
+    for (const color of colors) {
+      const regex = new RegExp(`\\b${color}\\b`, 'gi');
+      const matches = result.match(regex);
+      if (!matches || matches.length <= maxMentions) continue;
+      let kept = 0;
+      result = result.replace(regex, (match) => {
+        kept += 1;
+        return kept <= maxMentions ? match : '';
+      });
+    }
+    return result.replace(/\s{2,}/g, ' ').replace(/\s+,/g, ',').trim();
+  }
+
+  /**
+   * FLUX.1 Kontext Pro — image-edit model from Black Forest Labs that
+   * preserves character identity from a reference photo across multiple
+   * scenes. Better than PhotoMaker for multi-subject pages where the child
+   * appears alongside dragons / dinosaurs / fairies, since it doesn't fall
+   * back on a face-embedding mechanism that can transfer to the wrong
+   * subject. Input: prompt (scene + style), input_image (the child's photo).
+   */
+  private async runFluxKontext(faceImageUrl: string, prompt: string, model: string): Promise<string> {
+    this.logger.log(`Running FLUX.1 Kontext with model: ${model}`);
+    const output = await this.replicate.run(model as `${string}/${string}` | `${string}/${string}:${string}`, {
+      input: {
+        prompt,
+        input_image: faceImageUrl,
+        aspect_ratio: '1:1',
+        output_format: 'png',
+        safety_tolerance: 2,
+      },
+    });
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    // Kontext can return a FileOutput object with .url() method
+    if (output && typeof (output as any).url === 'function') {
+      const url = (output as any).url();
+      return typeof url === 'string' ? url : String(url);
+    }
+    throw new Error(`Unexpected output format from FLUX.1 Kontext`);
   }
 
   private async runImageToImage(faceImageUrl: string, prompt: string, model: string): Promise<string> {

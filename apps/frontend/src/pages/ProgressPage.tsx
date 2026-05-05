@@ -3,21 +3,21 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getOrder } from '../api/orders';
 
 const PREVIEW_STEPS = [
-  { status: 'CREATED', label: 'Setting up your story...', detail: 'Preparing the canvas', icon: '\u2728', progress: 5 },
-  { status: 'STORY_GENERATING', label: 'Writing a magical tale...', detail: 'Our AI author is crafting your story', icon: '\uD83D\uDCDD', progress: 25 },
-  { status: 'STORY_COMPLETE', label: 'Story written!', detail: 'Now creating your character', icon: '\uD83C\uDFA8', progress: 40 },
-  { status: 'IMAGES_GENERATING', label: 'Painting your preview...', detail: 'Bringing your child to life in the scene', icon: '\uD83D\uDD8C\uFE0F', progress: 65 },
-  { status: 'PREVIEW_READY', label: 'Preview is ready!', detail: 'Redirecting to your book...', icon: '\uD83C\uDF89', progress: 100 },
+  { status: 'CREATED', label: 'Setting up your story...', detail: 'Preparing the canvas', icon: '✨', progress: 5 },
+  { status: 'STORY_GENERATING', label: 'Writing a magical tale...', detail: 'Our AI author is crafting your story', icon: '📝', progress: 25 },
+  { status: 'STORY_COMPLETE', label: 'Story written!', detail: 'Now creating your character', icon: '🎨', progress: 40 },
+  { status: 'IMAGES_GENERATING', label: 'Painting your preview...', detail: 'Bringing your child to life in the scene', icon: '🖌️', progress: 65 },
+  { status: 'PREVIEW_READY', label: 'Preview is ready!', detail: 'Redirecting to your book...', icon: '🎉', progress: 100 },
 ];
 
 const FULL_STEPS = [
-  { status: 'PAID', label: 'Payment received!', detail: 'Starting full book creation', icon: '\u2705', progress: 3 },
-  { status: 'STORY_GENERATING', label: 'Writing complete story...', detail: 'Crafting all 16 pages of your tale', icon: '\uD83D\uDCDD', progress: 10 },
-  { status: 'STORY_COMPLETE', label: 'Full story written!', detail: 'Preparing illustrations', icon: '\uD83D\uDCD6', progress: 15 },
-  { status: 'IMAGES_GENERATING', label: 'Painting illustrations...', detail: '', icon: '\uD83D\uDD8C\uFE0F', progress: 20 },
-  { status: 'IMAGES_COMPLETE', label: 'All illustrations done!', detail: 'Assembling your book', icon: '\uD83C\uDF1F', progress: 90 },
-  { status: 'PDF_GENERATING', label: 'Building your book...', detail: 'Adding finishing touches', icon: '\uD83D\uDCD6', progress: 95 },
-  { status: 'ORDER_CONFIRMED', label: 'Your book is ready!', detail: 'Opening your storybook...', icon: '\uD83C\uDF89', progress: 100 },
+  { status: 'PAID', label: 'Payment received!', detail: 'Starting full book creation', icon: '✅', progress: 3 },
+  { status: 'STORY_GENERATING', label: 'Writing complete story...', detail: 'Crafting all 16 pages of your tale', icon: '📝', progress: 10 },
+  { status: 'STORY_COMPLETE', label: 'Full story written!', detail: 'Preparing illustrations', icon: '📖', progress: 15 },
+  { status: 'IMAGES_GENERATING', label: 'Painting illustrations...', detail: '', icon: '🖌️', progress: 20 },
+  { status: 'IMAGES_COMPLETE', label: 'All illustrations done!', detail: 'Assembling your book', icon: '🌟', progress: 90 },
+  { status: 'PDF_GENERATING', label: 'Building your book...', detail: 'Adding finishing touches', icon: '📖', progress: 95 },
+  { status: 'ORDER_CONFIRMED', label: 'Your book is ready!', detail: 'Opening your storybook...', icon: '🎉', progress: 100 },
 ];
 
 const FUN_FACTS = [
@@ -30,6 +30,12 @@ const FUN_FACTS = [
   'Every scene is designed to spark imagination and wonder.',
   'This storybook is one-of-a-kind — no two are the same!',
 ];
+
+const PAGE_BG = 'linear-gradient(180deg, #EDE4F8 0%, #E2D6F5 45%, #D5C4ED 100%)';
+const FONT_UI = "'Inter', sans-serif";
+const FONT_HEADING = "'Instrument Serif', serif";
+const ACCENT = '#7B3FA0';
+const PROGRESS_GRADIENT = 'linear-gradient(90deg, #16a34a, #AB47BC)';
 
 export function ProgressPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -115,10 +121,22 @@ export function ProgressPage() {
   // Special clean screen for payment confirmation (before generation starts)
   const isPaymentConfirmed = isFullMode && status === 'PAID';
 
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.8)',
+    borderRadius: 28,
+    boxShadow: '0 8px 32px rgba(45, 27, 105, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+    animation: 'fadeIn 0.5s ease',
+    position: 'relative',
+    zIndex: 1,
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1a0533 0%, #2d1b69 50%, #4a1a8a 100%)',
+      background: PAGE_BG,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -127,17 +145,13 @@ export function ProgressPage() {
       overflow: 'hidden',
     }}>
       <style>{`
-        @keyframes progressGlow {
-          0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.3); }
-          50% { box-shadow: 0 0 25px rgba(255,215,0,0.6); }
-        }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         @keyframes bookFloat {
           0%, 100% { transform: translateY(0) rotate(-2deg); }
-          50% { transform: translateY(-15px) rotate(2deg); }
+          50% { transform: translateY(-12px) rotate(2deg); }
         }
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -153,10 +167,6 @@ export function ProgressPage() {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.7; }
-        }
         @keyframes checkPop {
           0% { transform: scale(0.5); opacity: 0; }
           60% { transform: scale(1.15); opacity: 1; }
@@ -164,84 +174,62 @@ export function ProgressPage() {
         }
       `}</style>
 
-      {/* Background stars */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
-        {[...Array(25)].map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: 2 + Math.random() * 3,
-            height: 2 + Math.random() * 3,
-            borderRadius: '50%',
-            background: 'rgba(255,215,0,0.3)',
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animation: `twinkle ${2 + Math.random() * 4}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 3}s`,
-          }} />
-        ))}
+      {/* Soft decorative dots — same vibe as preview page */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', opacity: 0.55 }}>
+        <div style={{ position: 'absolute', top: '10%', left: '7%', width: 6, height: 6, borderRadius: '50%', background: '#FFD700' }} />
+        <div style={{ position: 'absolute', top: '18%', right: '9%', width: 4, height: 4, borderRadius: '50%', background: '#AB47BC' }} />
+        <div style={{ position: 'absolute', bottom: '22%', left: '5%', width: 5, height: 5, borderRadius: '50%', background: '#16a34a' }} />
+        <div style={{ position: 'absolute', bottom: '14%', right: '7%', width: 4, height: 4, borderRadius: '50%', background: '#FFD700' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '3%', width: 3, height: 3, borderRadius: '50%', background: '#7B3FA0' }} />
+        <div style={{ position: 'absolute', top: '40%', right: '4%', width: 3, height: 3, borderRadius: '50%', background: '#16a34a' }} />
       </div>
 
       {isPaymentConfirmed ? (
         /* ── PAYMENT CONFIRMED: Clean, minimal confirmation ── */
         <div style={{
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 30,
+          ...cardStyle,
           padding: '3rem 2.5rem',
           maxWidth: 420,
           width: '100%',
           textAlign: 'center',
-          border: '1px solid rgba(255,255,255,0.1)',
-          animation: 'fadeIn 0.5s ease',
-          position: 'relative',
-          zIndex: 1,
         }}>
-          {/* Green check icon */}
           <div style={{
             fontSize: '4.5rem',
             marginBottom: '1.2rem',
             animation: 'checkPop 0.6s ease-out',
-            filter: 'drop-shadow(0 0 20px rgba(76,175,80,0.4))',
+            filter: 'drop-shadow(0 4px 14px rgba(22, 163, 74, 0.25))',
           }}>
             ✅
           </div>
 
-          {/* Payment Received text */}
           <h1 style={{
-            fontFamily: "'Baloo 2', cursive",
-            fontSize: '1.8rem',
-            fontWeight: 800,
-            color: '#fff',
+            fontFamily: FONT_HEADING,
+            fontSize: '2rem',
+            fontWeight: 400,
+            color: '#111',
             margin: '0 0 0.5rem',
-            letterSpacing: '0.5px',
-            textShadow: '0 2px 15px rgba(255,255,255,0.15)',
+            letterSpacing: 0.3,
           }}>
             Payment Received
           </h1>
 
           <p style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontSize: '0.9rem',
-            color: 'rgba(255,255,255,0.45)',
+            fontFamily: FONT_UI,
+            fontSize: '0.95rem',
+            color: '#666',
             margin: 0,
           }}>
-            Preparing your storybook...
+            Preparing your storybook…
           </p>
         </div>
       ) : (
         /* ── GENERATION PROGRESS: Full progress UI ── */
         <div style={{
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 30,
+          ...cardStyle,
           padding: '2.5rem 2.5rem 2rem',
           maxWidth: 460,
           width: '100%',
           textAlign: 'center',
-          border: '1px solid rgba(255,255,255,0.1)',
-          animation: 'fadeIn 0.5s ease',
-          position: 'relative',
-          zIndex: 1,
         }}>
           {/* Animated icon */}
           <div style={{
@@ -253,19 +241,20 @@ export function ProgressPage() {
           </div>
 
           <p style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontSize: '1rem',
-            color: '#FFD700',
+            fontFamily: FONT_HEADING,
+            fontSize: '1.5rem',
+            fontWeight: 400,
+            color: '#111',
             margin: '0 0 0.3rem',
-            fontWeight: 600,
+            letterSpacing: 0.2,
           }}>
             {currentStep.label}
           </p>
 
           <p style={{
-            fontFamily: "'Nunito', sans-serif",
+            fontFamily: FONT_UI,
             fontSize: '0.85rem',
-            color: 'rgba(255,255,255,0.55)',
+            color: '#666',
             margin: '0 0 1.5rem',
             minHeight: '1.2em',
           }}>
@@ -289,15 +278,15 @@ export function ProgressPage() {
                   height: 6,
                   borderRadius: 3,
                   background: i < currentStepIndex
-                    ? '#FFD700'
+                    ? '#16a34a'
                     : i === currentStepIndex
-                    ? 'linear-gradient(90deg, #FFD700, #FFA500)'
-                    : 'rgba(255,255,255,0.15)',
+                    ? 'rgba(0,0,0,0.08)'
+                    : 'rgba(0,0,0,0.06)',
                   transition: 'all 0.5s ease',
                   ...(i === currentStepIndex ? {
                     backgroundSize: '200% 100%',
                     animation: 'shimmer 2s linear infinite',
-                    backgroundImage: 'linear-gradient(90deg, #FFD700 0%, #fff 50%, #FFD700 100%)',
+                    backgroundImage: 'linear-gradient(90deg, #16a34a 0%, #AB47BC 50%, #16a34a 100%)',
                   } : {}),
                 }}
               />
@@ -306,7 +295,7 @@ export function ProgressPage() {
 
           {/* Progress bar */}
           <div style={{
-            background: 'rgba(255,255,255,0.08)',
+            background: 'rgba(0,0,0,0.06)',
             borderRadius: 50,
             height: 10,
             overflow: 'hidden',
@@ -314,12 +303,11 @@ export function ProgressPage() {
             position: 'relative',
           }}>
             <div style={{
-              background: 'linear-gradient(90deg, #FFD700, #FFA500, #FF6347)',
+              background: PROGRESS_GRADIENT,
               height: '100%',
               width: `${progress}%`,
               transition: 'width 1s ease',
               borderRadius: 50,
-              animation: 'progressGlow 2s ease-in-out infinite',
             }} />
           </div>
 
@@ -328,10 +316,10 @@ export function ProgressPage() {
             justifyContent: 'space-between',
             marginBottom: '1.4rem',
             fontSize: '0.78rem',
-            fontFamily: "'Nunito', sans-serif",
+            fontFamily: FONT_UI,
           }}>
-            <span style={{ color: 'rgba(255,255,255,0.4)' }}>{progress}%</span>
-            <span style={{ color: 'rgba(255,255,255,0.35)' }}>{formatTime(elapsed)}</span>
+            <span style={{ color: '#777', fontWeight: 600 }}>{progress}%</span>
+            <span style={{ color: '#999' }}>{formatTime(elapsed)}</span>
           </div>
 
           {/* Image progress for full mode */}
@@ -351,15 +339,12 @@ export function ProgressPage() {
                     height: 24,
                     borderRadius: 3,
                     background: i < completedPages
-                      ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+                      ? 'linear-gradient(135deg, #16a34a, #AB47BC)'
                       : i === completedPages
-                      ? 'rgba(255,215,0,0.4)'
-                      : 'rgba(255,255,255,0.08)',
+                      ? 'rgba(171, 71, 188, 0.35)'
+                      : 'rgba(0, 0, 0, 0.06)',
                     transition: 'all 0.4s ease',
-                    boxShadow: i < completedPages ? '0 0 6px rgba(255,215,0,0.3)' : 'none',
-                    ...(i === completedPages ? {
-                      animation: 'progressGlow 1.5s ease-in-out infinite',
-                    } : {}),
+                    boxShadow: i < completedPages ? '0 2px 6px rgba(123, 63, 160, 0.18)' : 'none',
                   }}
                 />
               ))}
@@ -371,8 +356,8 @@ export function ProgressPage() {
             <div style={{
               width: 36,
               height: 36,
-              border: '3px solid rgba(255,255,255,0.08)',
-              borderTop: '3px solid #FFD700',
+              border: '3px solid rgba(0,0,0,0.06)',
+              borderTop: `3px solid ${ACCENT}`,
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
               margin: '0 auto 1rem',
@@ -382,17 +367,17 @@ export function ProgressPage() {
           {/* Fun fact */}
           {!error && status !== 'FAILED' && status !== 'PREVIEW_READY' && (
             <div style={{
-              background: 'rgba(255,215,0,0.06)',
-              borderRadius: 12,
+              background: 'rgba(123, 63, 160, 0.06)',
+              borderRadius: 14,
               padding: '10px 16px',
-              border: '1px solid rgba(255,215,0,0.1)',
+              border: '1px solid rgba(123, 63, 160, 0.12)',
             }}>
               <p
                 key={factIndex}
                 style={{
-                  fontFamily: "'Nunito', sans-serif",
+                  fontFamily: FONT_UI,
                   fontSize: '0.78rem',
-                  color: 'rgba(255,215,0,0.7)',
+                  color: '#5b2d7a',
                   margin: 0,
                   lineHeight: 1.5,
                   fontStyle: 'italic',
@@ -407,8 +392,8 @@ export function ProgressPage() {
           {error && (
             <div style={{ marginTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
               <p style={{
-                color: '#FF6B6B',
-                fontFamily: "'Nunito', sans-serif",
+                color: '#D32F2F',
+                fontFamily: FONT_UI,
                 fontSize: '0.9rem',
                 margin: '0 0 1rem',
               }}>
@@ -416,17 +401,8 @@ export function ProgressPage() {
               </p>
               <button
                 onClick={() => navigate('/')}
-                style={{
-                  padding: '0.6rem 2rem',
-                  borderRadius: 50,
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  background: 'transparent',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontFamily: "'Nunito', sans-serif",
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                }}
+                className="btn-secondary"
+                style={{ padding: '0.6rem 1.6rem', fontSize: '0.9rem' }}
               >
                 Go Back
               </button>
@@ -437,4 +413,3 @@ export function ProgressPage() {
     </div>
   );
 }
-

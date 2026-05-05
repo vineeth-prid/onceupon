@@ -11,7 +11,8 @@ const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 const FONT_BODY = "'Crimson Text', 'Georgia', serif";
 const FONT_TITLE = "'Playfair Display', 'Georgia', serif";
 const FONT_ACCENT = "'Dancing Script', cursive";
-const FONT_UI = "'Nunito', sans-serif";
+const FONT_UI = "'Inter', sans-serif";
+const FONT_HEADING = "'Instrument Serif', serif";
 const FONT_BRAND = "'Baloo 2', cursive";
 
 const PAGE_W = 400;
@@ -265,15 +266,16 @@ function ScrollHint({ visible }: { visible: boolean }) {
       <span style={{
         fontFamily: FONT_UI,
         fontSize: '0.7rem',
-        color: 'rgba(255,215,0,0.5)',
+        color: 'rgba(0,0,0,0.4)',
         letterSpacing: 1,
         textTransform: 'uppercase',
+        fontWeight: 600,
       }}>
         Scroll to flip
       </span>
       <div style={{ animation: 'scrollBounce 2s ease-in-out infinite' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M7 10L12 15L17 10" stroke="rgba(255,215,0,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M7 10L12 15L17 10" stroke="rgba(0,0,0,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
     </div>
@@ -305,28 +307,29 @@ export function PreviewPage() {
 
   const pagesWithImages = pages.filter((p: any) => p.imageUrl);
   const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
-  
+
   // Use payment status to determine if preview wall should be shown
   const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!orderPaymentId;
-  
+
   // Detect if full book generation is still in progress after payment
   const isGenerating = isPaid && (
     ['PAID', 'IMAGES_GENERATING', 'STORY_GENERATING', 'STORY_COMPLETE'].includes(orderStatus) ||
     (totalStoryPages > 1 && pages.some((p: any) => p.status === 'PENDING' || p.status === 'GENERATING'))
   );
-  
+
   // Admin viewing mode — hide customer-facing purchase buttons
   const isAdmin = user?.role === 'ADMIN';
 
-  // Determine if this is a preview-only order (1 image) vs full book
-  const isPreviewOnly = !isPaid && pagesWithImages.length <= 1 && totalStoryPages > 1;
-  
   // Compute generation progress for paid orders
   const completedPages = pages.filter((p: any) => p.status === 'COMPLETE').length;
   const generationProgress = totalStoryPages > 0 ? Math.round((completedPages / totalStoryPages) * 100) : 0;
 
   const filteredPages = pages.filter((p: any) => p.layout !== 'chapter-title');
   const totalBookPages = filteredPages.length + 2;
+
+  // After payment, the backend briefly deletes preview pages before recreating full pages.
+  // During this window, show a dedicated "preparing" screen instead of a broken flipbook.
+  const showFullScreenGenerating = isPaid && filteredPages.length === 0;
 
   // Derive book visual phase
   const bookPhase: 'closed-front' | 'open' | 'closed-back' = !useSpread
@@ -344,13 +347,13 @@ export function PreviewPage() {
 
   const bookShift = useSpread && bookPhase === 'closed-front' ? -PAGE_W : 0;
 
-  // Dynamic shadow
+  // Subtle shadow on light theme
   const bookShadow =
     bookPhase === 'closed-front'
-      ? '8px 10px 40px rgba(0,0,0,0.5), 2px 4px 12px rgba(0,0,0,0.3), 0 0 60px rgba(255,215,0,0.03)'
+      ? '8px 14px 36px rgba(45, 27, 105, 0.18), 2px 4px 12px rgba(45, 27, 105, 0.10)'
       : bookPhase === 'closed-back'
-      ? '-8px 10px 40px rgba(0,0,0,0.5), -2px 4px 12px rgba(0,0,0,0.3), 0 0 60px rgba(255,215,0,0.03)'
-      : '0 10px 40px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.3), 0 0 80px rgba(255,215,0,0.05)';
+      ? '-8px 14px 36px rgba(45, 27, 105, 0.18), -2px 4px 12px rgba(45, 27, 105, 0.10)'
+      : '0 14px 40px rgba(45, 27, 105, 0.18), 0 2px 10px rgba(45, 27, 105, 0.10)';
 
   // Responsive
   useEffect(() => {
@@ -368,9 +371,9 @@ export function PreviewPage() {
       setChildName(data.order.childName || '');
       setOrderPaymentId(data.order.paymentId || null);
       setOrderStatus(data.order.status || '');
-      
+
       const firstPageWithImage = orderPages.find((p: any) => p.imageUrl);
-      setCoverImageUrl(firstPageWithImage?.imageUrl || null);
+      setCoverImageUrl((prev) => firstPageWithImage?.imageUrl || prev);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [orderId]);
@@ -398,14 +401,12 @@ export function PreviewPage() {
     };
   }, [isGenerating, fetchOrder]);
 
-  // Pricing comes from PricingContext (single fetch on app load).
-
   const handlePayment = async () => {
     if (!orderId) return;
     setPaying(true);
     try {
       const rzpOrder = await createRazorpayOrder(orderId);
-      
+
       const options = {
         key: RZP_KEY_ID,
         amount: rzpOrder.amount,
@@ -422,6 +423,10 @@ export function PreviewPage() {
               razorpaySignature: response.razorpay_signature,
             });
             toast.success('Payment Successful!');
+            // Optimistically flip to "paid" so the UI doesn't render a stale preview-paywall
+            // for the brief window before fetchOrder resolves with the new server state.
+            setOrderPaymentId(response.razorpay_payment_id);
+            setOrderStatus('PAID');
             fetchOrder();
           } catch (err) {
             toast.error('Payment verification failed. Please contact support.');
@@ -433,7 +438,7 @@ export function PreviewPage() {
           contact: ''
         },
         theme: {
-          color: '#2d1b69'
+          color: '#16a34a'
         }
       };
 
@@ -448,7 +453,7 @@ export function PreviewPage() {
   // Scroll-based page flipping (wheel)
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || loading) return;
+    if (!container || loading || showFullScreenGenerating) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -468,12 +473,12 @@ export function PreviewPage() {
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
-  }, [loading]);
+  }, [loading, showFullScreenGenerating]);
 
   // Touch-based flipping (mobile vertical swipe)
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || loading) return;
+    if (!container || loading || showFullScreenGenerating) return;
 
     let touchStartY = 0;
     let touchStartX = 0;
@@ -508,11 +513,11 @@ export function PreviewPage() {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [loading]);
+  }, [loading, showFullScreenGenerating]);
 
   // Keyboard navigation
   useEffect(() => {
-    if (loading) return;
+    if (loading || showFullScreenGenerating) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isFlipping.current) return;
@@ -533,17 +538,69 @@ export function PreviewPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [loading]);
+  }, [loading, showFullScreenGenerating]);
 
   const handleFlip = useCallback((e: any) => {
     setCurrentPage(e.data);
   }, []);
 
+  const PAGE_BG = 'linear-gradient(180deg, #EDE4F8 0%, #E2D6F5 45%, #D5C4ED 100%)';
+
+  const BackButton = (
+    <button
+      onClick={() => {
+        if (window.history.length > 1) {
+          navigate(-1);
+        } else {
+          navigate('/');
+        }
+      }}
+      title="Go back"
+      style={{
+        position: 'absolute',
+        top: '1.2rem',
+        left: '1.2rem',
+        zIndex: 100,
+        background: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        borderRadius: 999,
+        padding: '0.5rem 1rem 0.5rem 0.85rem',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        color: '#222',
+        fontFamily: FONT_UI,
+        fontSize: '0.85rem',
+        fontWeight: 600,
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)',
+        transition: 'all 0.2s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.08)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.06)';
+      }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Back
+    </button>
+  );
+
   if (loading) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a0533, #2d1b69)',
+        background: PAGE_BG,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{ textAlign: 'center' }}>
@@ -552,10 +609,91 @@ export function PreviewPage() {
             animation: 'floatBook 2s ease-in-out infinite',
             marginBottom: '1rem',
           }}>&#x1F4D6;</div>
-          <p style={{ fontFamily: FONT_UI, color: 'rgba(255,255,255,0.6)', fontSize: '1rem' }}>
+          <p style={{ fontFamily: FONT_UI, color: '#666', fontSize: '1rem', fontWeight: 500 }}>
             Opening your storybook...
           </p>
           <style>{`@keyframes floatBook { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  // Dedicated screen during the brief window after payment when pages are being recreated.
+  if (showFullScreenGenerating) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: PAGE_BG,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem 1.5rem',
+        position: 'relative',
+      }}>
+        {BackButton}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          borderRadius: 28,
+          padding: '2.5rem 2rem',
+          maxWidth: 460,
+          width: '100%',
+          textAlign: 'center',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
+        }}>
+          <div style={{
+            fontSize: '3rem',
+            animation: 'floatBook 2.5s ease-in-out infinite',
+            marginBottom: '1.2rem',
+          }}>✨</div>
+          <h2 style={{
+            fontFamily: FONT_HEADING,
+            fontSize: '1.6rem',
+            fontWeight: 400,
+            color: '#111',
+            margin: '0 0 0.6rem',
+          }}>
+            Crafting your storybook
+          </h2>
+          <p style={{
+            fontFamily: FONT_UI,
+            fontSize: '0.95rem',
+            color: '#666',
+            margin: '0 0 1.5rem',
+            lineHeight: 1.5,
+          }}>
+            Payment received. We're now generating every page of <strong>{title}</strong> for {childName}. This can take a few minutes.
+          </p>
+          <div style={{
+            width: '100%',
+            height: 6,
+            background: 'rgba(0,0,0,0.06)',
+            borderRadius: 3,
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(90deg, transparent, #16a34a, transparent)',
+              animation: 'shimmer 1.8s ease-in-out infinite',
+            }} />
+          </div>
+          <p style={{
+            fontFamily: FONT_UI,
+            fontSize: '0.78rem',
+            color: '#999',
+            margin: '1rem 0 0',
+          }}>
+            You can safely close this page and come back later.
+          </p>
+          <style>{`
+            @keyframes floatBook { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+            @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+          `}</style>
         </div>
       </div>
     );
@@ -569,7 +707,7 @@ export function PreviewPage() {
       style={{
         height: '100vh',
         overflow: 'hidden',
-        background: 'linear-gradient(180deg, #1a0533 0%, #2d1b69 40%, #1a0533 100%)',
+        background: PAGE_BG,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -583,92 +721,48 @@ export function PreviewPage() {
         .stf__block {
           border-radius: 4px !important;
         }
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.8; }
-        }
         @keyframes scrollBounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(6px); }
         }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
       `}</style>
 
-      {/* Home Button */}
-      <button
-        onClick={() => navigate('/')}
-        title="Go to Home"
-        style={{
-          position: 'absolute',
-          top: '1.2rem',
-          left: '1.2rem',
-          zIndex: 100,
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '12px',
-          padding: '0.6rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          transition: 'all 0.3s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-          e.currentTarget.style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-      </button>
+      {BackButton}
 
-      {/* Background stars */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
-        {[...Array(30)].map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            width: 2 + Math.random() * 3,
-            height: 2 + Math.random() * 3,
-            borderRadius: '50%',
-            background: 'rgba(255,215,0,0.3)',
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animation: `twinkle ${2 + Math.random() * 4}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 3}s`,
-          }} />
-        ))}
+      {/* Soft decorative dots */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', opacity: 0.5 }}>
+        <div style={{ position: 'absolute', top: '8%', left: '6%', width: 6, height: 6, borderRadius: '50%', background: '#FFD700' }} />
+        <div style={{ position: 'absolute', top: '15%', right: '8%', width: 4, height: 4, borderRadius: '50%', background: '#AB47BC' }} />
+        <div style={{ position: 'absolute', bottom: '20%', left: '4%', width: 5, height: 5, borderRadius: '50%', background: '#16a34a' }} />
+        <div style={{ position: 'absolute', bottom: '12%', right: '6%', width: 4, height: 4, borderRadius: '50%', background: '#FFD700' }} />
       </div>
 
       {/* Book title */}
       <div style={{
         textAlign: 'center',
-        padding: '1.2rem 1rem 0.8rem',
+        padding: '1.4rem 1rem 0.6rem',
         position: 'relative',
         zIndex: 1,
         flexShrink: 0,
       }}>
         <h1 style={{
-          fontFamily: FONT_BRAND,
-          fontSize: '1.3rem',
-          fontWeight: 800,
-          color: '#fff',
+          fontFamily: FONT_HEADING,
+          fontSize: '1.6rem',
+          fontWeight: 400,
+          color: '#111',
           margin: '0 0 0.15rem',
-          textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+          letterSpacing: 0.2,
         }}>
           {title}
         </h1>
         <p style={{
-          fontFamily: FONT_ACCENT,
-          fontSize: '0.85rem',
-          color: '#FFD700',
+          fontFamily: FONT_UI,
+          fontSize: '0.78rem',
+          color: '#7B3FA0',
+          fontWeight: 600,
           margin: 0,
+          letterSpacing: 0.3,
         }}>
           Starring {childName}
         </p>
@@ -704,7 +798,7 @@ export function PreviewPage() {
               bottom: 0,
               width: 24,
               transform: 'translateX(-50%)',
-              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.1) 60%, transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.12) 40%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.12) 60%, transparent)',
               zIndex: 5,
               pointerEvents: 'none',
             }} />
@@ -717,13 +811,13 @@ export function PreviewPage() {
             transition: `transform ${ANIM_MS}ms ${ANIM_EASE}`,
           }}>
             <HTMLFlipBook
-              key={useSpread ? 'spread' : 'portrait'}
+              key={`${useSpread ? 'spread' : 'portrait'}-${filteredPages.length}`}
               ref={bookRef}
               width={PAGE_W}
               height={PAGE_H}
               size="fixed"
               showCover={true}
-              maxShadowOpacity={0.5}
+              maxShadowOpacity={0.4}
               mobileScrollSupport={false}
               onFlip={handleFlip}
               style={{}}
@@ -768,16 +862,15 @@ export function PreviewPage() {
         position: 'absolute',
         bottom: 0, left: 0, right: 0,
         height: 3,
-        background: 'rgba(255,255,255,0.05)',
+        background: 'rgba(0,0,0,0.05)',
         zIndex: 20,
       }}>
         <div style={{
           height: '100%',
           width: `${progress * 100}%`,
-          background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+          background: 'linear-gradient(90deg, #16a34a, #AB47BC)',
           transition: 'width 0.6s ease',
           borderRadius: '0 2px 2px 0',
-          boxShadow: '0 0 8px rgba(255,215,0,0.4)',
         }} />
       </div>
 
@@ -785,18 +878,19 @@ export function PreviewPage() {
       <div style={{
         position: 'relative',
         zIndex: 10,
-        padding: '0.8rem 1rem 1.2rem',
+        padding: '0.8rem 1rem 1.4rem',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.6rem',
+        gap: '0.7rem',
         flexShrink: 0,
       }}>
         <span style={{
-          color: 'rgba(255,255,255,0.35)',
-          fontSize: '0.75rem',
+          color: '#999',
+          fontSize: '0.72rem',
           fontFamily: FONT_UI,
           fontWeight: 600,
+          letterSpacing: 0.5,
         }}>
           {currentPage + 1} / {totalBookPages}
         </span>
@@ -807,30 +901,32 @@ export function PreviewPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.6rem',
+            gap: '0.7rem',
           }}>
             {isAdmin ? (
               <p style={{
-                color: 'rgba(255,215,0,0.5)',
+                color: '#AB47BC',
                 fontFamily: FONT_UI,
-                fontSize: '0.75rem',
+                fontSize: '0.8rem',
+                fontWeight: 600,
                 margin: 0,
                 textAlign: 'center',
                 padding: '6px 16px',
-                borderRadius: 20,
-                border: '1px solid rgba(255,215,0,0.15)',
-                background: 'rgba(255,215,0,0.05)',
+                borderRadius: 999,
+                border: '1px solid rgba(171, 71, 188, 0.25)',
+                background: 'rgba(171, 71, 188, 0.06)',
               }}>
                 👁 Viewing as Admin — Preview only (unpaid order)
               </p>
             ) : (
               <>
                 <p style={{
-                  color: 'rgba(255,255,255,0.6)',
+                  color: '#555',
                   fontFamily: FONT_UI,
-                  fontSize: '0.8rem',
+                  fontSize: '0.85rem',
                   margin: 0,
                   textAlign: 'center',
+                  maxWidth: 480,
                 }}>
                   This is a preview. Unlock the full storybook to download or order a print copy.
                 </p>
@@ -844,7 +940,8 @@ export function PreviewPage() {
                   <button
                     onClick={handlePayment}
                     disabled={paying}
-                    className="btn-gold"
+                    className="btn-primary"
+                    style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -854,7 +951,8 @@ export function PreviewPage() {
                   </button>
                   <button
                     onClick={() => navigate(`/checkout/${orderId}`)}
-                    className="btn-outline-white"
+                    className="btn-secondary"
+                    style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
@@ -873,37 +971,44 @@ export function PreviewPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.6rem',
+            gap: '0.55rem',
+            padding: '0.85rem 1.5rem',
+            background: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            borderRadius: 18,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
           }}>
             <p style={{
-              color: 'rgba(255,255,255,0.7)',
+              color: '#222',
               fontFamily: FONT_UI,
-              fontSize: '0.85rem',
+              fontSize: '0.88rem',
+              fontWeight: 600,
               margin: 0,
               textAlign: 'center',
             }}>
-              ✨ Your full storybook is being created...
+              ✨ Your full storybook is being created…
             </p>
             <div style={{
-              width: 220,
+              width: 240,
               height: 6,
-              background: 'rgba(255,255,255,0.1)',
+              background: 'rgba(0,0,0,0.07)',
               borderRadius: 3,
               overflow: 'hidden',
             }}>
               <div style={{
                 height: '100%',
                 width: `${Math.max(generationProgress, 5)}%`,
-                background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                background: 'linear-gradient(90deg, #16a34a, #AB47BC)',
                 borderRadius: 3,
                 transition: 'width 1s ease',
-                boxShadow: '0 0 8px rgba(255,215,0,0.4)',
               }} />
             </div>
             <p style={{
-              color: 'rgba(255,215,0,0.6)',
+              color: '#666',
               fontFamily: FONT_UI,
-              fontSize: '0.7rem',
+              fontSize: '0.72rem',
               margin: 0,
             }}>
               {completedPages} of {totalStoryPages} pages ready ({generationProgress}%)
@@ -915,7 +1020,7 @@ export function PreviewPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '1rem',
+            gap: '0.8rem',
             flexWrap: 'wrap',
           }}>
             <button
@@ -944,7 +1049,8 @@ export function PreviewPage() {
                 setDownloading(false);
               }}
               disabled={downloading}
-              className="btn-gold"
+              className="btn-primary"
+              style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -966,7 +1072,13 @@ export function PreviewPage() {
                   }
                 }}
                 className="btn-primary"
-                style={{ background: 'linear-gradient(135deg, #FF6B6B, #EE5253)', boxShadow: '0 4px 15px rgba(238, 82, 83, 0.4)' }}
+                style={{
+                  padding: '0.75rem 1.6rem',
+                  fontSize: '0.95rem',
+                  background: '#FF6B6B',
+                  color: '#fff',
+                  borderColor: '#FF6B6B',
+                }}
               >
                 Retry Generation
               </button>
@@ -975,7 +1087,8 @@ export function PreviewPage() {
             {!isAdmin && (
               <button
                 onClick={() => navigate(`/checkout/${orderId}`)}
-                className="btn-outline-white"
+                className="btn-secondary"
+                style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />

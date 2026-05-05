@@ -144,22 +144,13 @@ export function NavBar() {
                 </button>
               </div>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="no-underline font-body text-xs uppercase transition-colors"
-                  style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/admin/login"
-                  className="no-underline font-body text-xs uppercase transition-colors"
-                  style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
-                >
-                  Admin
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="no-underline font-body text-xs uppercase transition-colors"
+                style={{ color: '#6F6F6F', letterSpacing: '0.12em' }}
+              >
+                Sign In
+              </Link>
             )}
           </nav>
 
@@ -283,24 +274,14 @@ export function NavBar() {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="no-underline font-display text-2xl"
-                  style={{ color: '#000' }}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/admin/login"
-                  className="no-underline font-display text-2xl"
-                  style={{ color: '#6F6F6F' }}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Admin
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="no-underline font-display text-2xl"
+                style={{ color: '#000' }}
+                onClick={() => setMobileOpen(false)}
+              >
+                Sign In
+              </Link>
             )}
 
           </nav>

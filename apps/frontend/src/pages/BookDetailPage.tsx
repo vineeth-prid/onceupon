@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { BOOK_CATALOG } from '../data/bookCatalog';
+import { getBookGallery } from '../data/bookAssets';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { StarRating } from '../components/reviews/StarRating';
@@ -12,6 +13,8 @@ import { ReviewForm } from '../components/reviews/ReviewForm';
 const BOOK_DESCRIPTIONS: Record<string, string> = {
   'boy-cosmic-journey':
     "3, 2, 1... Blast off! Your child builds a rocket from pure imagination and soars into the cosmos. They explore candy-coloured nebulae, befriend a tiny alien on a crystal planet, and navigate asteroid fields. The most beautiful discovery? Earth, shining like a blue jewel when seen from the stars.",
+  'girl-tooth-fairy':
+    "When your child loses her first tooth and tucks it under the pillow, a tiny pixie named Twinkle appears in a swirl of golden sparkles. Together they fly past clouds and stars to a crystal castle in the sky, where she discovers the magical secret of where every lost tooth goes — a gentle bedtime tale about wonder, courage, and the magic hiding in everyday moments.",
 };
 
 const BOOK_FEATURES: Record<string, { icon: string; text: string }[]> = {
@@ -22,15 +25,6 @@ const BOOK_FEATURES: Record<string, { icon: string; text: string }[]> = {
     { icon: 'eye', text: '**Preview** available before ordering' },
   ],
 };
-
-const GALLERY_ITEMS = [
-  { type: 'video' as const, src: '/preview_video/00-super-boy-video.mp4', thumb: '/preview_video/01-video-thumbnail.webp' },
-  { type: 'image' as const, src: '/preview_video/02-book-open-spread.webp', thumb: '/preview_video/02-book-open-spread.webp' },
-  { type: 'image' as const, src: '/preview_video/03-book-illustration.webp', thumb: '/preview_video/03-book-illustration.webp' },
-  { type: 'image' as const, src: '/preview_video/04-personalized-child.webp', thumb: '/preview_video/04-personalized-child.webp' },
-  { type: 'image' as const, src: '/preview_video/05-book-page.webp', thumb: '/preview_video/05-book-page.webp' },
-  { type: 'image' as const, src: '/preview_video/06-book-page-2.webp', thumb: '/preview_video/06-book-page-2.webp' },
-];
 
 /* ─── Component ──────────────────────────────────────────────────────── */
 
@@ -82,6 +76,11 @@ export function BookDetailPage() {
     fetchReviews();
   }, [slug]);
 
+  const galleryItems = useMemo(
+    () => getBookGallery(book?.slug ?? '', book?.thumbnail ?? ''),
+    [book?.slug, book?.thumbnail],
+  );
+
   if (!book) {
     return (
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
@@ -95,7 +94,7 @@ export function BookDetailPage() {
 
   const description = BOOK_DESCRIPTIONS[book.id] || BOOK_DESCRIPTIONS['boy-cosmic-journey']!;
   const features = BOOK_FEATURES.default;
-  const activeItem = GALLERY_ITEMS[activeIndex];
+  const activeItem = galleryItems[activeIndex] ?? galleryItems[0]!;
   const isVideo = activeItem.type === 'video';
 
   const handlePlayPause = () => {
@@ -110,12 +109,12 @@ export function BookDetailPage() {
 
   const handlePrev = () => {
     setIsPlaying(false);
-    setActiveIndex((prev) => (prev <= 0 ? GALLERY_ITEMS.length - 1 : prev - 1));
+    setActiveIndex((prev) => (prev <= 0 ? galleryItems.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
     setIsPlaying(false);
-    setActiveIndex((prev) => (prev >= GALLERY_ITEMS.length - 1 ? 0 : prev + 1));
+    setActiveIndex((prev) => (prev >= galleryItems.length - 1 ? 0 : prev + 1));
   };
 
   const handlePersonalize = () => {
@@ -173,7 +172,7 @@ export function BookDetailPage() {
               flex: '0 0 80px',
             }}
           >
-            {GALLERY_ITEMS.map((item, i) => (
+            {galleryItems.map((item, i) => (
               <button
                 key={i}
                 onClick={() => { setActiveIndex(i); setIsPlaying(false); }}
@@ -288,7 +287,7 @@ export function BookDetailPage() {
                 gap: 6,
               }}
             >
-              {GALLERY_ITEMS.map((_, i) => (
+              {galleryItems.map((_, i) => (
                 <div
                   key={i}
                   style={{

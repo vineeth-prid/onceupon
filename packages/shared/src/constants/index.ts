@@ -54,6 +54,7 @@ export const BOOK_TEMPLATES = [
   { id: 'fruit-forest', categoryId: 'cook' as CategoryId, name: 'Fruit Forest', description: 'Pick magical fruits to make a special recipe' },
   // Pre-made books (static stories)
   { id: 'cosmic-journey', categoryId: 'adventure' as CategoryId, name: 'Cosmic Journey', description: 'Blast off through stars and galaxies' },
+  { id: 'tooth-fairy', categoryId: 'fantasy' as CategoryId, name: 'The Girl and the Tooth Fairy', description: 'A magical encounter with a pixie in the night sky' },
   // Family mode test story
   { id: 'family-park-adventure', categoryId: 'nurture' as CategoryId, name: 'Family Park Adventure', description: 'A magical day at the park with the whole family' },
   // Custom story (user-provided prompt)

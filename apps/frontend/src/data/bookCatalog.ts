@@ -46,4 +46,16 @@ export const BOOK_CATALOG: CatalogBook[] = [
     gender: 'boy',
     ageRange: '4-8',
   },
+  {
+    id: 'girl-tooth-fairy',
+    title: 'The Girl and the Tooth Fairy',
+    subtitle: "A magical secret hidden among the stars",
+    thumbnail: `${T}/the-girl-and-the-tooth-fairy.webp`,
+    price: 2499,
+    priceFormatted: '$24.99',
+    category: 'Fantasy',
+    slug: 'tooth-fairy',
+    gender: 'girl',
+    ageRange: '3-7',
+  },
 ];

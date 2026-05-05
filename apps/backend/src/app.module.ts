@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ReviewModule } from './reviews/review.module';
 import { UsersModule } from './users/users.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     QueueModule,
     AdminModule,
     ReviewModule,
+    ContactModule,
   ],
   controllers: [AppController],
 })

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { api } from '../api/client';
 
 type Topic = 'Book Creation' | 'Order & Delivery' | 'Printing Quality' | 'Payments' | 'Other';
 
@@ -19,9 +20,35 @@ export function ContactPage() {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!selectedTopic) {
+      setErrorMsg('Please select a topic');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg('');
+
+    try {
+      await api.post('/contact', {
+        firstName,
+        lastName,
+        email,
+        orderNumber: orderNumber || undefined,
+        topic: selectedTopic,
+        message,
+      });
+      setSubmitted(true);
+    } catch (error: any) {
+      console.error('Failed to submit contact message', error);
+      setErrorMsg(error.response?.data?.message || 'Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -425,9 +452,17 @@ export function ContactPage() {
                 />
               </div>
 
+              {/* Error Message */}
+              {errorMsg && (
+                <div style={{ color: '#c47560', marginBottom: 16, fontSize: '0.875rem', fontWeight: 500 }}>
+                  {errorMsg}
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="btn-primary"
                 style={{
                   width: '100%',
@@ -436,7 +471,7 @@ export function ContactPage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           )}

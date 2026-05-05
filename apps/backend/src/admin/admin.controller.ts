@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Delete, Post, UseGuards, Req, Res, Param, Body, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Put, Patch, Delete, Post, UseGuards, Req, Res, Param, Body, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { UserRole } from '@prisma/client';
@@ -127,5 +127,17 @@ export class AdminController {
   async getReportSummary(@Req() req: any) {
     this.checkAdmin(req);
     return this.adminService.getMonthlyReport();
+  }
+
+  @Get('messages')
+  async getMessages(@Req() req: any) {
+    this.checkAdmin(req);
+    return this.adminService.getMessages();
+  }
+
+  @Patch('messages/:id/read')
+  async markMessageAsRead(@Req() req: any, @Param('id') id: string) {
+    this.checkAdmin(req);
+    return this.adminService.markMessageAsRead(id);
   }
 }

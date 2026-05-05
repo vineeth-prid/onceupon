@@ -11,7 +11,8 @@ type Tab =
   | 'coupons'
   | 'users'
   | 'books'
-  | 'payments';
+  | 'payments'
+  | 'messages';
 
 const tabPaths: Record<Tab, string> = {
   dashboard: '/admin',
@@ -21,6 +22,7 @@ const tabPaths: Record<Tab, string> = {
   users: '/admin/users',
   books: '/admin/books',
   payments: '/admin/payments',
+  messages: '/admin/messages',
 };
 
 function getTabFromPath(pathname: string): Tab {
@@ -54,6 +56,7 @@ const navSections: NavSection[] = [
     items: [
       { id: 'users', label: 'Users', emoji: '👥' },
       { id: 'books', label: 'Books', emoji: '📚' },
+      { id: 'messages', label: 'Messages', emoji: '✉️' },
     ],
   },
   {
@@ -72,6 +75,7 @@ const tabTitles: Record<Tab, { title: string; subtitle: string }> = {
   users: { title: 'Users', subtitle: 'Manage registered users' },
   books: { title: 'Books', subtitle: 'All generated storybooks' },
   payments: { title: 'Payments', subtitle: 'Transaction history & analytics' },
+  messages: { title: 'Messages', subtitle: 'Customer inquiries and feedback' },
 };
 
 /* ── Shared Styles ── */
@@ -1060,6 +1064,84 @@ function UsersTab({ users, onRefresh }: { users: any[]; onRefresh: () => void })
   );
 }
 
+function MessagesTab() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMessages = async () => {
+    try {
+      const res = await api.get('/admin/messages');
+      setMessages(res.data);
+    } catch (e) {
+      console.error('Failed to fetch messages:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await api.patch(`/admin/messages/${id}/read`);
+      fetchMessages();
+    } catch (e) {
+      console.error('Failed to mark message as read:', e);
+    }
+  };
+
+  if (loading) return <div style={cardStyle}>Loading messages...</div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={cardStyle}>
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Date</th>
+              <th style={thStyle}>Name</th>
+              <th style={thStyle}>Email</th>
+              <th style={thStyle}>Topic</th>
+              <th style={thStyle}>Message</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.length === 0 ? (
+              <tr><td colSpan={7} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No messages found</td></tr>
+            ) : (
+              messages.map((m) => (
+                <tr key={m.id} style={{ opacity: m.isRead ? 0.7 : 1 }}>
+                  <td style={tdStyle}>{new Date(m.createdAt).toLocaleDateString()}</td>
+                  <td style={{ ...tdStyle, fontWeight: m.isRead ? 400 : 600 }}>{m.firstName} {m.lastName}</td>
+                  <td style={tdStyle}>{m.email}</td>
+                  <td style={tdStyle}>{m.topic}</td>
+                  <td style={{ ...tdStyle, maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.message}</td>
+                  <td style={tdStyle}>
+                    <span style={badge(m.isRead ? 'USER' : 'Pending')}>
+                      {m.isRead ? 'Read' : 'New'}
+                    </span>
+                  </td>
+                  <td style={tdStyle}>
+                    {!m.isRead && (
+                      <button style={btnOutline} onClick={() => markAsRead(m.id)}>
+                        Mark as Read
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function BooksTab() {
   return <div style={cardStyle}>Book management coming soon...</div>;
 }
@@ -1220,6 +1302,7 @@ export function AdminPage() {
       case 'users': return <UsersTab users={users} onRefresh={() => fetchData(false)} />;
       case 'books': return <BooksTab />;
       case 'payments': return <PaymentsTab />;
+      case 'messages': return <MessagesTab />;
     }
   };
 

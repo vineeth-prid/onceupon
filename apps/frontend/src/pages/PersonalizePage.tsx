@@ -4,6 +4,7 @@ import { BOOK_TEMPLATES, CATEGORIES, ILLUSTRATION_STYLES, FAMILY_COMPATIBLE_STYL
 import { uploadPhoto, createOrder, createFamilyOrder } from '../api/orders';
 import { useAuth } from '../context/AuthContext';
 import { FamilyPhotoUploader, type FamilyMemberOutput } from '../components/FamilyPhotoUploader';
+import { BOOK_CATALOG } from '../data/bookCatalog';
 
 export function PersonalizePage() {
   const { bookId } = useParams<{ bookId: string }>();
@@ -19,13 +20,21 @@ export function PersonalizePage() {
   const category = book ? CATEGORIES.find((c) => c.id === book.categoryId) : null;
   const accent = '#16a34a';
 
+  // Pre-made books carry a fixed gender — story prompts are written for that
+  // specific gender, so swapping it would degrade image/story quality.
+  const catalogBook = BOOK_CATALOG.find((b) => b.slug === bookId);
+  const lockedGender: 'boy' | 'girl' | null =
+    !isCustom && catalogBook && (catalogBook.gender === 'boy' || catalogBook.gender === 'girl')
+      ? catalogBook.gender
+      : null;
+
   // Mode toggle
   const [mode, setMode] = useState<'solo' | 'family'>('solo');
 
   // Solo mode state
   const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState(5);
-  const [childGender, setChildGender] = useState<'boy' | 'girl' | 'other'>('boy');
+  const [childGender, setChildGender] = useState<'boy' | 'girl'>(lockedGender ?? 'boy');
   const [illustrationStyle, setIllustrationStyle] = useState('disney-character');
   const [email, setEmail] = useState(user?.email || '');
   const [photo, setPhoto] = useState<File | null>(null);
@@ -274,42 +283,47 @@ export function PersonalizePage() {
               <div style={{ display: 'flex', gap: '0.7rem' }}>
                 {[
                   { value: 'solo' as const, label: 'Solo Story', desc: 'One child' },
-                  { value: 'family' as const, label: 'Family Story', desc: '2-4 people' },
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setMode(opt.value)}
-                    style={{
-                      flex: 1,
-                      padding: '0.8rem',
-                      borderRadius: 12,
-                      border: mode === opt.value ? `2px solid ${accent}` : '2px solid #eee',
-                      background: mode === opt.value ? `${accent}15` : '#fff',
-                      cursor: 'pointer',
-                      fontFamily: "'Nunito', sans-serif",
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.2rem',
-                    }}
-                  >
-                    <span style={{
-                      fontWeight: 700,
-                      fontSize: '0.9rem',
-                      color: mode === opt.value ? accent : '#555',
-                    }}>
-                      {opt.label}
-                    </span>
-                    <span style={{
-                      fontSize: '0.75rem',
-                      color: '#999',
-                    }}>
-                      {opt.desc}
-                    </span>
-                  </button>
-                ))}
+                  { value: 'family' as const, label: 'Family Story', desc: 'Coming soon' },
+                ].map((opt) => {
+                  const isDisabled = opt.value === 'family';
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => !isDisabled && setMode(opt.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.8rem',
+                        borderRadius: 12,
+                        border: mode === opt.value ? `2px solid ${accent}` : '2px solid #eee',
+                        background: mode === opt.value ? `${accent}15` : '#fff',
+                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                        opacity: isDisabled ? 0.5 : 1,
+                        fontFamily: "'Nunito', sans-serif",
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.2rem',
+                      }}
+                    >
+                      <span style={{
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        color: mode === opt.value ? accent : '#555',
+                      }}>
+                        {opt.label}
+                      </span>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: '#999',
+                      }}>
+                        {opt.desc}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -322,7 +336,7 @@ export function PersonalizePage() {
                     setFamilyData(data);
                     setChildName(data.mainChildName);
                     setChildAge(data.mainChildAge);
-                    setChildGender((data.mainChildGender || 'other') as any);
+                    setChildGender(data.mainChildGender === 'girl' ? 'girl' : 'boy');
                   }}
                 />
               </div>
@@ -505,34 +519,49 @@ export function PersonalizePage() {
                     {[
                       { value: 'boy' as const, label: 'Boy', icon: '\uD83D\uDC66' },
                       { value: 'girl' as const, label: 'Girl', icon: '\uD83D\uDC67' },
-                      { value: 'other' as const, label: 'Other', icon: '\u2B50' },
-                    ].map((g) => (
-                      <button
-                        key={g.value}
-                        type="button"
-                        onClick={() => setChildGender(g.value)}
-                        style={{
-                          flex: 1,
-                          padding: '0.7rem',
-                          borderRadius: 12,
-                          border: childGender === g.value ? `2px solid ${accent}` : '2px solid #eee',
-                          background: childGender === g.value ? `${accent}15` : '#fff',
-                          cursor: 'pointer',
-                          fontFamily: "'Nunito', sans-serif",
-                          fontWeight: 600,
-                          color: childGender === g.value ? accent : '#666',
-                          transition: 'all 0.2s',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.4rem',
-                          fontSize: '0.9rem',
-                        }}
-                      >
-                        <span>{g.icon}</span> {g.label}
-                      </button>
-                    ))}
+                    ].map((g) => {
+                      const isLocked = lockedGender !== null;
+                      const isSelected = childGender === g.value;
+                      return (
+                        <button
+                          key={g.value}
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() => !isLocked && setChildGender(g.value)}
+                          style={{
+                            flex: 1,
+                            padding: '0.7rem',
+                            borderRadius: 12,
+                            border: isSelected ? `2px solid ${accent}` : '2px solid #eee',
+                            background: isSelected ? `${accent}15` : '#fff',
+                            cursor: isLocked ? 'not-allowed' : 'pointer',
+                            opacity: isLocked && !isSelected ? 0.4 : 1,
+                            fontFamily: "'Nunito', sans-serif",
+                            fontWeight: 600,
+                            color: isSelected ? accent : '#666',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.4rem',
+                            fontSize: '0.9rem',
+                          }}
+                        >
+                          <span>{g.icon}</span> {g.label}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {lockedGender && (
+                    <p style={{
+                      margin: '0.5rem 0 0',
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.75rem',
+                      color: '#999',
+                    }}>
+                      {'\uD83D\uDD12'} This story is written for a {lockedGender}. To change the character, pick a different book or create a custom story.
+                    </p>
+                  )}
                 </div>
               </>
             )}

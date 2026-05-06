@@ -58,12 +58,12 @@ export class EmailService {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#EDE4F8;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#EDE4F8;padding:40px 20px;">
     <tr>
       <td align="center">
         <!-- Main Card -->
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.05);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(123, 63, 160, 0.15);border:1px solid rgba(0,0,0,0.05);">
           <!-- Header Logo/Title -->
           <tr>
             <td style="padding:48px 40px 10px;text-align:center;">
@@ -75,15 +75,19 @@ export class EmailService {
           <!-- Magical Divider -->
           <tr>
             <td style="text-align:center;padding:0 40px;">
-              <span style="color:#fbbf24;font-size:18px;letter-spacing:6px;">&#9733; &#9733; &#9733;</span>
+              <span style="color:#7B3FA0;font-size:18px;letter-spacing:6px;opacity:0.6;">&#9733; &#9733; &#9733;</span>
             </td>
           </tr>
           <!-- Body Content -->
           <tr>
             <td style="padding:32px 48px;">
-              <h2 style="color:#000000;font-size:26px;text-align:center;margin:0 0 16px;line-height:1.2;">
+              <h2 style="color:#000000;font-size:26px;text-align:center;margin:0 0 8px;line-height:1.2;">
                 ${childName}'s Storybook is Ready!
               </h2>
+              <p style="color:#7B3FA0;font-size:16px;font-weight:600;text-align:center;margin:0 0 24px;letter-spacing:0.5px;">
+                Starring ${childName}
+              </p>
+              
               <p style="color:#6F6F6F;font-size:16px;line-height:1.6;text-align:center;margin:0 0 12px;">
                 Great news! The personalized storybook
               </p>
@@ -93,11 +97,11 @@ export class EmailService {
               <p style="color:#6F6F6F;font-size:16px;line-height:1.6;text-align:center;margin:0 0 32px;">
                 has been illustrated and is ready for you to view.
               </p>
-              <!-- Action Button -->
+              <!-- Action Button (Matching Preview UI) -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${bookUrl}" style="display:inline-block;background-color:#fbbf24;color:#000000;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;box-shadow:0 4px 15px rgba(251,191,36,0.3);">
+                    <a href="${bookUrl}" style="display:inline-block;background-color:#ffffff;color:#111111;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;border:1px solid rgba(0,0,0,0.1);box-shadow:0 4px 12px rgba(0,0,0,0.05);">
                       View ${childName}'s Storybook
                     </a>
                   </td>
@@ -107,7 +111,7 @@ export class EmailService {
           </tr>
           <!-- Footer Branding -->
           <tr>
-            <td style="padding:32px 48px 48px;text-align:center;background-color:#f9fafb;border-top:1px solid #f1f5f9;">
+            <td style="padding:32px 48px 48px;text-align:center;background-color:#fdfaff;border-top:1px solid #f3effb;">
               <p style="color:#999999;font-size:13px;line-height:1.6;margin:0;">
                 This storybook was created just for ${childName} and is one-of-a-kind.<br>
                 If you didn't request this, you can safely ignore this email.
@@ -116,7 +120,7 @@ export class EmailService {
           </tr>
         </table>
         <!-- Simple Copyright Footer outside card -->
-        <p style="color:#94a3b8;font-size:12px;margin-top:24px;">
+        <p style="color:#7B3FA0;font-size:12px;margin-top:24px;opacity:0.5;">
           Once Upon a Time &copy; ${new Date().getFullYear()} All rights reserved
         </p>
       </td>
@@ -164,12 +168,12 @@ export class EmailService {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#EDE4F8;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#EDE4F8;padding:40px 20px;">
     <tr>
       <td align="center">
         <!-- Main Card -->
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.05);">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(123, 63, 160, 0.15);border:1px solid rgba(0,0,0,0.05);">
           <!-- Header -->
           <tr>
             <td style="padding:48px 40px 10px;text-align:center;">
@@ -181,7 +185,7 @@ export class EmailService {
           <!-- Star divider -->
           <tr>
             <td style="text-align:center;padding:0 40px;">
-              <span style="color:#fbbf24;font-size:18px;letter-spacing:6px;">&#9733; &#9733; &#9733;</span>
+              <span style="color:#7B3FA0;font-size:18px;letter-spacing:6px;opacity:0.6;">&#9733; &#9733; &#9733;</span>
             </td>
           </tr>
           <!-- Main content -->
@@ -197,7 +201,7 @@ export class EmailService {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${resetUrl}" style="display:inline-block;background-color:#fbbf24;color:#000000;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;box-shadow:0 4px 15px rgba(251,191,36,0.3);">
+                    <a href="${resetUrl}" style="display:inline-block;background-color:#ffffff;color:#111111;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;border:1px solid rgba(0,0,0,0.1);box-shadow:0 4px 12px rgba(0,0,0,0.05);">
                       Reset Password
                     </a>
                   </td>
@@ -207,7 +211,7 @@ export class EmailService {
           </tr>
           <!-- Footer -->
           <tr>
-            <td style="padding:32px 48px 48px;text-align:center;background-color:#f9fafb;border-top:1px solid #f1f5f9;">
+            <td style="padding:32px 48px 48px;text-align:center;background-color:#fdfaff;border-top:1px solid #f3effb;">
               <p style="color:#999999;font-size:13px;line-height:1.5;margin:0;">
                 If you didn't request this, you can safely ignore this email.
               </p>
@@ -215,7 +219,7 @@ export class EmailService {
           </tr>
         </table>
         <!-- Simple Copyright Footer outside card -->
-        <p style="color:#94a3b8;font-size:12px;margin-top:24px;">
+        <p style="color:#7B3FA0;font-size:12px;margin-top:24px;opacity:0.5;">
           Once Upon a Time &copy; ${new Date().getFullYear()} All rights reserved
         </p>
       </td>

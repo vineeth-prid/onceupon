@@ -19,12 +19,22 @@ export class EmailService {
       );
     }
 
-    this.transporter = nodemailer.createTransport({
+    const transportOptions: any = {
       host,
       port: Number(port),
       secure: Number(port) === 465,
       auth: user && pass ? { user, pass } : undefined,
-    });
+    };
+
+    // Gmail-specific optimization for reliability with App Passwords
+    if (host?.includes('gmail.com')) {
+      transportOptions.service = 'gmail';
+      delete transportOptions.host;
+      delete transportOptions.port;
+      delete transportOptions.secure;
+    }
+
+    this.transporter = nodemailer.createTransport(transportOptions);
   }
 
   async sendBookReadyEmail(params: {
@@ -87,7 +97,7 @@ export class EmailService {
                 <tr>
                   <td align="center">
                     <a href="${bookUrl}" style="display:inline-block;background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%);color:#1a1040;font-size:18px;font-weight:bold;text-decoration:none;padding:16px 48px;border-radius:50px;box-shadow:0 4px 16px rgba(251,191,36,0.4);">
-                      View Your Storybook
+                      View ${childName}'s Storybook
                     </a>
                   </td>
                 </tr>
@@ -147,24 +157,64 @@ export class EmailService {
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family:sans-serif;background-color:#faf9f7;padding:20px;">
-  <div style="max-width:600px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-    <h2 style="color:#1a1814;">Reset Your Password</h2>
-    <p style="color:#6F6F6F;font-size:16px;line-height:1.6;">
-      We received a request to reset your password. Click the button below to choose a new one. This link will expire in 1 hour.
-    </p>
-    <a href="${resetUrl}" style="display:inline-block;background:#1a1814;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;margin-top:20px;">
-      Reset Password
-    </a>
-    <p style="color:#8a8578;font-size:13px;margin-top:30px;">
-      If you didn't request this, you can safely ignore this email.
-    </p>
-  </div>
+<body style="margin:0;padding:0;background-color:#1a1040;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1040;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#2d1b69 0%,#1a1040 100%);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+          <!-- Header -->
+          <tr>
+            <td style="padding:40px 40px 20px;text-align:center;">
+              <h1 style="color:#f5e6c8;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-style:italic;margin:0;">
+                Once Upon a Time
+              </h1>
+            </td>
+          </tr>
+          <!-- Star divider -->
+          <tr>
+            <td style="text-align:center;padding:0 40px;">
+              <span style="color:#fbbf24;font-size:20px;letter-spacing:8px;">&#9733; &#9733; &#9733;</span>
+            </td>
+          </tr>
+          <!-- Main content -->
+          <tr>
+            <td style="padding:30px 40px;">
+              <h2 style="color:#ffffff;font-size:24px;text-align:center;margin:0 0 20px;">
+                Reset Your Password
+              </h2>
+              <p style="color:#d4c5f9;font-size:16px;line-height:1.6;text-align:center;margin:0 0 30px;">
+                We received a request to reset your password. Click the button below to choose a new one. This link will expire in 1 hour.
+              </p>
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%);color:#1a1040;font-size:18px;font-weight:bold;text-decoration:none;padding:16px 48px;border-radius:50px;box-shadow:0 4px 16px rgba(251,191,36,0.4);">
+                      Reset Password
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:30px 40px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.1);">
+              <p style="color:#8b7fb5;font-size:13px;line-height:1.5;margin:0;">
+                If you didn't request this, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
-    const text = `Reset Your Password\n\nClick the link below to choose a new password:\n${resetUrl}\n\nIf you didn't request this, ignore this email.`;
+    const text = `Reset Your Password\n\nWe received a request to reset your password. Click the link below to choose a new one:\n\n${resetUrl}\n\nThis link will expire in 1 hour.\n\nIf you didn't request this, ignore this email.`;
 
     try {
       const smtpConfigured = this.config.get('SMTP_HOST');

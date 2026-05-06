@@ -146,7 +146,7 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
     this.logger.log(`Generating reference sheet for order ${orderId} (style: ${style.id})`);
-    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt, style.photoMakerStyleName);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, prompt, style.photoMakerStyleName || '(No style)');
     const filename = `ref-${orderId}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/api/uploads/${filename}`;
@@ -227,7 +227,7 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
       this.logger.log(`Generating scene-only image (no face embed) for order ${orderId}, page ${pageNumber}`);
       this.logger.log(`Prompt: ${sceneOnlyPrompt.substring(0, 200)}...`);
       const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
-      const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt, style.photoMakerStyleName);
+      const imageUrl = await this.runSceneOnly(publicPhotoUrl, sceneOnlyPrompt, style.photoMakerStyleName || '(No style)');
       const filename = `${orderId}-page-${pageNumber}.png`;
       await this.downloadAndSave(imageUrl, filename);
       return `/api/uploads/${filename}`;
@@ -311,49 +311,16 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     this.logger.log(`Generating image for order ${orderId}, page ${pageNumber} (style: ${style.id})`);
     this.logger.log(`Prompt: ${fullPrompt.substring(0, 200)}...`);
 
-    let imageUrl: string;
-    
+    // Only the Disney/Pixar PhotoMaker theme reaches this point. Photoreal
+    // Kontext is handled by an early-return branch above. Other illustration
+    // styles were removed.
     const styleObj = style as any;
-    if (styleObj.replicateModel?.includes('photomaker')) {
-      this.logger.log(`Routing to PhotoMaker with style: ${styleObj.photoMakerStyleName || '(No style)'}`);
-      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, styleObj.photoMakerStyleName || '(No style)');
-    } else if (styleObj.replicateModel?.includes('gouache-folk-style')) {
-      this.logger.log(`Routing to Gouache Folk Style with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runImageToImage(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('claymation')) {
-      this.logger.log(`Routing to Claymation with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runImageToImage(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('stickergp')) {
-      this.logger.log(`Routing to StickerGP with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runFluxDev(fullPrompt, styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('flux-watercolor')) {
-      this.logger.log(`Routing to FluxWatercolor`);
-      imageUrl = await this.runFluxWatercolor(publicPhotoUrl, fullPrompt);
-    } else if (styleObj.replicateModel?.includes('flux-dev')) {
-      this.logger.log(`Routing to FluxDev with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runFluxDev(fullPrompt, styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('face-to-many')) {
-      this.logger.log(`Routing to FaceToMany with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runFaceToMany(publicPhotoUrl, fullPrompt, styleObj.replicateStyle || 'Clay', styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('flux-pulid')) {
-      this.logger.log(`Routing to FluxPuLID with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runFluxPuLID(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
-    } else if (styleObj.replicateModel?.includes('flux-kontext')) {
-      this.logger.log(`Routing to FLUX.1 Kontext with model: ${styleObj.replicateModel}`);
-      imageUrl = await this.runFluxKontext(publicPhotoUrl, fullPrompt, styleObj.replicateModel!);
-    } else {
-      // Fallback to default PhotoMaker
-      this.logger.log(`Fallback to PhotoMaker default style: ${styleObj.photoMakerStyleName || '(No style)'}`);
-      imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, styleObj.photoMakerStyleName || '(No style)');
-    }
+    this.logger.log(`Routing to PhotoMaker with style: ${styleObj.photoMakerStyleName || '(No style)'}`);
+    const imageUrl = await this.runPhotoMaker(publicPhotoUrl, fullPrompt, styleObj.photoMakerStyleName || '(No style)');
 
     const filename = `${orderId}-page-${pageNumber}.png`;
     await this.downloadAndSave(imageUrl, filename);
     return `/api/uploads/${filename}`;
-  }
-
-  private async runFluxWatercolor(faceImageUrl: string, prompt: string): Promise<string> {
-    return this.runImageToImage(faceImageUrl, prompt, "lucataco/flux-watercolor:ec079237c95a092c25390c50ca601b69f6fd7d5e4a83a152d192c7336e1cda6d");
   }
 
   /**
@@ -445,25 +412,6 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     }
     throw new Error(`Unexpected output format from FLUX.1 Kontext`);
   }
-
-  private async runImageToImage(faceImageUrl: string, prompt: string, model: string): Promise<string> {
-    this.logger.log(`Running Image-to-Image with model: ${model}`);
-    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
-      input: {
-        image: faceImageUrl,
-        prompt: prompt,
-        prompt_strength: 0.7,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
-        output_format: "png",
-      },
-    });
-
-    if (typeof output === 'string') return output;
-    if (Array.isArray(output) && output.length > 0) return String(output[0]);
-    throw new Error(`Unexpected output format from model ${model}`);
-  }
-
 
   /**
    * Generate a page image with multiple people using Flux Multi-PuLID ControlNet.
@@ -1067,115 +1015,6 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     throw new Error('Unexpected output format from Replicate');
   }
 
-  private async runFluxDev(prompt: string, model: string): Promise<string> {
-    this.logger.log(`Running FLUX-Dev using model "${model}" with high guidance`);
-    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
-      input: {
-        prompt: prompt,
-        guidance: 5.0, // Increased guidance for stronger style adherence
-        num_inference_steps: 30,
-        aspect_ratio: "1:1",
-        output_format: "png",
-        output_quality: 90,
-      },
-    });
-
-    if (typeof output === 'string') return output;
-    if (Array.isArray(output) && output.length > 0) return String(output[0]);
-    throw new Error('Unexpected output format from flux-dev');
-  }
-
-  private async runFaceToMany(faceImageUrl: string, prompt: string, style: string, model: string): Promise<string> {
-    this.logger.log(`Running Face-to-Many using model "${model}" with style "${style}"`);
-    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
-      input: {
-        image: faceImageUrl,
-        prompt: prompt,
-        style: style,
-        instant_id_strength: 0.7,
-        num_steps: 30,
-        guidance_scale: 5,
-        negative_prompt: NEGATIVE_PROMPT,
-      },
-    });
-
-    if (typeof output === 'string') return output;
-    if (Array.isArray(output) && output.length > 0) return String(output[0]);
-    throw new Error('Unexpected output format from face-to-many');
-  }
-
-  private async runFluxPuLID(faceImageUrl: string, prompt: string, model: string): Promise<string> {
-    this.logger.log(`Running Flux-PuLID using model "${model}"`);
-    const output = await this.replicate.run(model as `${string}/${string}:${string}`, {
-      input: {
-        main_face_image: faceImageUrl,
-        prompt: prompt,
-        negative_prompt: NEGATIVE_PROMPT,
-        num_steps: 20,
-        start_step: 1,
-        id_weight: 1.0,
-        guidance_scale: 4,
-        width: 1024,
-        height: 1024,
-        output_format: "png",
-      },
-    });
-
-    if (typeof output === 'string') return output;
-    if (Array.isArray(output) && output.length > 0) return String(output[0]);
-    throw new Error('Unexpected output format from flux-pulid');
-  }
-
-  /**
-   * Build the canonical "Disney Pixar cartoon portrait" of the subject for the
-   * Realistic / Disney-Pixar Kontext theme. PuLID-Flux uses a face embedding
-   * (ArcFace-style) to lock the user's actual facial features while rendering
-   * in a fully stylized Disney/Pixar look.
-   *
-   * Why PuLID and not Kontext for this step:
-   *   - Kontext is conditioning-driven, not embedding-locked → drift across
-   *     calls, faces don't reliably look like the user.
-   *   - PhotoMaker hits a similar style strength but its identity holds less
-   *     well on Asian/South-Asian faces.
-   *   - PuLID with start_step=0 + id_weight≥1.0 produces a cartoon portrait
-   *     that's the strongest available "your face, Pixar style" anchor.
-   *
-   * The output portrait is then fed to per-page Kontext as the input_image.
-   * Because the reference is already in the target Disney Pixar style,
-   * Kontext doesn't have to bridge a style gap on every page — which is
-   * what was causing face drift in the previous Kontext-only pipeline.
-   */
-  private async generateCartoonHeroPortrait(photoUrl: string, orderId: string): Promise<string> {
-    const PULID_MODEL = 'zsxkib/flux-pulid:8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b';
-    const portraitPrompt = 'Disney Pixar 3D animated movie still, head and shoulders character portrait, friendly neutral expression, looking at camera, plain neutral grey background, soft cinematic lighting, vibrant colors, expressive eyes, professional Pixar animation quality, sharp focus on face';
-
-    const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
-    this.logger.log(`Generating PuLID Disney Pixar hero portrait for order ${orderId}`);
-
-    const output = await this.replicate.run(PULID_MODEL as `${string}/${string}:${string}`, {
-      input: {
-        main_face_image: publicPhotoUrl,
-        prompt: portraitPrompt,
-        negative_prompt: 'photorealistic, photograph, real photo, photography, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, multiple people, two people, crowd, asymmetric face, distorted face, wrong eye color',
-        num_steps: 20,
-        start_step: 0,
-        id_weight: 1.05,
-        guidance_scale: 4,
-        width: 1024,
-        height: 1024,
-        output_format: 'png',
-      },
-    });
-
-    let portraitUrl: string;
-    if (typeof output === 'string') portraitUrl = output;
-    else if (Array.isArray(output) && output.length > 0) portraitUrl = String(output[0]);
-    else throw new Error('Unexpected output format from PuLID hero portrait');
-
-    const filename = `face-${orderId}.png`;
-    await this.downloadAndSave(portraitUrl, filename);
-    return `/api/uploads/${filename}`;
-  }
 
   private async runFluxMultiPuLID(
     prompt: string,

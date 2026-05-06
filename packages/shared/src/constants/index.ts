@@ -86,64 +86,6 @@ export const ILLUSTRATION_STYLES = [
     promptSuffix: 'photorealistic illustration, cinematic lighting, soft natural light, sharp focus, high detail, professional photography aesthetic, shallow depth of field',
     description: 'Photorealistic story scenes with your EXACT face pixel-swapped onto every page using InsightFace \u2014 guaranteed identical face across all images',
   },
-  {
-    id: '3d-animation',
-    name: '3D Animation',
-    icon: '\uD83C\uDFAE',
-    photoMakerStyleName: 'Lowpoly',
-    promptSuffix: '3D animated, bright saturated colors, smooth rendering, stylized proportions, Dreamworks style, low-poly 3D',
-    description: 'Modern 3D animated style',
-  },
-  {
-    id: 'watercolor',
-    name: 'Watercolor',
-    icon: '\uD83C\uDFA8',
-    photoMakerStyleName: '(No style)',
-    promptSuffix: 'watercolor painting, soft washes, gentle blending, delicate brushstrokes, children book illustration, warm tones',
-    description: 'Soft and dreamy watercolor paintings',
-  },
-  {
-    id: 'geometric',
-    name: 'Geometric',
-    icon: '\uD83D\uDD37',
-    photoMakerStyleName: 'Lowpoly',
-    promptSuffix: 'geometric art style, clean flat shapes, bold color blocks, low-poly, modern minimalist illustration',
-    description: 'Clean geometric shapes and bold colors',
-  },
-  {
-    id: 'gouache',
-    name: 'Gouache',
-    icon: '\uD83D\uDD8C\uFE0F',
-    replicateModel: 'bytedance/flux-pulid:8baa71b329cfbd406d471d2212b6ffc5b1acd95029cf3a6639c087985337fc99',
-    promptSuffix: 'gouache painting style, thick opaque watercolor, matte finish, visible brushstrokes, soft warm tones, children book illustration',
-    description: 'Rich opaque gouache painting style',
-  },
-  {
-    id: 'sticker-art',
-    name: 'Sticker Art',
-    icon: '\uD83C\uDFF7\uFE0F',
-    replicateModel: 'fofr/face-to-many:a46f759c991f868d407886407d58a0f0259b921e427b5e43a9d949cf94d762e1',
-    replicateStyle: 'Sticker',
-    promptSuffix: 'sticker art style, thick white border, glossy look, die-cut edges, flat vibrant colors, kawaii cute children book illustration',
-    description: 'Fun glossy sticker-style illustrations',
-  },
-  {
-    id: 'clay-animation',
-    name: 'Clay Animation',
-    icon: '\uD83E\uDDF8',
-    replicateModel: 'fofr/face-to-many:a46f759c991f868d407886407d58a0f0259b921e427b5e43a9d949cf94d762e1',
-    replicateStyle: 'Clay',
-    promptSuffix: 'claymation style, clay figure, stop motion look, textured surface, handmade craft, plasticine, warm lighting, children book illustration',
-    description: 'Handmade claymation / stop-motion look',
-  },
-  {
-    id: 'picture-book',
-    name: 'Picture Book',
-    icon: '\uD83D\uDCD5',
-    replicateModel: 'bytedance/flux-pulid:8baa71b329cfbd406d471d2212b6ffc5b1acd95029cf3a6639c087985337fc99',
-    promptSuffix: 'classic picture book illustration style, soft colored pencil, gentle watercolor wash, warm tones, storybook art, cozy, detailed background',
-    description: 'Classic children\'s picture book illustration',
-  },
 ] as const;
 
 export type IllustrationStyleId = (typeof ILLUSTRATION_STYLES)[number]['id'];
@@ -193,9 +135,6 @@ export const INSIGHTFACE_SWAP_MODEL = 'cdingram/face-swap:d1d6ea8c8be89d664a07a4
 // Illustration styles that support family mode (PhotoMaker-based only)
 export const FAMILY_COMPATIBLE_STYLES = [
   'disney-character',
-  '3d-animation',
-  'watercolor',
-  'geometric',
 ] as const;
 
 // Family role types

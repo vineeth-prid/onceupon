@@ -27,7 +27,7 @@ const FAQ_DATA = [
   },
   {
     question: 'What illustration styles are available?',
-    answer: 'We offer several styles including Disney/Pixar 3D, watercolor, gouache, sticker art, clay animation, geometric, and classic picture book illustration.',
+    answer: 'We offer two illustration styles: Disney/Pixar 3D, and Photoreal Kontext (photorealistic scenes with your exact face on every page).',
   },
   {
     question: 'Is my child\'s photo stored securely?',

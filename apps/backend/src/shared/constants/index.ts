@@ -178,6 +178,13 @@ export const NEGATIVE_PROMPT_FAMILY = MULTI_PERSON_NEGATIVE_PROMPT;
 // Easel Advanced Face Swap — used for swapping additional family member faces
 export const EASEL_FACE_SWAP_MODEL = 'easel/advanced-face-swap' as const;
 
+// InsightFace InSwapper-128 wrapper — pixel-precise, identity-preserving
+// face swap (the engine behind Roop / Reactor / FaceFusion). Used by the
+// Photoreal Kontext theme to transplant the user's actual face pixels onto
+// each generated scene. Unlike Easel which blends features, this swaps
+// pixels — true "exact face" output rather than a morph.
+export const INSIGHTFACE_SWAP_MODEL = 'cdingram/face-swap:d1d6ea8c8be89d664a07a457526f7128109dee7030fdac424788d762c71ed111' as const;
+
 // Illustration styles that support family mode (PhotoMaker-based only)
 export const FAMILY_COMPATIBLE_STYLES = [
   'disney-character',

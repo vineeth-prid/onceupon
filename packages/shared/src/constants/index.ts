@@ -80,11 +80,11 @@ export const ILLUSTRATION_STYLES = [
   },
   {
     id: 'kontext-disney',
-    name: 'Disney / Pixar (Kontext)',
-    icon: '\u2728',
+    name: 'Photoreal Kontext',
+    icon: '\ud83d\udcf7',
     replicateModel: 'black-forest-labs/flux-kontext-pro',
-    promptSuffix: '3d CGI, Pixar style, detailed background, full scene illustration, vibrant colors',
-    description: 'Disney/Pixar look with FLUX.1 Kontext \u2014 stronger character consistency on multi-creature scenes',
+    promptSuffix: 'photorealistic illustration, cinematic lighting, soft natural light, sharp focus, high detail, professional photography aesthetic, shallow depth of field',
+    description: 'Photorealistic story scenes with your EXACT face pixel-swapped onto every page using InsightFace \u2014 guaranteed identical face across all images',
   },
   {
     id: '3d-animation',
@@ -182,6 +182,13 @@ export const NEGATIVE_PROMPT_FAMILY = MULTI_PERSON_NEGATIVE_PROMPT;
 // Easel Advanced Face Swap — used for swapping additional family member faces
 // into PhotoMaker-generated scenes
 export const EASEL_FACE_SWAP_MODEL = 'easel/advanced-face-swap' as const;
+
+// InsightFace InSwapper-128 wrapper — pixel-precise, identity-preserving
+// face swap (industry standard, what Roop / Reactor / FaceFusion all use under
+// the hood). Used by the Photoreal Kontext theme to overlay the user's actual
+// face pixels onto each generated scene. Unlike Easel's advanced-face-swap,
+// this does not blend source+target features — it transplants the face.
+export const INSIGHTFACE_SWAP_MODEL = 'cdingram/face-swap:d1d6ea8c8be89d664a07a457526f7128109dee7030fdac424788d762c71ed111' as const;
 
 // Illustration styles that support family mode (PhotoMaker-based only)
 export const FAMILY_COMPATIBLE_STYLES = [

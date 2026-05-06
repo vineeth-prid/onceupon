@@ -16,7 +16,9 @@ export class StoryService {
   }
 
   /**
-   * Generate a single preview page (title + 1 page) — saves Gemini tokens for preview
+   * Generate a 3-page preview (title + 3 pages) — enough variety to validate
+   * face consistency / style across multiple scenes during preview, while
+   * still cheaper than the full book.
    */
   async generatePreviewPage(
     childName: string,
@@ -26,6 +28,7 @@ export class StoryService {
     customStoryPrompt?: string,
     familyMembers?: Array<{ role: string; name: string; age?: number | null; gender?: string | null }>,
   ): Promise<{ title: string; pages: Array<{ pageNumber: number; text: string; imagePrompt: string; sceneDescription: string; layout: string; charactersInScene?: string[] }> }> {
+    const PREVIEW_PAGE_COUNT = 3;
     const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
     const storyContext = customStoryPrompt
       ? `Story idea: "${customStoryPrompt}"`
@@ -44,7 +47,7 @@ export class StoryService {
           : m.role.toLowerCase();
         return `${m.name} (${roleLabel}, age ${m.age || '?'})`;
       }).join(', ');
-      familyInstructions = `\nThis is a FAMILY story featuring: ${charList}.\nIMPORTANT: Use the ACTUAL NAMES of family members in the story text (e.g., "${familyMembers[0]?.name}", "${familyMembers[1]?.name}"). Do NOT use generic labels like "the parent" or "the sibling" in story text.\nInclude at least 2 family members in the preview scene. In imagePrompt, refer to the main child as "the child" and use reference tags for others ("the father", "the mother", etc.).\n`;
+      familyInstructions = `\nThis is a FAMILY story featuring: ${charList}.\nIMPORTANT: Use the ACTUAL NAMES of family members in the story text (e.g., "${familyMembers[0]?.name}", "${familyMembers[1]?.name}"). Do NOT use generic labels like "the parent" or "the sibling" in story text.\nInclude at least 2 family members in the preview scenes. In imagePrompt, refer to the main child as "the child" and use reference tags for others ("the father", "the mother", etc.).\n`;
       characterFields = '\n  - "charactersInScene": array of roles appearing in the scene. Use EXACTLY these enum values: "MAIN_CHILD", "SIBLING", "PARENT", "GRANDPARENT". Do NOT use "FATHER"/"MOTHER" — always use "PARENT". Example: ["MAIN_CHILD", "PARENT", "PARENT"]';
     }
 
@@ -52,18 +55,18 @@ export class StoryService {
       ? 'Only include the listed family members — no strangers or crowds.'
       : 'NO other human characters.';
 
-    const prompt = `You are a children's book author. Create a SINGLE preview page for a personalized storybook.
+    const prompt = `You are a children's book author. Create the FIRST ${PREVIEW_PAGE_COUNT} pages of a personalized storybook as a preview.
 
 Child: ${childName}, age ${childAge}, ${childGender} (${pronoun})
 ${storyContext}${familyInstructions}
 
 Return JSON with:
 - "title": a creative, catchy book title
-- "pages": array with EXACTLY 1 page object containing:
-  - "pageNumber": 1
-  - "text": 2-3 sentences of the opening scene, age-appropriate for ${childAge}
-  - "imagePrompt": a VERY detailed scene description for image generation. Describe the setting, lighting, atmosphere, and refer to ${childName} as "the child". ${humanRule}
-  - "sceneDescription": brief description of what's happening
+- "pages": array with EXACTLY ${PREVIEW_PAGE_COUNT} page objects, each containing:
+  - "pageNumber": 1, 2, 3 in order
+  - "text": 2-3 sentences of story for this scene, age-appropriate for ${childAge}, flowing naturally page to page
+  - "imagePrompt": a VERY detailed scene description for image generation. Each page must be a DIFFERENT scene/location/moment so we can see the character placed in varied environments. Describe the setting, lighting, atmosphere, and refer to ${childName} as "the child". ${humanRule}
+  - "sceneDescription": brief description of what's happening on this page
   - "layout": "full-bleed-text-bottom"${characterFields}
 
 Return ONLY valid JSON, nothing else.`;
@@ -73,7 +76,7 @@ Return ONLY valid JSON, nothing else.`;
       try {
         const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-pro'];
         const currentModel = modelsToTry[attempt % modelsToTry.length];
-        this.logger.log(`Generating preview page attempt ${attempt + 1} for theme: ${theme} using ${currentModel}`);
+        this.logger.log(`Generating ${PREVIEW_PAGE_COUNT}-page preview attempt ${attempt + 1} for theme: ${theme} using ${currentModel}`);
         const response = await this.client.models.generateContent({
           model: 'gemini-flash-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -88,14 +91,31 @@ Return ONLY valid JSON, nothing else.`;
 
         const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsed = JSON.parse(cleanedText);
-        if (!parsed.title || !parsed.pages?.[0]) throw new Error('Invalid preview response structure');
+        if (!parsed.title || !Array.isArray(parsed.pages) || parsed.pages.length === 0) {
+          throw new Error('Invalid preview response structure');
+        }
 
-        // Ensure only 1 page
-        parsed.pages = [parsed.pages[0]];
-        parsed.pages[0].pageNumber = 1;
-        parsed.pages[0].layout = parsed.pages[0].layout || 'full-bleed-text-bottom';
+        // Pad if Gemini returned fewer; trim if it returned more.
+        while (parsed.pages.length < PREVIEW_PAGE_COUNT) {
+          const last = parsed.pages[parsed.pages.length - 1];
+          parsed.pages.push({
+            pageNumber: parsed.pages.length + 1,
+            text: last.text,
+            imagePrompt: last.imagePrompt,
+            sceneDescription: last.sceneDescription,
+            layout: last.layout || 'full-bleed-text-bottom',
+            ...(last.charactersInScene ? { charactersInScene: last.charactersInScene } : {}),
+          });
+        }
+        if (parsed.pages.length > PREVIEW_PAGE_COUNT) {
+          parsed.pages = parsed.pages.slice(0, PREVIEW_PAGE_COUNT);
+        }
+        parsed.pages.forEach((p: any, i: number) => {
+          p.pageNumber = i + 1;
+          p.layout = p.layout || 'full-bleed-text-bottom';
+        });
 
-        this.logger.log(`Preview page generated: "${parsed.title}"`);
+        this.logger.log(`Preview pages generated: "${parsed.title}" (${parsed.pages.length} pages)`);
         return parsed;
       } catch (error) {
         lastError = error as Error;

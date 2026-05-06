@@ -4,7 +4,7 @@ import Replicate from 'replicate';
 import { GoogleGenAI } from '@google/genai';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
-import { NEGATIVE_PROMPT, NEGATIVE_PROMPT_FAMILY, MULTI_PERSON_NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, MULTI_PERSON_IMAGE_GEN_CONFIG, EASEL_FACE_SWAP_MODEL, ILLUSTRATION_STYLES } from '@bookmagic/shared';
+import { NEGATIVE_PROMPT, NEGATIVE_PROMPT_FAMILY, MULTI_PERSON_NEGATIVE_PROMPT, IMAGE_GEN_CONFIG, MULTI_PERSON_IMAGE_GEN_CONFIG, EASEL_FACE_SWAP_MODEL, INSIGHTFACE_SWAP_MODEL, ILLUSTRATION_STYLES } from '@bookmagic/shared';
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
@@ -132,6 +132,16 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
 
   async generateReferenceSheet(photoUrl: string, orderId: string, illustrationStyle?: string): Promise<string> {
     const style = getStyleConfig(illustrationStyle);
+
+    // Photoreal Kontext theme: identity is locked at the per-page stage via
+    // InsightFace pixel swap (see generatePageImage Kontext branch). The
+    // "reference sheet" therefore doesn't need to be a generated image — the
+    // raw upload IS the canonical face source. Pass it through unchanged.
+    if ((style as any).replicateModel?.includes('flux-kontext')) {
+      this.logger.log(`Skipping reference-sheet generation for order ${orderId} (Photoreal Kontext — face is locked at swap stage)`);
+      return photoUrl;
+    }
+
     const prompt = `A full body character reference sheet of a img child, multiple angles, front view and side view, neutral pose, ${style.promptSuffix}, children's book character`;
 
     const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
@@ -152,9 +162,64 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     childGender?: string,
     layout?: string,
     illustrationStyle?: string,
+    referencePhotoUrl?: string,
   ): Promise<string> {
     const genderTag = childGender === 'boy' ? 'boy' : childGender === 'girl' ? 'girl' : 'child';
     const style = getStyleConfig(illustrationStyle);
+
+    // Photoreal Kontext: photoreal scene + pixel-precise InsightFace swap.
+    //
+    // Pipeline:
+    //   Stage A — Kontext scene generation:
+    //     input_image = the user's raw upload (gives Kontext age/gender/build
+    //                   cues so the rendered person matches the user's
+    //                   approximate physique — important for face-swap
+    //                   blending to look natural).
+    //     prompt      = scene description + photoreal style.
+    //     output      = photoreal scene with someone-like-you placed in it.
+    //
+    //   Stage B — InsightFace pixel swap (industry-standard face swap):
+    //     target = Stage A scene.
+    //     source = the user's raw upload (their actual face pixels).
+    //     output = Stage A scene with the user's REAL face transplanted in.
+    //              InSwapper-128 transplants face pixels rather than blending
+    //              source+target features (that's why the Easel attempt
+    //              produced a "third person" look and this won't).
+    //
+    // If the swap fails (no face detected, API hiccup) we keep Stage A as a
+    // fallback rather than failing the whole page.
+    const isKontext = (style as any).replicateModel?.includes('flux-kontext');
+    if (isKontext && layout !== 'dramatic-image-only') {
+      const scenePrompt = imagePrompt
+        .replace(/\b(the child|the kid|the boy|the girl|a child|a kid|a boy|a girl)\b/gi, 'the person')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      let kontextPrompt = `Place the person from the reference photo into this scene: ${scenePrompt}. ${style.promptSuffix}. Render them photorealistically, preserving their approximate age, gender, build, hair, and skin tone. The face must be clearly visible, well-lit, facing roughly toward the camera so identity is recognizable. Do not stylize, do not turn into a cartoon — keep the look photorealistic.`;
+      if (imageComposition) {
+        kontextPrompt = `${kontextPrompt}. Composition: ${imageComposition}`;
+      }
+
+      const referenceUrl = referencePhotoUrl || photoUrl;
+      const publicReferenceUrl = await this.resolvePublicUrl(referenceUrl);
+      this.logger.log(`[Photoreal Kontext] Stage A (Kontext) — page ${pageNumber} for order ${orderId}`);
+      this.logger.log(`Prompt: ${kontextPrompt.substring(0, 200)}...`);
+      const sceneImageUrl = await this.runFluxKontext(publicReferenceUrl, kontextPrompt, (style as any).replicateModel!);
+
+      // Stage B: InsightFace pixel-precise swap. Source = user's actual photo.
+      let finalImageUrl = sceneImageUrl;
+      try {
+        const publicOriginalUrl = await this.resolvePublicUrl(photoUrl);
+        this.logger.log(`[Photoreal Kontext] Stage B (InsightFace swap) — page ${pageNumber}`);
+        finalImageUrl = await this.runInsightFaceSwap(sceneImageUrl, publicOriginalUrl);
+      } catch (err) {
+        this.logger.warn(`[Photoreal Kontext] Face-swap failed for page ${pageNumber}, using scene-only image: ${(err as Error).message}`);
+      }
+
+      const filename = `${orderId}-page-${pageNumber}.png`;
+      await this.downloadAndSave(finalImageUrl, filename);
+      return `/api/uploads/${filename}`;
+    }
 
     // DRAMATIC-IMAGE-ONLY pages: Generate scene WITHOUT face embedding.
     if (layout === 'dramatic-image-only') {
@@ -835,6 +900,38 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
   /**
    * Easel Advanced Face Swap — swaps 1-2 faces into a target image.
    */
+  /**
+   * InsightFace InSwapper-128 — the industry-standard face-swap engine
+   * (same model under the hood as Roop / Reactor / FaceFusion). Unlike
+   * Easel's advanced-face-swap which blends source+target features, this
+   * transplants the face pixels — output's face is pixel-derived from the
+   * source photo, so it's a genuine "exact face" swap, not a morph.
+   *
+   * cdingram/face-swap input vocabulary (per Replicate schema):
+   *   - input_image = Target image (where the face will be replaced)
+   *   - swap_image  = the face source (what gets transplanted in)
+   */
+  private async runInsightFaceSwap(targetImageUrl: string, faceSourceUrl: string): Promise<string> {
+    this.logger.log(`Running InsightFace swap (cdingram/face-swap)`);
+    const output = await this.replicate.run(
+      INSIGHTFACE_SWAP_MODEL as `${string}/${string}:${string}`,
+      {
+        input: {
+          input_image: targetImageUrl,
+          swap_image: faceSourceUrl,
+        },
+      },
+    );
+
+    if (typeof output === 'string') return output;
+    if (Array.isArray(output) && output.length > 0) return String(output[0]);
+    if (output && typeof (output as any).url === 'function') {
+      const url = (output as any).url();
+      return typeof url === 'string' ? url : String(url);
+    }
+    throw new Error('Unexpected output format from InsightFace swap');
+  }
+
   private async runEaselFaceSwap(
     targetImageUrl: string,
     swapImageAUrl: string,
@@ -1027,6 +1124,57 @@ ${isAdult ? `- This is an ADULT — NEVER describe them as a child, kid, or baby
     if (typeof output === 'string') return output;
     if (Array.isArray(output) && output.length > 0) return String(output[0]);
     throw new Error('Unexpected output format from flux-pulid');
+  }
+
+  /**
+   * Build the canonical "Disney Pixar cartoon portrait" of the subject for the
+   * Realistic / Disney-Pixar Kontext theme. PuLID-Flux uses a face embedding
+   * (ArcFace-style) to lock the user's actual facial features while rendering
+   * in a fully stylized Disney/Pixar look.
+   *
+   * Why PuLID and not Kontext for this step:
+   *   - Kontext is conditioning-driven, not embedding-locked → drift across
+   *     calls, faces don't reliably look like the user.
+   *   - PhotoMaker hits a similar style strength but its identity holds less
+   *     well on Asian/South-Asian faces.
+   *   - PuLID with start_step=0 + id_weight≥1.0 produces a cartoon portrait
+   *     that's the strongest available "your face, Pixar style" anchor.
+   *
+   * The output portrait is then fed to per-page Kontext as the input_image.
+   * Because the reference is already in the target Disney Pixar style,
+   * Kontext doesn't have to bridge a style gap on every page — which is
+   * what was causing face drift in the previous Kontext-only pipeline.
+   */
+  private async generateCartoonHeroPortrait(photoUrl: string, orderId: string): Promise<string> {
+    const PULID_MODEL = 'zsxkib/flux-pulid:8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b';
+    const portraitPrompt = 'Disney Pixar 3D animated movie still, head and shoulders character portrait, friendly neutral expression, looking at camera, plain neutral grey background, soft cinematic lighting, vibrant colors, expressive eyes, professional Pixar animation quality, sharp focus on face';
+
+    const publicPhotoUrl = await this.resolvePublicUrl(photoUrl);
+    this.logger.log(`Generating PuLID Disney Pixar hero portrait for order ${orderId}`);
+
+    const output = await this.replicate.run(PULID_MODEL as `${string}/${string}:${string}`, {
+      input: {
+        main_face_image: publicPhotoUrl,
+        prompt: portraitPrompt,
+        negative_prompt: 'photorealistic, photograph, real photo, photography, blurry, low quality, deformed, ugly, bad anatomy, extra limbs, multiple people, two people, crowd, asymmetric face, distorted face, wrong eye color',
+        num_steps: 20,
+        start_step: 0,
+        id_weight: 1.05,
+        guidance_scale: 4,
+        width: 1024,
+        height: 1024,
+        output_format: 'png',
+      },
+    });
+
+    let portraitUrl: string;
+    if (typeof output === 'string') portraitUrl = output;
+    else if (Array.isArray(output) && output.length > 0) portraitUrl = String(output[0]);
+    else throw new Error('Unexpected output format from PuLID hero portrait');
+
+    const filename = `face-${orderId}.png`;
+    await this.downloadAndSave(portraitUrl, filename);
+    return `/api/uploads/${filename}`;
   }
 
   private async runFluxMultiPuLID(

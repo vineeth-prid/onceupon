@@ -6,7 +6,7 @@ import { OrdersService } from '../orders/orders.service';
 import { StoryService } from '../story/story.service';
 import { ImageService } from '../image/image.service';
 import { EmailService } from '../email/email.service';
-import { OrderStatus, StoryOutputInput } from '@bookmagic/shared';
+import { OrderStatus, StoryOutputInput, TOTAL_PAGES } from '@bookmagic/shared';
 import { ORCHESTRATOR_QUEUE, JobName } from './queue.constants';
 import { getStaticStory } from '../story/static-stories';
 
@@ -65,21 +65,24 @@ export class OrchestratorProcessor extends WorkerHost {
       });
 
       const previewPage = previewStory.pages[0];
+      const previewPagesAll = previewStory.pages;
 
       // Delete any existing pages from prior attempts before creating new ones
       await this.prisma.page.deleteMany({ where: { orderId } });
 
-      await this.prisma.page.create({
-        data: {
-          orderId,
-          pageNumber: 1,
-          text: previewPage.text,
-          imagePrompt: previewPage.imagePrompt,
-          sceneDescription: previewPage.sceneDescription,
-          layout: previewPage.layout || 'full-bleed-text-bottom',
-          status: 'PENDING',
-        },
-      });
+      for (const p of previewPagesAll) {
+        await this.prisma.page.create({
+          data: {
+            orderId,
+            pageNumber: p.pageNumber,
+            text: p.text,
+            imagePrompt: p.imagePrompt,
+            sceneDescription: p.sceneDescription,
+            layout: p.layout || 'full-bleed-text-bottom',
+            status: 'PENDING',
+          },
+        });
+      }
 
       await this.ordersService.updateStatus(orderId, OrderStatus.STORY_COMPLETE);
       this.logger.log(`Preview story generated: "${previewStory.title}"${isFamilyMode ? ' (family mode)' : ''}`);
@@ -205,12 +208,12 @@ export class OrchestratorProcessor extends WorkerHost {
         });
         this.logger.log(`Reference sheet generated`);
 
-        const page = await this.prisma.page.findFirst({
+        const previewDbPages = await this.prisma.page.findMany({
           where: { orderId },
           orderBy: { pageNumber: 'asc' },
         });
 
-        if (page) {
+        for (const page of previewDbPages) {
           await this.processPageImage(
             orderId,
             order.photoUrl,
@@ -220,6 +223,7 @@ export class OrchestratorProcessor extends WorkerHost {
             order.childGender,
             page.layout,
             order.illustrationStyle,
+            refUrl,
           );
 
           const updatedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
@@ -234,6 +238,7 @@ export class OrchestratorProcessor extends WorkerHost {
               order.childGender,
               page.layout,
               order.illustrationStyle,
+              refUrl,
             );
 
             const retriedPage = await this.prisma.page.findUnique({ where: { id: page.id } });
@@ -243,12 +248,15 @@ export class OrchestratorProcessor extends WorkerHost {
           }
 
           this.logger.log(`Preview image generated for page ${page.pageNumber}`);
+          // Brief delay between pages to avoid Replicate rate-limit spikes
+          await new Promise((resolve) => setTimeout(resolve, 4000));
         }
       }
 
       // Set status to PREVIEW_READY (with only 1 image)
       await this.ordersService.updateStatus(orderId, OrderStatus.PREVIEW_READY);
-      this.logger.log(`Order ${orderId} preview ready — 1 sample image generated${isFamilyMode ? ' (family mode)' : ''}`);
+      const previewImageCount = await this.prisma.page.count({ where: { orderId, status: 'COMPLETE' } });
+      this.logger.log(`Order ${orderId} preview ready — ${previewImageCount} sample image(s) generated${isFamilyMode ? ' (family mode)' : ''}`);
 
     } catch (error) {
       this.logger.error(`Order ${orderId} preview failed: ${(error as Error).message}`);
@@ -281,7 +289,7 @@ export class OrchestratorProcessor extends WorkerHost {
         : undefined;
 
       const existingStory = order.storyJson as unknown as StoryOutputInput | null;
-      const isFullStoryAlreadyGenerated = existingStory && existingStory.pages && existingStory.pages.length > 1;
+      const isFullStoryAlreadyGenerated = existingStory && existingStory.pages && existingStory.pages.length >= TOTAL_PAGES;
       let storyData: StoryOutputInput;
 
       if (!isFullStoryAlreadyGenerated) {
@@ -388,6 +396,7 @@ export class OrchestratorProcessor extends WorkerHost {
             order.childGender,
             page.layout,
             order.illustrationStyle,
+            (order as any).referenceSheetUrl ?? undefined,
           );
         }
 
@@ -428,6 +437,7 @@ export class OrchestratorProcessor extends WorkerHost {
               order.childGender,
               page.layout,
               order.illustrationStyle,
+              (order as any).referenceSheetUrl ?? undefined,
             );
           }
 
@@ -569,6 +579,7 @@ export class OrchestratorProcessor extends WorkerHost {
     childGender?: string,
     layout?: string,
     illustrationStyle?: string,
+    referencePhotoUrl?: string,
   ): Promise<void> {
     try {
       await this.prisma.page.update({
@@ -586,6 +597,7 @@ export class OrchestratorProcessor extends WorkerHost {
         childGender,
         layout || page.layout,
         illustrationStyle,
+        referencePhotoUrl,
       );
 
       await this.prisma.page.update({

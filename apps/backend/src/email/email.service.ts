@@ -19,12 +19,22 @@ export class EmailService {
       );
     }
 
-    this.transporter = nodemailer.createTransport({
+    const transportOptions: any = {
       host,
       port: Number(port),
       secure: Number(port) === 465,
       auth: user && pass ? { user, pass } : undefined,
-    });
+    };
+
+    // Gmail-specific optimization for reliability with App Passwords
+    if (host?.includes('gmail.com')) {
+      transportOptions.service = 'gmail';
+      delete transportOptions.host;
+      delete transportOptions.port;
+      delete transportOptions.secure;
+    }
+
+    this.transporter = nodemailer.createTransport(transportOptions);
   }
 
   async sendBookReadyEmail(params: {
@@ -48,62 +58,71 @@ export class EmailService {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background-color:#1a1040;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1040;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#EDE4F8;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#EDE4F8;padding:40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#2d1b69 0%,#1a1040 100%);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
-          <!-- Header -->
+        <!-- Main Card -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(123, 63, 160, 0.15);border:1px solid rgba(0,0,0,0.05);">
+          <!-- Header Logo/Title -->
           <tr>
-            <td style="padding:40px 40px 20px;text-align:center;">
-              <h1 style="color:#f5e6c8;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-style:italic;margin:0;">
+            <td style="padding:48px 40px 10px;text-align:center;">
+              <h1 style="color:#000000;font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:-0.5px;margin:0;">
                 Once Upon a Time
               </h1>
             </td>
           </tr>
-          <!-- Star divider -->
+          <!-- Magical Divider -->
           <tr>
             <td style="text-align:center;padding:0 40px;">
-              <span style="color:#fbbf24;font-size:20px;letter-spacing:8px;">&#9733; &#9733; &#9733;</span>
+              <span style="color:#7B3FA0;font-size:18px;letter-spacing:6px;opacity:0.6;">&#9733; &#9733; &#9733;</span>
             </td>
           </tr>
-          <!-- Main content -->
+          <!-- Body Content -->
           <tr>
-            <td style="padding:30px 40px;">
-              <h2 style="color:#ffffff;font-size:24px;text-align:center;margin:0 0 20px;">
+            <td style="padding:32px 48px;">
+              <h2 style="color:#000000;font-size:26px;text-align:center;margin:0 0 8px;line-height:1.2;">
                 ${childName}'s Storybook is Ready!
               </h2>
-              <p style="color:#d4c5f9;font-size:16px;line-height:1.6;text-align:center;margin:0 0 10px;">
+              <p style="color:#7B3FA0;font-size:16px;font-weight:600;text-align:center;margin:0 0 24px;letter-spacing:0.5px;">
+                Starring ${childName}
+              </p>
+              
+              <p style="color:#6F6F6F;font-size:16px;line-height:1.6;text-align:center;margin:0 0 12px;">
                 Great news! The personalized storybook
               </p>
-              <p style="color:#fbbf24;font-size:20px;font-style:italic;text-align:center;margin:0 0 20px;">
+              <p style="color:#000000;font-size:18px;font-weight:600;text-align:center;margin:0 0 12px;font-style:italic;">
                 "${storyTitle}"
               </p>
-              <p style="color:#d4c5f9;font-size:16px;line-height:1.6;text-align:center;margin:0 0 30px;">
+              <p style="color:#6F6F6F;font-size:16px;line-height:1.6;text-align:center;margin:0 0 32px;">
                 has been illustrated and is ready for you to view.
               </p>
-              <!-- CTA Button -->
+              <!-- Action Button (Matching Preview UI) -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${bookUrl}" style="display:inline-block;background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%);color:#1a1040;font-size:18px;font-weight:bold;text-decoration:none;padding:16px 48px;border-radius:50px;box-shadow:0 4px 16px rgba(251,191,36,0.4);">
-                      View Your Storybook
+                    <a href="${bookUrl}" style="display:inline-block;background-color:#ffffff;color:#111111;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;border:1px solid rgba(0,0,0,0.1);box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                      View ${childName}'s Storybook
                     </a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
-          <!-- Footer -->
+          <!-- Footer Branding -->
           <tr>
-            <td style="padding:30px 40px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.1);">
-              <p style="color:#8b7fb5;font-size:13px;line-height:1.5;margin:0;">
+            <td style="padding:32px 48px 48px;text-align:center;background-color:#fdfaff;border-top:1px solid #f3effb;">
+              <p style="color:#999999;font-size:13px;line-height:1.6;margin:0;">
                 This storybook was created just for ${childName} and is one-of-a-kind.<br>
                 If you didn't request this, you can safely ignore this email.
               </p>
             </td>
           </tr>
         </table>
+        <!-- Simple Copyright Footer outside card -->
+        <p style="color:#7B3FA0;font-size:12px;margin-top:24px;opacity:0.5;">
+          Once Upon a Time &copy; ${new Date().getFullYear()} All rights reserved
+        </p>
       </td>
     </tr>
   </table>
@@ -132,6 +151,104 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}: ${(error as Error).message}`);
       // Don't throw — email failure should not break the book generation flow
+    }
+  }
+
+  async sendPasswordResetEmail(params: { to: string; resetUrl: string }): Promise<void> {
+    const { to, resetUrl } = params;
+    const fromName = this.config.get('SMTP_FROM_NAME', 'Once Upon a Time');
+    const fromEmail = this.config.get('SMTP_FROM_EMAIL', this.config.get('SMTP_USER', 'noreply@onceuponatime.com'));
+
+    const subject = 'Password Reset Request';
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#EDE4F8;font-family:'Parkinsans','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#EDE4F8;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <!-- Main Card -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(123, 63, 160, 0.15);border:1px solid rgba(0,0,0,0.05);">
+          <!-- Header -->
+          <tr>
+            <td style="padding:48px 40px 10px;text-align:center;">
+              <h1 style="color:#000000;font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:-0.5px;margin:0;">
+                Once Upon a Time
+              </h1>
+            </td>
+          </tr>
+          <!-- Star divider -->
+          <tr>
+            <td style="text-align:center;padding:0 40px;">
+              <span style="color:#7B3FA0;font-size:18px;letter-spacing:6px;opacity:0.6;">&#9733; &#9733; &#9733;</span>
+            </td>
+          </tr>
+          <!-- Main content -->
+          <tr>
+            <td style="padding:32px 48px;">
+              <h2 style="color:#000000;font-size:24px;text-align:center;margin:0 0 20px;line-height:1.2;">
+                Reset Your Password
+              </h2>
+              <p style="color:#6F6F6F;font-size:16px;line-height:1.6;text-align:center;margin:0 0 32px;">
+                We received a request to reset your password. Click the button below to choose a new one. This link will expire in 1 hour.
+              </p>
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${resetUrl}" style="display:inline-block;background-color:#ffffff;color:#111111;font-size:16px;font-weight:bold;text-decoration:none;padding:18px 48px;border-radius:50px;border:1px solid rgba(0,0,0,0.1);box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                      Reset Password
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:32px 48px 48px;text-align:center;background-color:#fdfaff;border-top:1px solid #f3effb;">
+              <p style="color:#999999;font-size:13px;line-height:1.5;margin:0;">
+                If you didn't request this, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <!-- Simple Copyright Footer outside card -->
+        <p style="color:#7B3FA0;font-size:12px;margin-top:24px;opacity:0.5;">
+          Once Upon a Time &copy; ${new Date().getFullYear()} All rights reserved
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    const text = `Reset Your Password\n\nWe received a request to reset your password. Click the link below to choose a new one:\n\n${resetUrl}\n\nThis link will expire in 1 hour.\n\nIf you didn't request this, ignore this email.`;
+
+    try {
+      const smtpConfigured = this.config.get('SMTP_HOST');
+      if (!smtpConfigured) {
+        this.logger.log(`[EMAIL NOT SENT - SMTP not configured] To: ${to}, Subject: ${subject}`);
+        this.logger.log(`Reset URL: ${resetUrl}`);
+        return;
+      }
+
+      await this.transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to,
+        subject,
+        text,
+        html,
+      });
+
+      this.logger.log(`Password reset email sent to ${to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send reset email to ${to}: ${(error as Error).message}`);
     }
   }
 }

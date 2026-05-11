@@ -840,7 +840,16 @@ function AddressModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #E0E0E0',
-    fontSize: 14, outline: 'none', marginBottom: 12,
+    fontSize: 14, outline: 'none', marginBottom: 12, boxSizing: 'border-box',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block', fontSize: 12, color: '#6F6F6F', marginBottom: 4,
+    fontWeight: 500, letterSpacing: '0.03em',
+  };
+
+  const requiredStyle: React.CSSProperties = {
+    color: '#C62828', fontWeight: 700,
   };
 
   return (
@@ -856,33 +865,63 @@ function AddressModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         <h3 style={{ margin: '0 0 24px', fontSize: 20, fontWeight: 600 }}>Add New Address</h3>
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <input placeholder="First Name" required style={inputStyle} value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
-            <input placeholder="Last Name" required style={inputStyle} value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+            <div>
+              <label style={labelStyle}>First Name <span style={requiredStyle}>*</span></label>
+              <input placeholder="First Name" required style={inputStyle} value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+            </div>
+            <div>
+              <label style={labelStyle}>Last Name <span style={requiredStyle}>*</span></label>
+              <input placeholder="Last Name" required style={inputStyle} value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+            </div>
           </div>
-          <input placeholder="Address Label (e.g. Home, Office)" required style={inputStyle} value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} />
-          <input placeholder="Address Line 1" required style={inputStyle} value={formData.addressLine1} onChange={e => setFormData({...formData, addressLine1: e.target.value})} />
-          <input placeholder="Address Line 2 (Optional)" style={inputStyle} value={formData.addressLine2} onChange={e => setFormData({...formData, addressLine2: e.target.value})} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <input placeholder="City" required style={inputStyle} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-            <input placeholder="State" required style={inputStyle} value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+          <div>
+            <label style={labelStyle}>Address Label <span style={requiredStyle}>*</span></label>
+            <input placeholder="e.g. Home, Office" required style={inputStyle} value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} />
+          </div>
+          <div>
+            <label style={labelStyle}>Address Line 1 <span style={requiredStyle}>*</span></label>
+            <input placeholder="Address Line 1" required style={inputStyle} value={formData.addressLine1} onChange={e => setFormData({...formData, addressLine1: e.target.value})} />
+          </div>
+          <div>
+            <label style={labelStyle}>Address Line 2</label>
+            <input placeholder="Address Line 2 (Optional)" style={inputStyle} value={formData.addressLine2} onChange={e => setFormData({...formData, addressLine2: e.target.value})} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>City <span style={requiredStyle}>*</span></label>
+              <input placeholder="City" required style={inputStyle} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+            </div>
+            <div>
+              <label style={labelStyle}>State <span style={requiredStyle}>*</span></label>
+              <input placeholder="State" required style={inputStyle} value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Postal Code <span style={requiredStyle}>*</span></label>
+              <input 
+                placeholder="6 digits" 
+                required 
+                style={inputStyle} 
+                value={formData.postalCode} 
+                onChange={e => setFormData({...formData, postalCode: e.target.value.replace(/\D/g, '').slice(0, 6)})} 
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Country <span style={requiredStyle}>*</span></label>
+              <input placeholder="Country" required style={inputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
+            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>Phone <span style={requiredStyle}>*</span></label>
             <input 
-              placeholder="Postal Code (6 digits)" 
+              placeholder="12 digits including country code" 
               required 
               style={inputStyle} 
-              value={formData.postalCode} 
-              onChange={e => setFormData({...formData, postalCode: e.target.value.replace(/\D/g, '').slice(0, 6)})} 
+              value={formData.phone} 
+              onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 12)})} 
             />
-            <input placeholder="Country" required style={inputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
           </div>
-          <input 
-            placeholder="Phone (12 digits including country code)" 
-            required 
-            style={inputStyle} 
-            value={formData.phone} 
-            onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 12)})} 
-          />
           
           {error && (
             <div style={{ color: '#C62828', fontSize: 13, marginBottom: 16, fontWeight: 500 }}>

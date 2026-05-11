@@ -30,13 +30,13 @@ function findRedisServer() {
 
 function startRedis(serverExe) {
   console.log(`Starting Redis from: ${serverExe}`);
-  const child = spawn(serverExe, ['--port', '6381'], {
+  const child = spawn(serverExe, ['--port', '6379'], {
     detached: true,
     stdio: 'ignore',
     cwd: path.dirname(serverExe),
   });
   child.unref();
-  console.log(`Redis ${REDIS_VERSION} started on port 6381 (PID: ${child.pid})`);
+  console.log(`Redis ${REDIS_VERSION} started on port 6379 (PID: ${child.pid})`);
 }
 
 // Check if redis is already extracted

@@ -84,6 +84,7 @@ export class AdminService {
     return this.prisma.order.findMany({
       include: {
         user: { select: { firstName: true, lastName: true, email: true } },
+        pages: { select: { id: true, pageNumber: true, imageUrl: true, status: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

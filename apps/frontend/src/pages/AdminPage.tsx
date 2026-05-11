@@ -965,16 +965,693 @@ function UsersTab({ users, onRefresh }: { users: any[]; onRefresh: () => void })
   );
 }
 
-function BooksTab() {
-  return <div style={cardStyle}>Book management coming soon...</div>;
+function MessagesTab() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMessages = async () => {
+    try {
+      const res = await api.get('/admin/messages');
+      setMessages(res.data);
+    } catch (e) {
+      console.error('Failed to fetch messages:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await api.patch(`/admin/messages/${id}/read`);
+      fetchMessages();
+    } catch (e) {
+      console.error('Failed to mark message as read:', e);
+    }
+  };
+
+  if (loading) return <div style={cardStyle}>Loading messages...</div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={cardStyle}>
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Date</th>
+              <th style={thStyle}>Name</th>
+              <th style={thStyle}>Email</th>
+              <th style={thStyle}>Topic</th>
+              <th style={thStyle}>Message</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.length === 0 ? (
+              <tr><td colSpan={7} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No messages found</td></tr>
+            ) : (
+              messages.map((m) => (
+                <tr key={m.id} style={{ opacity: m.isRead ? 0.7 : 1 }}>
+                  <td style={tdStyle}>{new Date(m.createdAt).toLocaleDateString()}</td>
+                  <td style={{ ...tdStyle, fontWeight: m.isRead ? 400 : 600 }}>{m.firstName} {m.lastName}</td>
+                  <td style={tdStyle}>{m.email}</td>
+                  <td style={tdStyle}>{m.topic}</td>
+                  <td style={{ ...tdStyle, maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.message}</td>
+                  <td style={tdStyle}>
+                    <span style={badge(m.isRead ? 'USER' : 'Pending')}>
+                      {m.isRead ? 'Read' : 'New'}
+                    </span>
+                  </td>
+                  <td style={tdStyle}>
+                    {!m.isRead && (
+                      <button style={btnOutline} onClick={() => markAsRead(m.id)}>
+                        Mark as Read
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function BooksTab({ orders }: { orders: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [themeFilter, setThemeFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [selectedBook, setSelectedBook] = useState<any>(null);
+  const navigate = useNavigate();
+
+  // Filter to only orders that have story/pages (i.e. actual books)
+  const books = orders.filter((o) => o.storyJson || (o.pages && o.pages.length > 0));
+
+  // Unique themes for filter dropdown
+  const allThemes = [...new Set(books.map((b) => b.theme).filter(Boolean))];
+
+  // Stats
+  const totalBooks = books.length;
+  const booksWithImages = books.filter((b) => b.pages?.some((p: any) => p.imageUrl)).length;
+  const paidBooks = books.filter((b) => ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(b.status)).length;
+  const previewReady = books.filter((b) => ['PREVIEW_READY', 'IMAGES_COMPLETE'].includes(b.status)).length;
+  const failedBooks = books.filter((b) => b.status === 'FAILED').length;
+
+  // Apply filters
+  const filteredBooks = books.filter((b) => {
+    if (statusFilter && b.status !== statusFilter) return false;
+    if (themeFilter && b.theme !== themeFilter) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const title = (b.storyJson?.title || '').toLowerCase();
+      const child = (b.childName || '').toLowerCase();
+      const user = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase();
+      const id = b.id.toLowerCase();
+      if (!title.includes(q) && !child.includes(q) && !user.includes(q) && !id.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const statCards = [
+    { emoji: '📚', label: 'Total Books', value: totalBooks, color: '#1a1814' },
+    { emoji: '🖼️', label: 'With Images', value: booksWithImages, color: '#2a6cb8' },
+    { emoji: '✅', label: 'Preview Ready', value: previewReady, color: '#3a7048' },
+    { emoji: '💳', label: 'Purchased', value: paidBooks, color: '#9a7020' },
+    { emoji: '❌', label: 'Failed', value: failedBooks, color: '#c47560' },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        {statCards.map((s) => (
+          <div key={s.label} style={{
+            ...cardStyle, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <span style={{ fontSize: 22 }}>{s.emoji}</span>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: '#8a8578', marginTop: 2 }}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          style={{ ...inputStyle, flex: 1, minWidth: 180 }}
+          placeholder="Search by title, child name, user..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select style={selectStyle} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All Statuses</option>
+          {ALL_ORDER_STATUSES.map((s) => (
+            <option key={s} value={s}>{statusLabel(s)}</option>
+          ))}
+        </select>
+        <select style={selectStyle} value={themeFilter} onChange={(e) => setThemeFilter(e.target.value)}>
+          <option value="">All Themes</option>
+          {allThemes.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
+          <button
+            style={{ ...btnOutline, padding: '6px 10px', background: viewMode === 'grid' ? '#1a1814' : 'transparent', color: viewMode === 'grid' ? '#fff' : '#1a1814' }}
+            onClick={() => setViewMode('grid')}
+            title="Grid view"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+          </button>
+          <button
+            style={{ ...btnOutline, padding: '6px 10px', background: viewMode === 'table' ? '#1a1814' : 'transparent', color: viewMode === 'table' ? '#fff' : '#1a1814' }}
+            onClick={() => setViewMode('table')}
+            title="Table view"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Book detail modal */}
+      {selectedBook && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={() => setSelectedBook(null)}>
+          <div style={{
+            ...cardStyle, width: '90%', maxWidth: 600, maxHeight: '80vh',
+            overflow: 'auto', position: 'relative',
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8a8578' }}
+              onClick={() => setSelectedBook(null)}
+            >✕</button>
+
+            <div style={{ display: 'flex', gap: 20, marginBottom: 24 }}>
+              {/* Cover thumbnail */}
+              <div style={{
+                width: 120, height: 150, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+                background: '#f0ede8',
+              }}>
+                {selectedBook.pages?.find((p: any) => p.imageUrl) ? (
+                  <img
+                    src={selectedBook.pages.find((p: any) => p.imageUrl).imageUrl}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>📖</div>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700 }}>
+                  {selectedBook.storyJson?.title || `${selectedBook.childName}'s Adventure`}
+                </h3>
+                <p style={{ margin: '0 0 8px', fontSize: 13, color: '#8a8578' }}>For {selectedBook.childName}</p>
+                <span style={badge(selectedBook.status)}>{statusLabel(selectedBook.status)}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 700 }}>{selectedBook.pages?.length || 0}</div>
+                <div style={{ fontSize: 11, color: '#8a8578' }}>Total Pages</div>
+              </div>
+              <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 700 }}>{selectedBook.pages?.filter((p: any) => p.imageUrl).length || 0}</div>
+                <div style={{ fontSize: 11, color: '#8a8578' }}>With Images</div>
+              </div>
+              <div style={{ padding: 12, background: '#faf9f7', borderRadius: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 18, fontWeight: 700 }}>{selectedBook.amountPaid ? `₹${selectedBook.amountPaid / 100}` : '—'}</div>
+                <div style={{ fontSize: 11, color: '#8a8578' }}>Revenue</div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 13, color: '#6a6560', lineHeight: 2, marginBottom: 20 }}>
+              <div><strong>Order ID:</strong> {selectedBook.id}</div>
+              <div><strong>Child:</strong> {selectedBook.childName} ({selectedBook.childAge}y, {selectedBook.childGender})</div>
+              <div><strong>Theme:</strong> {selectedBook.theme}</div>
+              <div><strong>Customer:</strong> {selectedBook.user?.firstName} {selectedBook.user?.lastName} ({selectedBook.user?.email})</div>
+              <div><strong>Created:</strong> {new Date(selectedBook.createdAt).toLocaleString()}</div>
+              {selectedBook.paymentId && <div><strong>Payment ID:</strong> {selectedBook.paymentId}</div>}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button style={btnPrimary} onClick={() => window.open(`/preview/${selectedBook.id}`, '_blank')}>Open Preview</button>
+              <button style={btnOutline} onClick={() => setSelectedBook(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results count */}
+      <div style={{ fontSize: 13, color: '#8a8578', paddingLeft: 4 }}>
+        Showing {filteredBooks.length} of {totalBooks} books
+      </div>
+
+      {/* Grid View */}
+      {viewMode === 'grid' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+          {filteredBooks.length === 0 ? (
+            <div style={{ ...cardStyle, gridColumn: '1 / -1', textAlign: 'center', padding: 60, color: '#8a8578' }}>
+              No books found matching your filters.
+            </div>
+          ) : (
+            filteredBooks.map((book) => {
+              const coverImg = book.pages?.find((p: any) => p.imageUrl)?.imageUrl;
+              const title = book.storyJson?.title || `${book.childName}'s Adventure`;
+              const pageCount = book.pages?.length || 0;
+              const imageCount = book.pages?.filter((p: any) => p.imageUrl).length || 0;
+              const isPurchased = ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(book.status);
+
+              return (
+                <div
+                  key={book.id}
+                  style={{
+                    ...cardStyle,
+                    padding: 0,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                  onClick={() => setSelectedBook(book)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  {/* Cover image */}
+                  <div style={{ width: '100%', height: 160, overflow: 'hidden', position: 'relative', background: '#f0ede8' }}>
+                    {coverImg ? (
+                      <img src={coverImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d5d0c8' }}>📖</div>
+                    )}
+                    {/* Status badge overlay */}
+                    <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                      <span style={badge(book.status)}>{statusLabel(book.status)}</span>
+                    </div>
+                    {isPurchased && (
+                      <div style={{ position: 'absolute', top: 8, left: 8, background: '#3a7048', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 10, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                        Purchased
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card content */}
+                  <div style={{ padding: '14px 16px' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1814', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {title}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#8a8578', marginBottom: 10 }}>
+                      For <strong>{book.childName}</strong> &middot; {book.theme}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#8a8578' }}>
+                        <span>📄 {pageCount} pages</span>
+                        <span>🖼️ {imageCount} images</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#8a8578' }}>
+                        {new Date(book.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div style={cardStyle}>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Cover</th>
+                <th style={thStyle}>Title</th>
+                <th style={thStyle}>Child</th>
+                <th style={thStyle}>Theme</th>
+                <th style={thStyle}>Pages</th>
+                <th style={thStyle}>Status</th>
+                <th style={thStyle}>Customer</th>
+                <th style={thStyle}>Date</th>
+                <th style={thStyle}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBooks.length === 0 ? (
+                <tr><td colSpan={9} style={{ ...tdStyle, textAlign: 'center', padding: 40 }}>No books found</td></tr>
+              ) : (
+                filteredBooks.map((book) => {
+                  const coverImg = book.pages?.find((p: any) => p.imageUrl)?.imageUrl;
+                  const title = book.storyJson?.title || `${book.childName}'s Adventure`;
+
+                  return (
+                    <tr key={book.id}>
+                      <td style={tdStyle}>
+                        <div style={{ width: 40, height: 50, borderRadius: 4, overflow: 'hidden', background: '#f0ede8' }}>
+                          {coverImg ? (
+                            <img src={coverImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📖</div>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle, fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</td>
+                      <td style={tdStyle}>{book.childName}</td>
+                      <td style={tdStyle}>{book.theme}</td>
+                      <td style={tdStyle}>{book.pages?.length || 0}</td>
+                      <td style={tdStyle}><span style={badge(book.status)}>{statusLabel(book.status)}</span></td>
+                      <td style={tdStyle}>{book.user?.firstName || 'Guest'}</td>
+                      <td style={tdStyle}>{new Date(book.createdAt).toLocaleDateString()}</td>
+                      <td style={tdStyle}>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={() => setSelectedBook(book)}>Details</button>
+                          <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={() => window.open(`/preview/${book.id}`, '_blank')}>Preview</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function APITab() {
   return <div style={cardStyle}>API management coming soon...</div>;
 }
 
-function PaymentsTab() {
-  return <div style={cardStyle}>Payment history coming soon...</div>;
+function PaymentsTab({ orders }: { orders: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dateRange, setDateRange] = useState<'all' | '7d' | '30d' | '90d'>('all');
+  const [selectedTxn, setSelectedTxn] = useState<any>(null);
+
+  // Only orders with a payment (amountPaid > 0 or paymentId set)
+  const paidOrders = orders.filter((o) => o.amountPaid && o.amountPaid > 0);
+
+  // Date filter
+  const now = new Date();
+  const dateFilteredOrders = paidOrders.filter((o) => {
+    if (dateRange === 'all') return true;
+    const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
+    const cutoff = new Date(now.getTime() - days * 86400000);
+    return new Date(o.createdAt) >= cutoff;
+  });
+
+  // Search + status filter
+  const filteredTxns = dateFilteredOrders.filter((o) => {
+    if (statusFilter && o.status !== statusFilter) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        o.id.toLowerCase().includes(q) ||
+        (o.paymentId || '').toLowerCase().includes(q) ||
+        (o.razorpayOrderId || '').toLowerCase().includes(q) ||
+        (o.childName || '').toLowerCase().includes(q) ||
+        `${o.user?.firstName || ''} ${o.user?.lastName || ''}`.toLowerCase().includes(q) ||
+        (o.user?.email || '').toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  // KPIs
+  const totalRevenue = paidOrders.reduce((s, o) => s + (o.amountPaid || 0), 0) / 100;
+  const totalTxns = paidOrders.length;
+  const avgOrder = totalTxns > 0 ? totalRevenue / totalTxns : 0;
+  const couponOrders = paidOrders.filter((o) => o.couponId);
+  const totalDiscount = couponOrders.reduce((s, o) => s + (o.discountAmount || 0), 0) / 100;
+
+  // Monthly revenue for the bar chart (last 6 months)
+  const monthlyData: { label: string; revenue: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+    const rev = paidOrders
+      .filter((o) => { const c = new Date(o.createdAt); return c >= d && c <= monthEnd; })
+      .reduce((s, o) => s + (o.amountPaid || 0), 0) / 100;
+    monthlyData.push({ label, revenue: rev });
+  }
+  const maxRevenue = Math.max(...monthlyData.map((m) => m.revenue), 1);
+
+  // Export CSV
+  const exportPaymentsCSV = () => {
+    const headers = ['Payment ID', 'Razorpay Order ID', 'Order ID', 'Date', 'Customer', 'Email', 'Child', 'Amount (₹)', 'Discount (₹)', 'Coupon', 'Status', 'Provider'];
+    const rows = filteredTxns.map((o) => [
+      o.paymentId || '',
+      o.razorpayOrderId || '',
+      o.id,
+      new Date(o.createdAt).toLocaleDateString(),
+      `${o.user?.firstName || ''} ${o.user?.lastName || ''}`.trim() || 'Guest',
+      o.user?.email || o.email || '',
+      o.childName || '',
+      ((o.amountPaid || 0) / 100).toString(),
+      ((o.discountAmount || 0) / 100).toString(),
+      o.coupon?.code || '',
+      o.status,
+      o.paymentProvider || 'Razorpay',
+    ]);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell: string) => `"${(cell ?? '').replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `payments_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const kpiCards = [
+    { emoji: '💰', label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: '#3a7048' },
+    { emoji: '🧾', label: 'Transactions', value: totalTxns.toString(), color: '#1a1814' },
+    { emoji: '📊', label: 'Avg Order Value', value: `₹${avgOrder.toFixed(0)}`, color: '#2a6cb8' },
+    { emoji: '🎟️', label: 'Coupons Used', value: `${couponOrders.length} (₹${totalDiscount.toLocaleString('en-IN')})`, color: '#9a7020' },
+    { emoji: '📈', label: 'This Month', value: `₹${monthlyData[monthlyData.length - 1]?.revenue.toLocaleString('en-IN') || '0'}`, color: '#6e9973' },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* KPI Summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        {kpiCards.map((k) => (
+          <div key={k.label} style={{ ...cardStyle, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 22 }}>{k.emoji}</span>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: k.color }}>{k.value}</div>
+              <div style={{ fontSize: 11, color: '#8a8578', marginTop: 2 }}>{k.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Monthly Revenue Chart */}
+      <div style={cardStyle}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 600 }}>Monthly Revenue (Last 6 Months)</h3>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140, padding: '0 4px' }}>
+          {monthlyData.map((m) => {
+            const pct = maxRevenue > 0 ? (m.revenue / maxRevenue) * 100 : 0;
+            return (
+              <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#1a1814' }}>
+                  {m.revenue > 0 ? `₹${m.revenue.toLocaleString('en-IN')}` : '—'}
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: 64,
+                    height: `${Math.max(pct, 4)}%`,
+                    background: m.revenue > 0 ? 'linear-gradient(180deg, #c8a45c 0%, #a8843c 100%)' : '#e8e4de',
+                    borderRadius: '6px 6px 0 0',
+                    transition: 'height 0.4s ease',
+                    minHeight: 4,
+                  }}
+                />
+                <div style={{ fontSize: 10, color: '#8a8578', fontWeight: 500 }}>{m.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Filters + Search */}
+      <div style={{ ...cardStyle, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          style={{ ...inputStyle, flex: 1, minWidth: 180 }}
+          placeholder="Search by payment ID, customer, email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select style={selectStyle} value={dateRange} onChange={(e) => setDateRange(e.target.value as any)}>
+          <option value="all">All Time</option>
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="90d">Last 90 Days</option>
+        </select>
+        <select style={selectStyle} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All Statuses</option>
+          {['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].map((s) => (
+            <option key={s} value={s}>{statusLabel(s)}</option>
+          ))}
+        </select>
+        <button style={btnPrimary} onClick={exportPaymentsCSV}>Export CSV</button>
+      </div>
+
+      {/* Transaction detail modal */}
+      {selectedTxn && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={() => setSelectedTxn(null)}>
+          <div style={{
+            ...cardStyle, width: '90%', maxWidth: 580, maxHeight: '80vh',
+            overflow: 'auto', position: 'relative',
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#8a8578' }}
+              onClick={() => setSelectedTxn(null)}
+            >✕</button>
+
+            <h3 style={{ margin: '0 0 20px', fontSize: 18, fontWeight: 700 }}>Payment Details</h3>
+
+            {/* Amount hero */}
+            <div style={{
+              textAlign: 'center', padding: '20px 0 24px',
+              borderBottom: '1px solid #f0ede8', marginBottom: 20,
+            }}>
+              <div style={{ fontSize: 36, fontWeight: 700, color: '#3a7048' }}>
+                ₹{((selectedTxn.amountPaid || 0) / 100).toLocaleString('en-IN')}
+              </div>
+              <div style={{ fontSize: 13, color: '#8a8578', marginTop: 4 }}>
+                {selectedTxn.currency || 'INR'} • {new Date(selectedTxn.createdAt).toLocaleString()}
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <span style={badge(selectedTxn.status)}>{statusLabel(selectedTxn.status)}</span>
+              </div>
+            </div>
+
+            {/* Details grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 13, color: '#6a6560', lineHeight: 2, marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', marginBottom: 4 }}>Payment Info</div>
+                <div><strong>Payment ID:</strong> {selectedTxn.paymentId || '—'}</div>
+                <div><strong>Razorpay Order:</strong> {selectedTxn.razorpayOrderId || '—'}</div>
+                <div><strong>Provider:</strong> {selectedTxn.paymentProvider || 'Razorpay'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', marginBottom: 4 }}>Customer</div>
+                <div><strong>Name:</strong> {selectedTxn.user?.firstName} {selectedTxn.user?.lastName}</div>
+                <div><strong>Email:</strong> {selectedTxn.user?.email || selectedTxn.email || '—'}</div>
+                <div><strong>Book:</strong> {selectedTxn.childName}'s story</div>
+              </div>
+            </div>
+
+            {/* Coupon info */}
+            {selectedTxn.couponId && (
+              <div style={{
+                padding: '12px 16px', background: '#faf8f3', borderRadius: 8,
+                border: '1px solid #efebe3', marginBottom: 20,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#8a8578', marginBottom: 6 }}>Coupon Applied</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, color: '#9a7020' }}>
+                    {selectedTxn.coupon?.code || selectedTxn.couponId.slice(0, 8)}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#3a7048' }}>
+                    -₹{((selectedTxn.discountAmount || 0) / 100).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button style={btnPrimary} onClick={() => window.open(`/preview/${selectedTxn.id}`, '_blank')}>View Book</button>
+              <button style={btnOutline} onClick={() => setSelectedTxn(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results count */}
+      <div style={{ fontSize: 13, color: '#8a8578', paddingLeft: 4 }}>
+        Showing {filteredTxns.length} of {paidOrders.length} transactions
+      </div>
+
+      {/* Transactions Table */}
+      <div style={cardStyle}>
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Date</th>
+              <th style={thStyle}>Payment ID</th>
+              <th style={thStyle}>Customer</th>
+              <th style={thStyle}>Book</th>
+              <th style={thStyle}>Amount</th>
+              <th style={thStyle}>Discount</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTxns.length === 0 ? (
+              <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', padding: 40, color: '#8a8578' }}>No transactions found</td></tr>
+            ) : (
+              filteredTxns.map((o) => (
+                <tr key={o.id}>
+                  <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 11, fontWeight: 600 }}>
+                    {o.paymentId ? `${o.paymentId.slice(0, 16)}...` : '—'}
+                  </td>
+                  <td style={tdStyle}>
+                    <div>{o.user?.firstName || 'Guest'} {o.user?.lastName || ''}</div>
+                    <div style={{ fontSize: 11, color: '#8a8578' }}>{o.user?.email || o.email || ''}</div>
+                  </td>
+                  <td style={tdStyle}>{o.childName}</td>
+                  <td style={{ ...tdStyle, fontWeight: 600, color: '#3a7048' }}>₹{((o.amountPaid || 0) / 100).toLocaleString('en-IN')}</td>
+                  <td style={tdStyle}>
+                    {o.discountAmount ? (
+                      <span style={{ color: '#9a7020', fontWeight: 500 }}>-₹{(o.discountAmount / 100).toLocaleString('en-IN')}</span>
+                    ) : '—'}
+                  </td>
+                  <td style={tdStyle}><span style={badge(o.status)}>{statusLabel(o.status)}</span></td>
+                  <td style={tdStyle}>
+                    <button style={{ ...btnOutline, padding: '4px 10px', fontSize: 12 }} onClick={() => setSelectedTxn(o)}>Details</button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 function NotificationsTab() {
@@ -1074,8 +1751,9 @@ export function AdminPage() {
       case 'pricing': return <PricingTab />;
       case 'coupons': return <CouponsTab />;
       case 'users': return <UsersTab users={users} onRefresh={() => fetchData(false)} />;
-      case 'books': return <BooksTab />;
-      case 'payments': return <PaymentsTab />;
+      case 'books': return <BooksTab orders={orders} />;
+      case 'payments': return <PaymentsTab orders={orders} />;
+      case 'messages': return <MessagesTab />;
     }
   };
 

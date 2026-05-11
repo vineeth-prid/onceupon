@@ -137,13 +137,26 @@ export class PdfService {
             doc.rect(0, 0, A4_WIDTH, A4_HEIGHT).fill('#2d1b69');
           }
 
+          // Story text overlaid at bottom — dynamically positioned
+          const textMargin = 50;
+          const textWidth = A4_WIDTH - textMargin * 2;
+          const textFontSize = 14;
+          const textLineGap = 7;
+          const bottomPadding = 35; // space above page number
+
+          // Measure the text height first so we can bottom-align it
+          doc.font(this.getFont('body')).fontSize(textFontSize);
+          const textHeight = doc.heightOfString(page.text, {
+            width: textWidth,
+            lineGap: textLineGap,
+          });
+
+          // Position text so it ends at (A4_HEIGHT - bottomPadding)
+          const textY = A4_HEIGHT - bottomPadding - textHeight;
+
           // Dark gradient overlay at bottom for text readability.
-          // ROOT CAUSE FIX: The previous approach used 5 stacked semi-transparent
-          // rectangles. PDFKit renders each as a separate compositing layer, creating
-          // visible horizontal seam artifacts at each rect's top edge.
-          // FIX: Use a single native PDFKit linearGradient — no discrete layer
-          // boundaries, so the PDF renders completely clean with no lines.
-          const gradOverlayStart = A4_HEIGHT * 0.50;
+          // Starts well above the text so the transition looks smooth.
+          const gradOverlayStart = Math.min(A4_HEIGHT * 0.50, textY - 80);
           const grad = doc.linearGradient(0, gradOverlayStart, 0, A4_HEIGHT);
           grad.stop(0, '#0a0514', 0);
           grad.stop(0.35, '#0a0514', 0.45);
@@ -151,16 +164,11 @@ export class PdfService {
           grad.stop(1, '#0a0514', 0.88);
           doc.rect(0, gradOverlayStart, A4_WIDTH, A4_HEIGHT - gradOverlayStart).fill(grad);
 
-          // Story text overlaid at bottom
-          const textY = A4_HEIGHT - 180;
-          const textMargin = 50;
-          const textWidth = A4_WIDTH - textMargin * 2;
-
-          doc.font(this.getFont('body')).fontSize(14).fillColor('#f0ece4')
+          doc.fillColor('#f0ece4')
             .text(page.text, textMargin, textY, {
               align: 'center',
               width: textWidth,
-              lineGap: 7,
+              lineGap: textLineGap,
             });
 
           // Page number (subtle, bottom-right)

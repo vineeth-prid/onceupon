@@ -311,7 +311,7 @@ export function ContactPage() {
               >
                 <div>
                   <label className="font-body" htmlFor="firstName" style={labelStyle}>
-                    First name
+                    First name *
                   </label>
                   <input
                     id="firstName"
@@ -328,7 +328,7 @@ export function ContactPage() {
                 </div>
                 <div>
                   <label className="font-body" htmlFor="lastName" style={labelStyle}>
-                    Last name
+                    Last name *
                   </label>
                   <input
                     id="lastName"
@@ -348,7 +348,7 @@ export function ContactPage() {
               {/* Email */}
               <div style={{ marginBottom: 20 }}>
                 <label className="font-body" htmlFor="email" style={labelStyle}>
-                  Email address
+                  Email address *
                 </label>
                 <input
                   id="email"
@@ -388,7 +388,7 @@ export function ContactPage() {
               {/* Topic Selector */}
               <div style={{ marginBottom: 20 }}>
                 <label className="font-body" style={labelStyle}>
-                  Topic
+                  Topic *
                 </label>
                 <input type="hidden" name="topic" value={selectedTopic || ''} />
                 <div
@@ -427,7 +427,7 @@ export function ContactPage() {
               {/* Message */}
               <div style={{ marginBottom: 28 }}>
                 <label className="font-body" htmlFor="message" style={labelStyle}>
-                  Message
+                  Message *
                 </label>
                 <textarea
                   id="message"

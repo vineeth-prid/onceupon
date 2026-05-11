@@ -56,12 +56,18 @@ export function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
 
   const [childName, setChildName] = useState('');
+  const [hasPreviousPayment, setHasPreviousPayment] = useState(false);
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     if (orderId) {
       getOrder(orderId).then(data => {
         setChildName(data.order.childName || '');
+        const paid = !!data.order.paymentId;
+        setHasPreviousPayment(paid);
+        if (paid) {
+          setFormat('print');
+        }
       });
     }
 
@@ -221,7 +227,7 @@ export function CheckoutPage() {
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
         name: 'Once Upon a Time',
-        description: `${format === 'ebook' ? 'eBook' : 'Print Book'} for ${childName}`,
+        description: `✨ ${format === 'ebook' ? 'Digital Magic' : 'Printed Magic'} for ${childName} ✨`,
         order_id: rzpOrder.id,
         handler: async (response: any) => {
           try {
@@ -247,7 +253,7 @@ export function CheckoutPage() {
           contact: shipping.phone
         },
         theme: {
-          color: '#000000'
+          color: '#AB47BC'
         },
         modal: {
           ondismiss: () => setPaying(false)
@@ -312,36 +318,46 @@ export function CheckoutPage() {
           <section style={{ marginBottom: 36 }}>
             <h2 style={sectionTitle}>Format</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {FORMATS.map(f => (
-                <div
-                  key={f.id}
-                  style={radioCard(format === f.id)}
-                  onClick={() => setFormat(f.id)}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{
-                        width: 18, height: 18, borderRadius: '50%',
-                        border: format === f.id ? '5px solid #000' : '2px solid #ccc',
-                        display: 'inline-block', flexShrink: 0,
-                        boxSizing: 'border-box',
-                      }} />
-                      <div>
-                        <span style={{ fontWeight: 500, fontSize: 15, color: '#000' }}>{f.label}</span>
-                        {f.badge && (
-                          <span style={{
-                            marginLeft: 10, fontSize: 10, fontWeight: 600,
-                            background: '#000', color: '#FFF', padding: '2px 8px',
-                            borderRadius: 4, letterSpacing: 0.5, verticalAlign: 'middle',
-                          }}>{f.badge}</span>
-                        )}
-                        <div style={{ fontSize: 13, color: '#6F6F6F', marginTop: 2 }}>{f.desc}</div>
+              {FORMATS.filter(f => {
+                if (hasPreviousPayment && f.id === 'ebook') return false;
+                return true;
+              }).map(f => {
+                const isUpgrade = hasPreviousPayment && f.id === 'print';
+                const displayLabel = isUpgrade ? 'Printed Book Upgrade' : f.label;
+                const displayPrice = isUpgrade ? Math.max(0, pricing.physicalPrice - pricing.ebookPrice) : f.price;
+                const displayDesc = isUpgrade ? 'You already unlocked the digital version. Just pay for printing and shipping.' : f.desc;
+
+                return (
+                  <div
+                    key={f.id}
+                    style={radioCard(format === f.id)}
+                    onClick={() => setFormat(f.id)}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: '50%',
+                          border: format === f.id ? '5px solid #000' : '2px solid #ccc',
+                          display: 'inline-block', flexShrink: 0,
+                          boxSizing: 'border-box',
+                        }} />
+                        <div>
+                          <span style={{ fontWeight: 500, fontSize: 15, color: '#000' }}>{displayLabel}</span>
+                          {f.badge && !isUpgrade && (
+                            <span style={{
+                              marginLeft: 10, fontSize: 10, fontWeight: 600,
+                              background: '#000', color: '#FFF', padding: '2px 8px',
+                              borderRadius: 4, letterSpacing: 0.5, verticalAlign: 'middle',
+                            }}>{f.badge}</span>
+                          )}
+                          <div style={{ fontSize: 13, color: '#6F6F6F', marginTop: 2 }}>{displayDesc}</div>
+                        </div>
                       </div>
+                      <span style={{ fontWeight: 600, fontSize: 16, color: '#000' }}>{formatPrice(displayPrice)}</span>
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: 16, color: '#000' }}>{formatPrice(f.price)}</span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -625,9 +641,21 @@ export function CheckoutPage() {
             onClick={handlePlaceOrder}
             disabled={paying}
             className="btn-primary"
-            style={{ width: '100%', padding: '16px 0' }}
+            style={{ 
+              width: '100%', 
+              padding: '18px 0',
+              background: paying ? '#F5F5F5' : 'linear-gradient(135deg, #16a34a 0%, #AB47BC 100%)',
+              color: paying ? '#999' : '#FFFFFF',
+              border: 'none',
+              boxShadow: paying ? 'none' : '0 6px 20px rgba(171, 71, 188, 0.3)',
+              fontSize: '1.05rem',
+              fontWeight: 700
+            }}
           >
-            {paying ? 'Processing...' : `Pay & Place Order — ${formatPrice(breakdown.total)}`}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, display: 'inline-block', verticalAlign: 'middle' }}>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            {paying ? '✨ Weaving Your Magic...' : `Pay & Place Order — ${formatPrice(breakdown.total)}`}
           </button>
         </div>
 

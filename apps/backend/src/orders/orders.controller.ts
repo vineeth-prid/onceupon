@@ -64,8 +64,8 @@ export class OrdersController {
       }
     }
     
-    // Validate shipping if it's a print order (amount >= 1000 INR)
-    if (amount >= 1000) {
+    // Validate shipping if shipping data is provided
+    if (shipping) {
       if (!shipping) {
         throw new BadRequestException('Shipping address is required for print orders');
       }

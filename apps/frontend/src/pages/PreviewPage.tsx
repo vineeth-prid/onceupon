@@ -305,8 +305,7 @@ export function PreviewPage() {
   const totalStoryPages = pages.filter((p: any) => p.layout !== 'chapter-title').length;
   
   // Use payment status to determine if preview wall should be shown
-  const isPaid = ['PAID', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!orderPaymentId;
-  
+  const isPaid = ['PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED'].includes(orderStatus) || !!orderPaymentId;
   // Detect if full book generation is still in progress after payment
   const isGenerating = isPaid && (
     ['PAID', 'IMAGES_GENERATING', 'STORY_GENERATING', 'STORY_COMPLETE'].includes(orderStatus) ||
@@ -413,7 +412,7 @@ export function PreviewPage() {
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
         name: 'Once Upon a Time',
-        description: `Personalized storybook for ${childName}`,
+        description: `✨ Unlocking Magic for ${childName} ✨`,
         order_id: rzpOrder.id,
         handler: async (response: any) => {
           try {
@@ -435,7 +434,7 @@ export function PreviewPage() {
           contact: ''
         },
         theme: {
-          color: '#2d1b69'
+          color: '#AB47BC'
         }
       };
 
@@ -811,45 +810,73 @@ export function PreviewPage() {
             alignItems: 'center',
             gap: '0.6rem',
           }}>
-            <p style={{
-              color: 'rgba(255,255,255,0.6)',
-              fontFamily: FONT_UI,
-              fontSize: '0.8rem',
-              margin: 0,
-              textAlign: 'center',
-            }}>
-              This is a preview. Unlock the full storybook to download or order a print copy.
-            </p>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.8rem',
-              flexWrap: 'wrap',
-            }}>
-              <button
-                onClick={handlePayment}
-                disabled={paying}
-                className="btn-gold"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-                {paying ? 'Initiating...' : `Unlock eBook ₹${ebookPrice}`}
-              </button>
-              <button
-                onClick={() => navigate(`/checkout/${orderId}`)}
-                className="btn-outline-white"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                  <line x1="12" y1="22.08" x2="12" y2="12" />
-                </svg>
-                Order Physical Book
-              </button>
-            </div>
+            {isAdmin ? (
+              <p style={{
+                color: '#AB47BC',
+                fontFamily: FONT_UI,
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                margin: 0,
+                textAlign: 'center',
+                padding: '6px 16px',
+                borderRadius: 999,
+                border: '1px solid rgba(171, 71, 188, 0.25)',
+                background: 'rgba(171, 71, 188, 0.06)',
+              }}>
+                👁 Viewing as Admin — Preview only (unpaid order)
+              </p>
+            ) : (
+              <>
+                <p style={{
+                  color: '#555',
+                  fontFamily: FONT_UI,
+                  fontSize: '0.85rem',
+                  margin: 0,
+                  textAlign: 'center',
+                  maxWidth: 480,
+                }}>
+                  This is a preview. Unlock the full storybook to download or order a print copy.
+                </p>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.8rem',
+                  flexWrap: 'wrap',
+                }}>
+                  <button
+                    onClick={handlePayment}
+                    disabled={paying}
+                    className="btn-primary"
+                    style={{ 
+                      padding: '0.85rem 2rem', 
+                      fontSize: '1rem',
+                      background: paying ? '#F5F5F5' : 'linear-gradient(135deg, #16a34a 0%, #AB47BC 100%)',
+                      color: paying ? '#999' : '#FFFFFF',
+                      border: 'none',
+                      boxShadow: paying ? 'none' : '0 4px 15px rgba(171, 71, 188, 0.3)',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    {paying ? '✨ Preparing Magic...' : `Unlock eBook ₹${ebookPrice}`}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/checkout/${orderId}`)}
+                    className="btn-secondary"
+                    style={{ padding: '0.75rem 1.6rem', fontSize: '0.95rem' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Order Physical Book
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : isGenerating ? (
           /* ── GENERATING MODE: show progress while book is being created ── */

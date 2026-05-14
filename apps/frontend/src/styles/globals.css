@@ -115,23 +115,7 @@ html, body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea 
     transform: translateY(0);
   }
 
-  /* ─── Hero — brand-aligned readable text on bright video ─── */
-  .hero-card {
-    position: relative;
-    background: rgba(250, 245, 237, 0.72);     /* cream @ 72% — brand background */
-    backdrop-filter: blur(22px) saturate(140%);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    border-radius: 32px;
-    padding: clamp(36px, 6vw, 64px) clamp(28px, 5vw, 72px);
-    max-width: 920px;
-    width: calc(100% - 32px);
-    box-shadow:
-      0 24px 80px rgba(59, 35, 22, 0.25),
-      0 4px 14px rgba(59, 35, 22, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  }
-
+  /* ─── Hero — brand-aligned text on video, no backdrop card ─── */
   .hero-headline {
     color: #2C1810;                            /* brand brown.dark */
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);

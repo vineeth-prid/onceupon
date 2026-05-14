@@ -18,17 +18,21 @@ export function LandingPage() {
       <section
         className="relative z-10 flex flex-col items-center justify-center text-center px-6 min-h-screen"
       >
+        {/* Dark vignette so text reads against any background frame */}
+        <div aria-hidden className="hero-scrim" />
+
         {/* Headline */}
         <h1
-          className="font-display text-5xl sm:text-7xl md:text-8xl font-normal max-w-7xl animate-fade-rise"
-          style={{ lineHeight: 0.95, letterSpacing: '-2.46px', color: '#000000' }}
+          className="font-display hero-headline text-5xl sm:text-7xl md:text-8xl font-normal max-w-7xl animate-fade-rise relative"
+          style={{ lineHeight: 0.95, letterSpacing: '-2.46px' }}
         >
-          Create <em className="not-italic" style={{ color: '#6F6F6F', fontStyle: 'italic' }}>Magical</em> Storybooks{' '}
-          <br />
+          Create <span className="hero-magical">Magical</span> Storybooks
         </h1>
 
         {/* Description */}
-        <p className="text-sm sm:text-base max-w-xl mt-1 leading-relaxed font-body animate-fade-rise-delay" style={{ color: '#6F6F6F' }}>
+        <p
+          className="hero-sub text-base sm:text-lg max-w-2xl mt-6 leading-relaxed font-body animate-fade-rise-delay relative"
+        >
           Transform your little one into the hero of their very own
           personalized illustrated storybook. Through the magic of AI, we craft
           beautiful stories just for them.
@@ -37,7 +41,7 @@ export function LandingPage() {
         {/* CTA Button */}
         <button
           onClick={() => navigate('/create')}
-          className="btn-secondary animate-fade-rise-delay-2 px-14 py-5"
+          className="btn-secondary hero-cta-glow animate-fade-rise-delay-2 px-14 py-5 mt-10 relative"
         >
           Create a Book
         </button>

@@ -145,35 +145,6 @@ export function ContactPage() {
 
           {/* Contact Info Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Email */}
-            <div
-              style={{
-                border: '1px solid #E5E5E5',
-                borderRadius: 12,
-                padding: '20px 24px',
-              }}
-            >
-              <div
-                className="font-body"
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  textTransform: 'uppercase' as const,
-                  letterSpacing: '0.06em',
-                  color: '#6F6F6F',
-                  marginBottom: 6,
-                }}
-              >
-                Email
-              </div>
-              <div
-                className="font-body"
-                style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
-              >
-                hello@onceuponatym.com
-              </div>
-            </div>
-
             {/* Live Chat */}
             <div
               style={{
@@ -199,7 +170,7 @@ export function ContactPage() {
                 className="font-body"
                 style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
               >
-                Mon&ndash;Fri, 9am&ndash;6pm
+                Mon&ndash;Fri, 9:00&ndash;18:00
               </div>
             </div>
 
@@ -228,7 +199,42 @@ export function ContactPage() {
                 className="font-body"
                 style={{ fontSize: '1rem', color: '#000', fontWeight: 500 }}
               >
-                +44 20 0000 0000
+                +91 80890 00123
+              </div>
+            </div>
+
+            {/* Grievance Officer */}
+            <div
+              style={{
+                border: '1px solid #E5E5E5',
+                borderRadius: 12,
+                padding: '20px 24px',
+              }}
+            >
+              <div
+                className="font-body"
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  textTransform: 'uppercase' as const,
+                  letterSpacing: '0.06em',
+                  color: '#6F6F6F',
+                  marginBottom: 6,
+                }}
+              >
+                Grievance Officer
+              </div>
+              <div
+                className="font-body"
+                style={{ fontSize: '1rem', color: '#000', fontWeight: 500, lineHeight: 1.5 }}
+              >
+                Rakesh V Gopi &middot; Creative Head
+              </div>
+              <div
+                className="font-body"
+                style={{ fontSize: '0.875rem', color: '#6F6F6F', marginTop: 4, lineHeight: 1.5 }}
+              >
+                Prestige Cube, Koramangala, Bengaluru, Karnataka, India.
               </div>
             </div>
           </div>

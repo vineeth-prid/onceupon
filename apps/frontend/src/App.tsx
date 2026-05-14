@@ -14,6 +14,11 @@ import { BookDetailPage } from './pages/BookDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { FAQPage } from './pages/FAQPage';
 import { ContactPage } from './pages/ContactPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { ReturnPolicyPage } from './pages/ReturnPolicyPage';
+import { ShippingPolicyPage } from './pages/ShippingPolicyPage';
+import { RefundPolicyPage } from './pages/RefundPolicyPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { ConfirmationPage } from './pages/ConfirmationPage';
 import { TrackingPage } from './pages/TrackingPage';
@@ -83,6 +88,11 @@ export function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/return-policy" element={<ReturnPolicyPage />} />
+              <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+              <Route path="/refund-policy" element={<RefundPolicyPage />} />
               <Route path="/profile" element={
                 <ProtectedRoute><ProfilePage /></ProtectedRoute>
               } />

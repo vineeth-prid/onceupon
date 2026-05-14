@@ -115,41 +115,41 @@ html, body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea 
     transform: translateY(0);
   }
 
-  /* ─── Hero — readable text on bright video ─── */
-  .hero-scrim {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse 70% 55% at 50% 52%,
-        rgba(0, 0, 0, 0.58) 0%,
-        rgba(0, 0, 0, 0.42) 30%,
-        rgba(0, 0, 0, 0.22) 60%,
-        rgba(0, 0, 0, 0.05) 85%,
-        transparent 100%);
+  /* ─── Hero — brand-aligned readable text on bright video ─── */
+  .hero-card {
+    position: relative;
+    background: rgba(250, 245, 237, 0.72);     /* cream @ 72% — brand background */
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 32px;
+    padding: clamp(36px, 6vw, 64px) clamp(28px, 5vw, 72px);
+    max-width: 920px;
+    width: calc(100% - 32px);
+    box-shadow:
+      0 24px 80px rgba(59, 35, 22, 0.25),
+      0 4px 14px rgba(59, 35, 22, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
 
   .hero-headline {
-    color: #FFFFFF;
-    text-shadow:
-      0 2px 24px rgba(0, 0, 0, 0.55),
-      0 1px 3px rgba(0, 0, 0, 0.4);
+    color: #2C1810;                            /* brand brown.dark */
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
   }
 
   .hero-sub {
-    color: rgba(255, 255, 255, 0.94);
-    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.6);
+    color: #5C3D2E;                            /* brand brown.light */
   }
 
   .hero-magical {
     font-style: italic;
     background: linear-gradient(
       120deg,
-      #F5C97A 0%,
-      #FFE9A8 25%,
-      #FFF6D6 50%,
-      #FFE9A8 75%,
-      #F5C97A 100%
+      #B8862C 0%,
+      #D4A373 22%,
+      #F0CC8A 48%,
+      #D4A373 75%,
+      #B8862C 100%
     );
     background-size: 220% 100%;
     -webkit-background-clip: text;
@@ -157,13 +157,26 @@ html, body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea 
     -webkit-text-fill-color: transparent;
     color: transparent;
     animation: magical-shimmer 4.5s ease-in-out infinite;
-    filter: drop-shadow(0 2px 14px rgba(245, 201, 122, 0.4));
+    filter: drop-shadow(0 1px 8px rgba(212, 163, 115, 0.45));
   }
 
-  .hero-cta-glow {
+  .hero-cta-brand {
+    background: #3B2316 !important;            /* brand brown */
+    color: #FAF5ED !important;                 /* brand cream */
+    border: 1px solid #2C1810 !important;
     box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.25),
-      0 2px 8px rgba(0, 0, 0, 0.15);
+      0 10px 28px rgba(44, 24, 16, 0.32),
+      0 2px 8px rgba(44, 24, 16, 0.18) !important;
+  }
+  .hero-cta-brand:hover {
+    background: #2C1810 !important;
+    transform: translateY(-2px);
+  }
+  .hero-cta-brand:active {
+    background: #D4A373 !important;            /* brand gold on press */
+    color: #2C1810 !important;
+    border-color: #D4A373 !important;
+    transform: translateY(0);
   }
 }
 

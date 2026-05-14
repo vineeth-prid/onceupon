@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getAlphabetsStory(childName: string, _childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Alphabet Adventure`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Alphabet Adventure`,
+        imagePrompt: 'A decorative storybook title page with large playful hand-drawn alphabet letters from A to Z scattered along an ornamental border, each letter a different cheerful pastel color, tiny acorns and leaves between the letters, a small apple in the corner, soft warm storybook lighting, vibrant pastel colors',
+        sceneDescription: 'Title page with alphabet decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with playful alphabet letters and tiny forest elements',
+      },
+      {
+        pageNumber: 2,
+        text: `${childName}'s adventure began under a tall apple tree. ${Pronoun} found a shiny red Apple resting on the soft grass. "A is for Apple!" ${pronoun} said with a smile.`,
+        imagePrompt: 'A cheerful storybook scene at the base of a tall leafy apple tree with thick green canopy and a few red apples hanging from the branches, one bright shiny red apple sitting on soft green grass beside a small wicker basket, warm morning sunlight filtering through the leaves, a large playful capital letter A floating gently in the corner of the scene, the child kneeling beside the apple holding it gently with both hands, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, delighted expression, soft pastel storybook style',
+        sceneDescription: `${childName} finds the letter A — an apple under a tree`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and apple tree in upper two-thirds, soft grass at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `Around a leafy bush peeked a friendly furry Bear holding a tiny basket of berries. "B is for Bear!" ${childName} laughed as the bear waved a soft paw.`,
+        imagePrompt: 'A friendly storybook scene with a fluffy round brown bear with kind round eyes and a soft pink nose sitting beside a leafy green berry bush, the bear holding a small woven basket full of plump blueberries with one chubby paw, the other paw raised in a gentle wave, tall ferns and a few tiny mushrooms around them, dappled forest light, a large playful capital letter B floating gently in the corner, the child standing a few steps away with hands clasped happily in front, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, charmed smile, soft pastel storybook style',
+        sceneDescription: `${childName} meets a friendly bear with berries`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place bear and child on the LEFT side, leave right side as soft forest for text',
+      },
+      {
+        pageNumber: 4,
+        text: `In a sunny garden, a curious tabby Cat chased a few fluttering butterflies. "C is for Cat!" ${childName} called as the cat purred and curled around ${possessive} ankles.`,
+        imagePrompt: 'A cheerful storybook garden scene with a small round tabby cat with soft orange and cream stripes and big green cat eyes (cat eyes only — not the child) playfully chasing two tiny butterflies fluttering through the air, a low garden wall covered in pink climbing roses, a small green watering can on a flagstone path, warm afternoon sunlight, a large playful capital letter C floating in the corner, the child standing on the path leaning forward laughing at the cat, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes (NOT green like the cat eyes), warm light brown skin, joyful expression, soft pastel storybook style',
+        sceneDescription: `${childName} watches a cat play with butterflies`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep cat and child in upper two-thirds, soft path at bottom for text',
+      },
+      {
+        pageNumber: 5,
+        text: `Down a sunny lane, a happy Dog danced in a circle, tail wagging fast. "D is for Dog!" ${childName} cheered as the dog hopped beside ${possessive} feet.`,
+        imagePrompt: 'A sunny storybook lane with a fluffy small dog with golden cream fur and floppy ears and a pink tongue panting happily, dancing in a tight circle with tail wagging in a blur, a red collar around its neck, tiny daisies along the dirt path, a wooden fence behind, bright daytime sunlight, a large playful capital letter D floating in the corner, the child walking down the lane clapping hands and laughing, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming smile, soft pastel storybook style',
+        sceneDescription: `${childName} sees a happy dog dancing`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place dog and child on the RIGHT side, soft lane on left for text',
+      },
+      {
+        pageNumber: 6,
+        text: `At the edge of a wide blue river, a kind grey Elephant gently splashed cool water. "E is for Elephant!" ${childName} cheered, dancing back from the friendly splashes.`,
+        imagePrompt: 'A storybook riverbank scene with a friendly soft grey elephant with kind black eyes (elephant eyes — not the child) and big floppy ears, raising its trunk and gently spraying a sparkling fan of water droplets that catch the sunlight like tiny rainbows, the wide blue river with gentle ripples behind the elephant, lush green trees and tall reeds on the far bank, warm afternoon light, a large playful capital letter E floating in the corner, the child standing a safe distance away on the grassy bank with both hands raised in delighted surprise, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, joyful expression, soft pastel storybook style',
+        sceneDescription: `${childName} watches an elephant splash water`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep elephant and child in upper two-thirds, soft riverbank at bottom for text',
+      },
+      {
+        pageNumber: 7,
+        text: `In a quiet pond, a shiny silver Fish flipped above the water with a tiny splash. "F is for Fish!" ${childName} grinned as ripples spread across the calm pond.`,
+        imagePrompt: 'A peaceful storybook pond scene with calm clear water reflecting the sky, one shiny silver and pale blue fish leaping above the water with a tiny crystal splash, gentle ripples expanding outward, a few pink and white lily pads with lotus flowers, tall green reeds along the edge, a wooden lantern in the background, soft afternoon sun, a large playful capital letter F floating in the corner, the child crouching at the edge of the pond pointing at the leaping fish with eyes wide in wonder, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, amazed smile, soft pastel storybook style',
+        sceneDescription: `${childName} sees a fish leap in the pond`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place fish and child on the LEFT side, soft sky reflection on right for text',
+      },
+      {
+        pageNumber: 8,
+        text: `Across the soft green grass, a little Grasshopper leaped high into the air. "G is for Grasshopper!" ${childName} called, hopping along beside it.`,
+        imagePrompt: 'A close-up storybook meadow scene with tall soft green grass blades and tiny white clover flowers, one small bright lime green grasshopper in mid-leap arcing through the air with its long back legs extended, a few tiny dandelion seeds floating around, warm afternoon sunlight, a large playful capital letter G floating in the corner, the child crouched low in the grass mid-hop with one foot off the ground mimicking the grasshopper, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes (NOT green like the grasshopper), warm light brown skin, gleeful expression, soft pastel storybook style',
+        sceneDescription: `${childName} hops with a grasshopper`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep grasshopper and child in upper two-thirds, soft grass at bottom for text',
+      },
+      {
+        pageNumber: 9,
+        text: `On a windy green hill stood a proud brown Horse with a flowing mane. "H is for Horse!" ${childName} whispered as the horse gave a soft nicker hello.`,
+        imagePrompt: 'A scenic storybook hilltop scene with rolling green grass and a few wildflowers waving in a gentle breeze, one strong friendly chestnut brown horse with a long flowing dark mane and tail standing proudly on the hilltop turned three-quarter to camera, soft white clouds and pale blue sky behind, distant blue mountains in the background, warm late-afternoon golden light, a large playful capital letter H floating in the corner, the child standing beside the horse reaching one careful hand up to touch the soft muzzle, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, gentle awestruck smile, soft pastel storybook style',
+        sceneDescription: `${childName} greets a friendly horse on a hill`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place horse and child on the RIGHT side, soft sky on left for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Under a leafy tree, a sleepy golden Lion yawned a big rumbly yawn. "L is for Lion!" ${childName} giggled, tip-toeing carefully past.`,
+        imagePrompt: 'A storybook savanna scene with a single sleepy friendly golden lion with a fluffy mane and soft amber eyes (lion eyes only — not the child) sitting in shade beneath a wide acacia tree, the lion mid-yawn with mouth gently open showing soft pink tongue, tall golden grass swaying in the warm breeze, distant rolling savanna hills and a few flat-topped trees in the background, warm afternoon light, a large playful capital letter L floating in the corner, the child tiptoeing past at a safe distance with a finger held up to lips and a playful smile, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes (NOT amber like the lion), warm light brown skin, mischievous gentle expression, soft pastel storybook style',
+        sceneDescription: `${childName} tiptoes past a sleepy lion`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep lion and child in upper two-thirds, soft grass at bottom for text',
+      },
+      {
+        pageNumber: 11,
+        text: `Up in the leafy canopy, a cheeky little Monkey swung from branch to branch. "M is for Monkey!" ${childName} laughed as it tossed down a tiny banana.`,
+        imagePrompt: 'A lush storybook jungle canopy scene with thick green leaves and twisting vines, one small playful brown monkey with a long curling tail hanging upside down from a branch by its tail, one paw holding a small yellow banana, big round friendly eyes, dappled sunlight filtering through the leaves, a large playful capital letter M floating in the corner, the child standing on the jungle floor with arms reaching up to catch the tossed banana, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, laughing surprised expression, soft pastel storybook style',
+        sceneDescription: `${childName} laughs as a monkey tosses a banana`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep monkey in upper, child in lower two-thirds, soft canopy at top for text',
+      },
+      {
+        pageNumber: 12,
+        text: `As evening crept in, a wise round Owl peeked out from an old oak tree. "O is for Owl!" ${childName} whispered to the soft brown bird.`,
+        imagePrompt: 'A soft storybook dusk scene at an ancient gnarled oak tree with a round hollow in its trunk, one plump fluffy brown spotted owl with huge round friendly yellow eyes (owl eyes only — not the child) peeking out from the tree hollow, soft purple and pink twilight sky in the background, a few tiny moths fluttering near a glowing firefly, a thin crescent moon rising, a large playful capital letter O floating in the corner, the child standing beneath the tree looking up with both hands cupped near the cheeks in wonder, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes (NOT yellow like the owl eyes), warm light brown skin, hushed amazed expression, soft pastel storybook style',
+        sceneDescription: `${childName} meets a wise owl in an oak tree`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place owl and child on the LEFT side, soft twilight sky on right for text',
+      },
+      {
+        pageNumber: 13,
+        text: `Perched proudly on a wooden post, a colorful Parrot repeated everything ${childName} said. "P is for Parrot!" ${childName} called — "P is for Parrot!" squawked the bird right back.`,
+        imagePrompt: 'A bright storybook tropical scene with one cheerful parrot perched on a wooden fence post — the parrot has a red chest, blue and green wings, a curving yellow beak, and a small black eye, head tilted to one side curiously, lush tropical leaves and pink hibiscus flowers in the background, warm golden afternoon light, a large playful capital letter P floating in the corner, the child standing in front of the post leaning forward with one hand raised mid-speech as if mid-sentence, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, animated talking expression, soft pastel storybook style',
+        sceneDescription: `${childName} talks with a copycat parrot`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place parrot and child on the RIGHT side, soft tropical background on left for text',
+      },
+      {
+        pageNumber: 14,
+        text: `Among soft pink roses hopped a fluffy white Rabbit with twitching ears. "R is for Rabbit!" ${childName} smiled as it nibbled a leafy green leaf.`,
+        imagePrompt: 'A charming storybook rose garden scene with rows of soft pink and pale yellow roses in full bloom along a winding stone path, one small fluffy white rabbit with long pink-lined ears and a tiny pink nose sitting on its hind legs nibbling a fresh green clover leaf, a few tiny daisies in the grass, soft afternoon sunlight filtering through the rose bushes, a large playful capital letter R floating in the corner, the child kneeling on the path watching the rabbit with both hands resting gently on the knees, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, tender quiet smile, soft pastel storybook style',
+        sceneDescription: `${childName} watches a rabbit nibble a leaf`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'tight close-up of child and rabbit, circular-friendly framing',
+      },
+      {
+        pageNumber: 15,
+        text: `At the gates of the zoo trotted a striped black-and-white Zebra. "Z is for Zebra!" ${childName} cheered — the very last letter of the alphabet adventure!`,
+        imagePrompt: 'A cheerful storybook zoo entrance scene with a tall arched wooden gate decorated with carved animal shapes, soft fluffy clouds and a few tiny birds in the pale blue sky, one friendly black-and-white striped zebra trotting through the gate with a soft cheerful expression, a few green palm leaves and pebble paths around, warm afternoon light, a large playful capital letter Z floating in the corner, the child standing beside the gate with both arms thrown wide in a joyful welcome pose, the child wearing a green explorer hat and a tan short-sleeve adventure shirt with brown shorts and brown boots, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming celebratory expression, soft pastel storybook style',
+        sceneDescription: `${childName} meets a zebra — the last letter Z`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'wide cinematic composition, child and zebra centered, maximum visual impact',
+      },
+      {
+        pageNumber: 16,
+        text: `That night, ${childName} dreamed of every letter ${pronoun} had met — from A all the way to Z. ${Pronoun} smiled in ${possessive} sleep, ready for many more adventures tomorrow. The End.`,
+        imagePrompt: 'A cozy storybook bedroom at night, a small wooden bed with a soft alphabet-patterned quilt, a fluffy pillow, a window showing a deep blue starry sky with floating dreamy pastel letters from A to Z drifting gently like little balloons in the night sky, a warm bedside lamp casting golden amber light, a tiny apple and a tiny stuffed bear on the bedside table, the child sleeping peacefully on the pillow with a gentle dream smile, the child wearing soft cream pajamas with tiny letter patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, peaceful dreaming expression, soft pastel storybook style',
+        sceneDescription: `${childName} dreams of every letter from A to Z`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place child and floating letters at edges, keep center sky softer for text',
+      },
+    ],
+  };
+}

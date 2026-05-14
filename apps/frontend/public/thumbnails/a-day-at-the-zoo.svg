@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF8A5E"/>
+      <stop offset="1" stop-color="#F2C29B"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#g)"/>
+  <g font-family="Georgia, serif" fill="#fff" text-anchor="middle">
+    <text x="150" y="190" font-size="28" font-weight="700">A Day at</text>
+    <text x="150" y="224" font-size="28" font-weight="700">the Zoo</text>
+    <text x="150" y="266" font-size="12" opacity="0.85" letter-spacing="2">PLACEHOLDER</text>
+  </g>
+</svg>

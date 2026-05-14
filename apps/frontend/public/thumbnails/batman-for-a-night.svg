@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F2937"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#g)"/>
+  <g font-family="Georgia, serif" fill="#FACC15" text-anchor="middle">
+    <text x="150" y="180" font-size="28" font-weight="700">Bat-Hero</text>
+    <text x="150" y="214" font-size="28" font-weight="700">for a Night</text>
+    <text x="150" y="256" font-size="12" opacity="0.85" letter-spacing="2" fill="#fff">PLACEHOLDER</text>
+  </g>
+</svg>

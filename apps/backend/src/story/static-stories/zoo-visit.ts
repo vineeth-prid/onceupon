@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getZooVisitStory(childName: string, _childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName}'s Day at the Zoo`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName}'s Day at the Zoo`,
+        imagePrompt: 'A decorative storybook title page with a soft pastel border featuring a tall arched wooden zoo gate, small silhouettes of zoo animals along the edges — a giraffe head, an elephant trunk, a tiny penguin, a parrot — colorful balloons floating in the corners, tiny paw prints scattered around, warm afternoon storybook lighting',
+        sceneDescription: 'Title page with zoo-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with zoo gate and small animal silhouettes',
+      },
+      {
+        pageNumber: 2,
+        text: `One bright Saturday morning, ${childName} skipped up to the big arched zoo gate, ${possessive} ticket gripped tightly in one hand. ${Pronoun} could hardly wait to see all the animals inside!`,
+        imagePrompt: 'A cheerful storybook zoo entrance scene with a tall arched wooden gate decorated with carved animal shapes and a bright "ZOO" sign above, soft pastel balloons tied to the gate posts, lush green hedges on either side, a cobblestone path leading inside, fluffy white clouds in a pale blue morning sky, the child standing in front of the gate holding a small paper ticket in one hand and pointing through the gate with the other, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming excited expression, soft pastel storybook style',
+        sceneDescription: `${childName} arrives at the zoo gate`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep gate and child in upper two-thirds, soft cobblestone at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `First came the monkey enclosure! Cheeky little monkeys leaped from branch to branch, chattering away. ${childName} laughed as one swung upside down by its long tail.`,
+        imagePrompt: 'A lively storybook zoo monkey enclosure scene with thick wooden climbing frames, twisting ropes, leafy green vines, three small playful brown monkeys with long curling tails — one hanging upside down from a rope by its tail, one swinging mid-leap between branches, one peeling a yellow banana — soft afternoon sunlight filtering through trees, a low stone wall in the foreground, the child standing at the wall pointing and laughing with one hand on the cap, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, laughing delighted expression, soft pastel storybook style',
+        sceneDescription: `${childName} watches the monkeys play`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place monkeys and child on the LEFT side, soft enclosure background on right for text',
+      },
+      {
+        pageNumber: 4,
+        text: `Next, ${childName} tilted ${possessive} head all the way back to look up — way, way up — at two tall spotted giraffes nibbling leaves from the very top branches.`,
+        imagePrompt: 'A storybook zoo savanna enclosure scene with two tall friendly spotted giraffes with long graceful necks reaching up toward the high green canopy of a tall acacia tree, gently nibbling fresh green leaves with soft pink tongues, their tan and chocolate-brown patches clearly visible, golden grass and a few flat-topped trees in the background, warm afternoon light, a low wooden viewing fence in the foreground, the child standing at the fence looking straight up with mouth open in amazement, one hand holding the cap on the head, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, awe-struck expression, soft pastel storybook style',
+        sceneDescription: `${childName} looks up at the tall giraffes`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep giraffes and child in upper two-thirds, soft fence at bottom for text',
+      },
+      {
+        pageNumber: 5,
+        text: `At the elephant pool, two gentle grey giants splashed cool water with their long curling trunks. ${childName} clapped happily as the spray made a tiny rainbow in the sunshine.`,
+        imagePrompt: 'A storybook zoo elephant pool scene with two friendly soft grey elephants standing in a wide shallow blue pool, one elephant raising its trunk high to spray a sparkling fan of water droplets, the spray catching sunlight to form a tiny rainbow arc in the air, the other elephant gently dipping its trunk into the water, lush green tropical plants around the pool, a stone viewing wall in the foreground, warm afternoon light, the child standing at the wall clapping both hands together, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, clapping joyful expression, soft pastel storybook style',
+        sceneDescription: `${childName} watches elephants splash water`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place elephants and child on the RIGHT side, soft enclosure on left for text',
+      },
+      {
+        pageNumber: 6,
+        text: `Behind a tall safety glass lay a sleepy golden lion, yawning a great big yawn. ${childName} pressed ${possessive} hands to the glass and whispered hello very politely.`,
+        imagePrompt: 'A storybook zoo lion enclosure scene viewed through a tall clear safety glass panel, a single friendly golden lion with a fluffy mane and soft amber eyes (lion eyes only — not the child) lying comfortably on warm sandy ground beside a sunlit boulder, the lion mid-yawn with mouth softly open showing pink tongue, golden savanna grass and a flat-topped acacia tree in the background, warm afternoon sunlight, the child standing on the visitor side with both small hands pressed against the glass and face close to the glass with a respectful quiet smile, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes (NOT amber like the lion), warm light brown skin, hushed gentle smile, soft pastel storybook style',
+        sceneDescription: `${childName} greets a sleepy lion through the glass`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep lion and child in upper two-thirds, soft floor at bottom for text',
+      },
+      {
+        pageNumber: 7,
+        text: `Just around the bend, a herd of striped zebras trotted in a happy bunch. "Look! They're like horses wearing stripy pajamas!" ${childName} giggled.`,
+        imagePrompt: 'A cheerful storybook zoo savanna enclosure scene with three friendly zebras with bold black-and-white stripes trotting together across a stretch of soft golden grass, their manes bristling, a few flat-topped acacia trees and rolling savanna hills in the background, warm afternoon sun, a low wooden viewing fence in the foreground, the child standing at the fence pointing and laughing, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, laughing delighted expression, soft pastel storybook style',
+        sceneDescription: `${childName} watches the zebras trot by`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place zebras and child on the LEFT side, soft savanna on right for text',
+      },
+      {
+        pageNumber: 8,
+        text: `At a calm pink pond stood a flock of beautiful pink flamingos, standing tall on one leg. ${childName} tried to balance on one leg too — and almost tipped over!`,
+        imagePrompt: 'A graceful storybook zoo flamingo pond scene with calm pale pink-tinted water reflecting the sky, a small flock of four friendly soft pink flamingos with long curving necks and slender black-tipped beaks, each standing elegantly on one thin leg in shallow water, lush green tropical reeds and pink lotus flowers along the pond edges, soft afternoon sunlight, a low viewing wall in the foreground, the child standing on the path beside the wall mid-wobble balancing on one foot with arms stretched out for balance, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes (NOT pink like the flamingos), warm light brown skin, playful giggling expression, soft pastel storybook style',
+        sceneDescription: `${childName} tries balancing like a flamingo`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep flamingos in upper, child in lower two-thirds, soft sky at top for text',
+      },
+      {
+        pageNumber: 9,
+        text: `In the chilly penguin enclosure, ${childName} watched fluffy black-and-white penguins waddle, then dive headfirst into the icy water with a splash.`,
+        imagePrompt: 'A delightful storybook zoo penguin enclosure scene with smooth icy rocks and pale blue cold water, three small chubby black-and-white penguins with bright orange beaks (penguin beaks only — not the child) — one waddling on the rocks with little wings stretched out for balance, one mid-dive splashing headfirst into the water, one already swimming gracefully underwater, frosty mist drifting in the air, a low glass viewing panel in the foreground, the child standing at the glass with both hands pressed against it watching closely, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes (NOT orange like the penguin beaks), warm light brown skin, captivated smile, soft pastel storybook style',
+        sceneDescription: `${childName} watches penguins dive`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep penguins and child in upper two-thirds, soft floor at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Inside the warm glass butterfly house, hundreds of butterflies fluttered around ${childName}'s head like floating jewels. One tiny blue one even landed on ${possessive} finger!`,
+        imagePrompt: 'A magical storybook indoor butterfly house scene with warm humid sunlight streaming through tall glass walls, lush tropical plants and bright tropical flowers in pinks, oranges, and reds, dozens of colorful butterflies with delicate wings fluttering through the air — soft blues, yellows, oranges, and purples — one small bright blue butterfly resting delicately on the child outstretched index finger, the child standing very still with one arm extended and face turned slightly toward the butterfly on the finger, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes (NOT blue like the butterfly), warm light brown skin, tender enchanted expression, soft pastel storybook style',
+        sceneDescription: `A butterfly lands on ${childName}'s finger`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'tight close-up of child finger and butterfly, circular-friendly framing',
+      },
+      {
+        pageNumber: 11,
+        text: `Next was the giant aquarium tunnel. Sharks, rays, and colorful fish glided right over ${childName}'s head! It felt like walking on the bottom of the ocean.`,
+        imagePrompt: 'A breathtaking storybook aquarium glass tunnel scene with a curving transparent glass walkway, deep blue ocean water above and on all sides filled with one gentle grey shark, two graceful brown stingrays gliding overhead, schools of small bright tropical fish in yellow, orange, and silver, soft sunlight rays beaming down through the water from above, a few wavy seaweed plants and bright coral on the tunnel floor, the child standing in the middle of the tunnel looking up with both hands raised in amazement, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes (NOT blue like the water), warm light brown skin, breathless wonder expression, soft pastel storybook style',
+        sceneDescription: `${childName} walks through the aquarium tunnel`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'wide cinematic composition, child centered with sea creatures swimming around, maximum visual impact',
+      },
+      {
+        pageNumber: 12,
+        text: `After so much walking, ${childName} sat down on a sunny bench with a delicious scoop of strawberry ice cream and watched a little sparrow hop nearby.`,
+        imagePrompt: 'A cozy storybook zoo plaza scene with a wooden park bench beside a cheerful flower planter full of pink and yellow blossoms, a wooden snack stand visible in the soft blurry background, the child sitting on the bench holding a sugar cone with a single round scoop of pink strawberry ice cream, one tiny brown sparrow hopping cheerfully on the cobblestone nearby looking up hopefully, warm afternoon sunlight, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, content happy smile mid-lick, soft pastel storybook style',
+        sceneDescription: `${childName} takes a snack break`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place child and bench on the RIGHT side, soft plaza on left for text',
+      },
+      {
+        pageNumber: 13,
+        text: `Around the corner spun a beautiful carousel with painted horses going up and down. ${childName} climbed onto a sparkling white horse and waved as it began to turn.`,
+        imagePrompt: 'A magical storybook zoo carousel scene with a bright spinning carousel decorated with intricate gold trim, twinkling string lights, hand-painted carousel horses in white, pink, and pale blue going up and down on shiny brass poles, festive striped red and white canopy on top, the child seated proudly on a sparkling white carousel horse with a flowing rainbow mane, holding onto the brass pole with one hand and waving cheerfully with the other, joyful evening light, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming carefree smile, soft pastel storybook style',
+        sceneDescription: `${childName} rides the carousel`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep carousel and child in upper two-thirds, soft ground at bottom for text',
+      },
+      {
+        pageNumber: 14,
+        text: `At the gift shop, ${childName} found the most perfect souvenir — a soft little plush penguin that hugged just right. ${Pronoun} cuddled it close all the way back to the gate.`,
+        imagePrompt: 'A charming storybook zoo gift shop exit scene with warm wooden shelves lined with colorful plush animals — bears, lions, giraffes, penguins — bright string lights overhead, a wooden floor and a sign saying "Souvenirs" in the soft background, the child walking out the door hugging a small cuddly fluffy black-and-white plush penguin with a tiny orange beak (plush, not real), tilting head against the toy, golden afternoon light streaming in, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, contented soft smile, soft pastel storybook style',
+        sceneDescription: `${childName} picks out a plush penguin souvenir`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place child and plush on the LEFT side, soft shop background on right for text',
+      },
+      {
+        pageNumber: 15,
+        text: `As the sun dipped low and the zoo lanterns began to glow, ${childName} waved goodbye at the gate. "Thank you, animals!" ${pronoun} called softly into the warm orange evening.`,
+        imagePrompt: 'A warm storybook zoo gate exit scene at sunset, the tall arched wooden gate framed by soft glowing lanterns just lighting up, a sky of warm orange, pink, and gold pastel clouds, distant tree silhouettes inside the zoo, a few balloons drifting up into the sky, the child standing at the gate turned back toward the zoo with one hand raised in a small goodbye wave and the plush penguin tucked under the other arm, the child wearing a bright orange short-sleeve t-shirt, blue denim shorts, white sneakers, and a small blue baseball cap, the child has dark brown hair and dark brown eyes, warm light brown skin, soft contented farewell smile, soft pastel storybook style',
+        sceneDescription: `${childName} waves goodbye to the zoo`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep gate and child in upper two-thirds, soft path at bottom for text',
+      },
+      {
+        pageNumber: 16,
+        text: `That night, snuggled in bed with the little plush penguin, ${childName} drifted off dreaming of stripes and trunks and flippers — the best zoo day ever. The End.`,
+        imagePrompt: 'A cozy storybook bedroom at night with soft warm amber lamplight, a small wooden bed with a fluffy quilt printed with tiny animal patterns, a pillow with a soft cream cover, a window above showing a deep blue starry sky and a thin crescent moon, the child sleeping curled peacefully on the pillow with arms wrapped around the small fluffy plush black-and-white penguin, gentle dream smile, the child wearing soft cream pajamas with tiny paw print patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, peaceful dreaming expression, the small blue baseball cap resting on a chair nearby, soft pastel storybook style',
+        sceneDescription: `${childName} falls asleep with the plush penguin`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place child and bed at edges, soft sky in center for text',
+      },
+    ],
+  };
+}

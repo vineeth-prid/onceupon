@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getCountingFunStory(childName: string, _childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} and the Counting Adventure`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} and the Counting Adventure`,
+        imagePrompt: 'A decorative storybook title page with a soft pastel meadow border, large playful hand-drawn numbers from 1 to 10 scattered around the edges in cheerful colors, tiny golden sparkles, a single bright sun at the top corner and a few flowers at the bottom, soft warm morning lighting, vibrant pastel storybook colors',
+        sceneDescription: 'Title page with counting-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with playful numbers and meadow elements',
+      },
+      {
+        pageNumber: 2,
+        text: `One sunny morning, ${childName} stepped outside to count the wonderful things in the world. High above, ${pronoun} saw 1 bright golden sun shining warmly over the meadow.`,
+        imagePrompt: 'A cheerful storybook meadow at golden morning with rolling green grass and tiny wildflowers, one single large bright golden sun glowing high in a soft pale blue sky with a few fluffy white clouds, the child standing in the meadow looking up with both hands shading the eyes, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, gentle joyful expression, soft pastel storybook style',
+        sceneDescription: `${childName} sees 1 bright sun in the sky`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep main subject in upper two-thirds, soft meadow at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `On a low leafy branch nearby, ${childName} spotted 2 little chirping birds singing back and forth. ${Pronoun} smiled and counted out loud, "One... two!"`,
+        imagePrompt: 'A close storybook view of a low leafy oak branch with exactly two small round chirping songbirds with bright orange chests and tiny black eyes singing to each other, fresh green leaves and a few pink blossoms around them, soft morning light, the child standing beside the tree pointing happily, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes (NOT orange like the birds), warm light brown skin, cheerful expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 2 chirping birds`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place birds and child on the LEFT side, leave right side as soft pale sky for text',
+      },
+      {
+        pageNumber: 4,
+        text: `In a cozy garden patch, ${childName} discovered 3 colorful flowers blooming bright in the sunshine — one red, one pink, and one yellow. They swayed gently in the warm morning breeze.`,
+        imagePrompt: 'A charming storybook garden patch with exactly three tall blooming flowers on slender green stems — one red tulip, one pink daisy, one cheerful yellow sunflower — surrounded by a few green leaves and tiny ladybugs, soft pastel grass background, gentle morning sunlight, the child kneeling in the grass beside the flowers smelling one of them, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, content smile, soft pastel storybook style',
+        sceneDescription: `${childName} counts 3 colorful flowers`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and flowers in upper two-thirds, soft grass at bottom for text',
+      },
+      {
+        pageNumber: 5,
+        text: `Around the corner came 4 playful puppies, tails wagging like tiny propellers. They tumbled and rolled in the soft grass, and ${childName} laughed and counted each one.`,
+        imagePrompt: 'A joyful storybook scene of exactly four small fluffy puppies of different friendly colors — one golden, one creamy white, one tan, one chocolate brown — tumbling and rolling in soft green grass, their tongues out happily, tails wagging, tiny paw prints behind them, soft sunny outdoor backyard background with a wooden picket fence in the distance, the child sitting cross-legged in the grass with arms open laughing, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, delighted laughing expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 4 playful puppies`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place puppies and child on the RIGHT side, soft grass on left for text',
+      },
+      {
+        pageNumber: 6,
+        text: `Up, up went 5 shiny balloons drifting into the soft blue sky! Each one was a different color, and ${childName} counted them as they floated higher and higher.`,
+        imagePrompt: 'A storybook sky scene with exactly five large shiny round balloons floating upward — one cherry red, one sunny yellow, one sky blue, one mint green, one bubblegum pink — each with a long curling white string, fluffy white clouds drifting around them, the child standing on green grass below looking up and pointing one hand toward the balloons, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, awe-struck happy expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 5 shiny balloons in the sky`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep child and balloons in lower two-thirds, soft sky at top for text',
+      },
+      {
+        pageNumber: 7,
+        text: `At the gentle park, ${childName} found 6 tall trees swaying side to side in the breeze, their leaves whispering soft songs. ${Pronoun} pointed at each one and counted carefully.`,
+        imagePrompt: 'A peaceful storybook park scene with exactly six tall leafy trees in a curving row, their thick trunks lined up across rolling green grass, their wide green canopies swaying gently in a soft breeze, a winding pebble path between them, a wooden park bench in the foreground, soft sunlight filtering through the leaves casting dappled patterns on the grass, the child walking along the path counting on fingers, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, focused happy expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 6 tall trees in the park`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep trees and child in upper two-thirds, soft grass and path at bottom for text',
+      },
+      {
+        pageNumber: 8,
+        text: `Through the air danced 7 tiny butterflies in every color of the rainbow! They twirled around ${childName}'s head like little floating jewels, and ${pronoun} counted as they fluttered by.`,
+        imagePrompt: 'A magical storybook close-up of exactly seven tiny butterflies with delicate wings in different rainbow colors — red, orange, yellow, green, blue, indigo, violet — fluttering and twirling in the air around the child, tiny sparkles trailing behind each butterfly, soft summer meadow background with tall grass and wildflowers, the child standing with arms gently extended and chin tilted up watching the butterflies with wonder, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, enchanted joyful expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 7 colorful butterflies`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place child and butterflies on the LEFT side, leave right side as soft meadow for text',
+      },
+      {
+        pageNumber: 9,
+        text: `At the edge of a quiet pond, ${childName} saw 8 little yellow ducks swimming in a tidy line. "Quack! Quack!" they called, and ${pronoun} counted each one bobbing along.`,
+        imagePrompt: 'A storybook pond scene with calm blue water, lily pads with pink lotus flowers, tall green reeds along the banks, exactly eight small yellow ducklings swimming in a neat single-file line across the water leaving gentle ripples, soft afternoon light reflecting on the pond, the child crouching at the grassy edge of the pond pointing at the ducks and counting, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, gentle smiling expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 8 little ducks in the pond`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep ducks and child in upper two-thirds, soft pond bank at bottom for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Down in the soft grass, ${childName} watched 9 busy little ants carrying tiny crumbs in a wiggly line. ${Pronoun} bent down close to count them one by one.`,
+        imagePrompt: 'A close-up storybook macro view of soft green blades of grass with exactly nine tiny dark cartoon-style ants walking in a wiggly line each carrying a small crumb or leaf piece, a few tiny dewdrops sparkling on the grass, a smooth pebble in the background, warm afternoon light, the child kneeling and leaning down with face close to the grass, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, curious gentle expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 9 tiny ants in the grass`,
+        layout: 'text-heavy-vignette' as const,
+        imageComposition: 'tight close-up of child and ants, circular-friendly framing',
+      },
+      {
+        pageNumber: 11,
+        text: `As evening came, ${childName} looked up and saw 10 bright stars beginning to twinkle in the deep blue sky. ${Pronoun} whispered the numbers softly — "...nine, ten!"`,
+        imagePrompt: 'A breathtaking storybook twilight scene with a deep velvet blue evening sky, exactly ten large bright golden stars twinkling at different heights in the sky each with a soft sparkle halo, a thin crescent moon at the corner, silhouettes of soft rolling hills at the bottom, the child standing on a small grassy hilltop with face turned upward toward the stars and one arm raised, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, wonder-filled expression, soft pastel storybook style',
+        sceneDescription: `${childName} counts 10 twinkling stars`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place child and stars at edges, keep center sky softer for text',
+      },
+      {
+        pageNumber: 12,
+        text: `What a magical day! From the bright morning sun to the twinkling night stars — counting had become a happy adventure full of wonder.`,
+        imagePrompt: 'A cinematic wide storybook collage showing a soft swirling background of pastel colors with all the day’s counted things arranged in a magical circular sweep around the child — the bright sun, a pair of birds, three flowers, four puppy silhouettes, five colorful balloons floating up, six little trees, seven butterflies, eight ducks, nine tiny ants in a line, ten twinkling stars — every element gently glowing with sparkles, the child standing centered in the middle with arms thrown joyfully wide, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming radiant expression, dreamy magical pastel storybook style',
+        sceneDescription: 'A magical collage of everything counted today',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'full cinematic wide composition, child centered with counted items swirling around, maximum visual impact',
+      },
+      {
+        pageNumber: 13,
+        text: `Hand in pocket, ${childName} walked happily down the lane toward home. ${Pronoun} thought about all the things ${pronoun} had counted, and ${possessive} heart felt as full as the starry sky.`,
+        imagePrompt: 'A cozy storybook countryside lane at soft twilight with golden lamplight just beginning to glow from a small cottage in the distance, a winding pebble path lined with wildflowers, a few tiny fireflies drifting in the air, a gentle pink and lavender sky, the child walking down the path with hands tucked in the overall pockets, the child wearing a red and white striped short-sleeve t-shirt and blue denim overalls, the child has dark brown hair and dark brown eyes, warm light brown skin, content peaceful expression, soft pastel storybook style',
+        sceneDescription: `${childName} walks home thinking of all the things counted`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place child and path on the RIGHT side, soft twilight sky on left for text',
+      },
+      {
+        pageNumber: 14,
+        text: `At home, ${childName} climbed into a soft warm bed. ${Pronoun} pulled up a cozy patchwork quilt and yawned, still whispering the numbers from one to ten under ${possessive} breath.`,
+        imagePrompt: 'A cozy storybook bedroom at night, a small wooden bed with a soft patchwork quilt covered in tiny number patterns, a fluffy pillow, a bedside table with a brass lamp giving warm amber light, a window showing a deep blue starry sky outside, the child sitting up in bed pulling the quilt up to the chin with a sleepy smile, the child wearing soft cream pajamas with tiny star patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, peaceful sleepy expression, soft pastel storybook style',
+        sceneDescription: `${childName} is tucked into bed`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and bed in upper two-thirds, soft floor at bottom for text',
+      },
+      {
+        pageNumber: 15,
+        text: `In ${possessive} dreams, the numbers floated like balloons across the sky. One, two, three... all the way to ten, dancing happily in a long colorful line.`,
+        imagePrompt: 'A dreamy storybook sky scene with soft swirling pastel pink and purple clouds, large playful colorful hand-drawn numbers from 1 to 10 floating in a curving cheerful line through the clouds, each number a different soft color and sparkling gently, a thin crescent moon and tiny twinkling stars in the background, the child curled up on a fluffy cloud in the foreground holding a small pillow, the child wearing soft cream pajamas with tiny star patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, dreaming peaceful expression with closed eyes and gentle smile, soft pastel storybook style',
+        sceneDescription: `${childName} dreams of dancing numbers`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep child and numbers in lower two-thirds, soft dreamy sky at top for text',
+      },
+      {
+        pageNumber: 16,
+        text: `And when morning came, ${childName} woke with a big smile — because now ${pronoun} knew that wherever ${pronoun} looked, there were always wonderful things to count. The End.`,
+        imagePrompt: 'A bright cheerful storybook morning bedroom scene, warm golden sunlight streaming through an open window with white curtains gently billowing, a small wooden bed with the patchwork quilt pushed aside, fresh wildflowers in a glass jar on the windowsill, a tiny robin singing on the windowsill, the child sitting up in bed stretching with both arms raised, the child wearing soft cream pajamas with tiny star patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, beaming refreshed smile, soft pastel storybook style',
+        sceneDescription: `${childName} wakes up happy, ready to count again`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and bed in upper two-thirds, soft floor at bottom for text',
+      },
+    ],
+  };
+}

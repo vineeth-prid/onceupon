@@ -1,0 +1,141 @@
+import type { StoryOutputInput } from '@bookmagic/shared';
+
+export function getSpaceMissionStory(childName: string, _childAge: number, childGender: string): StoryOutputInput {
+  const pronoun = childGender === 'girl' ? 'she' : childGender === 'boy' ? 'he' : 'they';
+  const possessive = childGender === 'girl' ? 'her' : childGender === 'boy' ? 'his' : 'their';
+  const Pronoun = pronoun.charAt(0).toUpperCase() + pronoun.slice(1);
+
+  return {
+    title: `${childName} the Space Explorer`,
+    pages: [
+      {
+        pageNumber: 1,
+        text: `${childName} the Space Explorer`,
+        imagePrompt: 'A decorative storybook title page with a deep navy night sky border, swirling constellations and tiny golden stars, a small cartoon rocket ship and a few planets with rings in the corners, a curving comet trail, soft starlight glow around the edges, vibrant cosmic storybook colors',
+        sceneDescription: 'Title page with space-themed decorations',
+        layout: 'chapter-title' as const,
+        imageComposition: 'chapter-title: decorative border with stars, planets, and a small rocket',
+      },
+      {
+        pageNumber: 2,
+        text: `Every night, ${childName} pressed ${possessive} nose to the bedroom window and gazed up at the twinkling stars, dreaming of one day flying among them.`,
+        imagePrompt: 'A cozy storybook bedroom at night with soft golden lamplight, a small wooden bed in the background with a star-patterned quilt, a window framed with white curtains opening onto a vast deep navy sky filled with thousands of twinkling silver stars and a thin crescent moon, a small toy rocket on the windowsill, a poster of the solar system on the wall, the child kneeling on a small cushion at the window with both hands pressed against the glass and face turned up toward the stars, the child wearing soft cream pajamas with tiny rocket patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, wonder-filled dreamy expression, soft pastel storybook style',
+        sceneDescription: `${childName} dreams of flying among the stars`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and window in upper two-thirds, soft floor at bottom for text',
+      },
+      {
+        pageNumber: 3,
+        text: `One bright morning, ${childName} pulled on a real space suit. ${Pronoun} tucked ${possessive} bubble helmet under one arm and felt ${possessive} heart leap. Today was the day!`,
+        imagePrompt: 'A bright storybook hallway scene in a space training center with shiny silver walls, soft blue floor lights, and posters of planets on the wall, the child standing proudly in a clean white astronaut suit with red and blue accent stripes and a gold rocket emblem on the chest, sturdy red boots, a clear round transparent bubble astronaut helmet with a thin gold rim tucked under one arm, warm overhead light, the child has dark brown hair and dark brown eyes, warm light brown skin, brave excited expression, the child face fully visible since the helmet is not worn, soft pastel storybook style',
+        sceneDescription: `${childName} suits up for the mission`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place child on the LEFT side, soft hallway background on right for text',
+      },
+      {
+        pageNumber: 4,
+        text: `At the launchpad stood a tall silver rocket pointing straight up at the sky. ${Pronoun} took a deep breath, climbed the ladder, and stepped inside.`,
+        imagePrompt: 'A breathtaking storybook launchpad scene at dawn with a tall sleek silver rocket ship standing on a concrete launch platform pointing straight up toward a pale pink sky, white steam venting from the side of the rocket, a long metal gantry leading to the cockpit hatch, a few warning lights and tiny flag patterns on the rocket, distant rolling hills and a soft orange horizon, the child walking up the gantry stairs holding the bubble helmet at the side, the child wearing a clean white astronaut suit with red and blue accent stripes and a gold rocket emblem, red boots, the child face fully visible (no helmet on), the child has dark brown hair and dark brown eyes, warm light brown skin, determined brave expression, soft pastel storybook style',
+        sceneDescription: `${childName} climbs aboard the rocket`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep rocket and child in upper two-thirds, soft concrete launchpad at bottom for text',
+      },
+      {
+        pageNumber: 5,
+        text: `THREE... TWO... ONE... WHOOSH! The rocket roared upward in a bright trail of fire and smoke. ${childName} held on tight as the sky turned from blue to black.`,
+        imagePrompt: 'A dramatic storybook scene of a tall silver rocket blasting off, a brilliant white and orange flame trail jetting downward from the engine, huge plumes of white smoke billowing around the launchpad, the rocket already high above the ground curving slightly upward, a fading pale blue sky transitioning at the top of the frame into deep starry navy black, sparkling stars beginning to appear, dynamic motion lines and small light flares around the rocket, cinematic dramatic angle, vibrant storybook cosmic style',
+        sceneDescription: 'The rocket blasts off into space',
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'wide cinematic composition with rocket centered, maximum visual impact, no text on image',
+      },
+      {
+        pageNumber: 6,
+        text: `Soon ${childName} peeked through a round window and gasped. There below was Earth — round and blue and beautiful, with swirling white clouds wrapping around it.`,
+        imagePrompt: 'A cozy storybook interior of a rocket cockpit with a large round porthole window framed in silver metal, through the window a magnificent view of planet Earth floating in deep black space — vibrant ocean blue with swirling soft white cloud patterns and patches of warm green continents, tiny twinkling stars in the background, soft cabin lights inside the cockpit, the child floating gently in the cabin pressed close to the window with both hands on the glass, the child wearing a clean white astronaut suit with red and blue accent stripes, the bubble helmet floating gently nearby (not worn), the child face fully visible, the child has dark brown hair and dark brown eyes, warm light brown skin, awe-struck wide-eyed expression, soft pastel storybook style',
+        sceneDescription: `${childName} sees Earth from space`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep child and window in upper two-thirds, soft cabin floor at bottom for text',
+      },
+      {
+        pageNumber: 7,
+        text: `Inside the cabin, ${childName} floated up like a feather! ${Pronoun} spun in a slow somersault, laughing as everything drifted weightlessly around ${possessive} head.`,
+        imagePrompt: 'A playful storybook scene inside a softly lit rocket cabin with smooth silver walls and round porthole windows showing dark starry space outside, the child floating mid-air in a gentle weightless somersault with arms and legs spread joyfully, a few small floating objects drifting nearby — a clipboard, a small water bottle, a plush dog toy — the child wearing a clean white astronaut suit with red and blue accent stripes and gold rocket emblem, the bubble helmet floating in the background (not worn), the child face fully visible, the child has dark brown hair and dark brown eyes, warm light brown skin, laughing carefree expression, soft pastel storybook style',
+        sceneDescription: `${childName} floats in zero gravity`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place child on the RIGHT side, soft cabin interior on left for text',
+      },
+      {
+        pageNumber: 8,
+        text: `The first planet ${childName} flew past was tiny Mercury — a small grey ball covered in craters, shimmering close to the warm yellow sun in the distance.`,
+        imagePrompt: 'A storybook outer-space scene with tiny grey Mercury in the center of the view, the planet covered in small round craters and uneven rocky terrain, the warm yellow sun glowing softly in the far background bathing one side of Mercury in golden light, scattered twinkling stars all around, the curved silver edge of a rocket ship visible at the corner of the frame, the child seen through a porthole window pressed against the glass wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), the white astronaut suit with red and blue accents visible, the child has dark brown hair and dark brown eyes, warm light brown skin, curious wonder expression, soft pastel storybook style',
+        sceneDescription: `${childName} flies past Mercury`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep planet and rocket porthole in upper two-thirds, soft starry space at bottom for text',
+      },
+      {
+        pageNumber: 9,
+        text: `Next came Venus, glowing like a soft yellow pearl beneath thick swirling clouds. "Hello, Venus!" ${childName} called from the cockpit window.`,
+        imagePrompt: 'A storybook outer-space scene featuring the planet Venus as a glowing round soft yellow-gold pearl covered in thick swirling cream-colored cloud patterns, gentle pastel haze around the planet, deep navy starry space behind, the curved silver hull of a rocket ship visible at the edge of the frame, the child framed through a round porthole window waving with one hand pressed flat against the inside of the glass, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes (NOT yellow like Venus), warm light brown skin, cheerful waving expression, soft pastel storybook style',
+        sceneDescription: `${childName} flies past Venus`,
+        layout: 'image-left-text-right' as const,
+        imageComposition: 'place planet and porthole on the LEFT side, soft starry space on right for text',
+      },
+      {
+        pageNumber: 10,
+        text: `Then ${childName} saw Mars — a rusty red planet with tall mountains and wide red deserts. It looked dusty and quiet, like a sleeping giant.`,
+        imagePrompt: 'A storybook outer-space scene featuring planet Mars as a round rusty red and orange world with darker red mountain ridges and lighter sandy deserts visible across the surface, two tiny moons hovering near it, faint reddish dust haze around the equator, deep starry navy black space behind, the curved silver edge of a rocket ship visible at the corner of the frame, the child seen through a round porthole window with hand on chin in thoughtful curiosity, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes (NOT red like Mars), warm light brown skin, thoughtful curious expression, soft pastel storybook style',
+        sceneDescription: `${childName} flies past Mars`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep planet and porthole in upper two-thirds, soft starry space at bottom for text',
+      },
+      {
+        pageNumber: 11,
+        text: `Mighty Jupiter came next — a huge swirling giant of orange, cream, and red stripes, with a big spinning storm like a giant red eye.`,
+        imagePrompt: 'A grand storybook outer-space scene featuring the gas giant Jupiter as a massive round planet filling much of the frame, the surface covered in horizontal bands of swirling cream, soft orange, and rust red cloud stripes, a large oval spinning storm (the Great Red Spot) visible on one side, a few tiny moons orbiting around the planet, deep starry navy black space behind, the small curved silver rocket ship visible to scale beside the enormous planet, the child seen through a round porthole pointing in awe with mouth slightly open, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes, warm light brown skin, awestruck expression, soft pastel storybook style',
+        sceneDescription: `${childName} flies past Jupiter`,
+        layout: 'full-bleed-text-top' as const,
+        imageComposition: 'keep planet in upper section and rocket porthole in lower two-thirds, soft starry space at top for text',
+      },
+      {
+        pageNumber: 12,
+        text: `Saturn was next, and it took ${childName}'s breath away! Beautiful glowing rings circled the pale golden planet, shining like rivers of stardust.`,
+        imagePrompt: 'A breathtaking storybook outer-space scene featuring planet Saturn as a round pale golden cream-colored gas giant with soft horizontal cloud bands, surrounded by magnificent wide flat glowing rings of icy silver, pale gold, and soft lavender particles tilted at a gentle angle, tiny sparkles within the rings, a few small moons nearby, deep starry navy black space, the curved silver rocket flying gracefully alongside the rings, the child seen through a round porthole with both hands pressed against the glass, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes (NOT gold like Saturn), warm light brown skin, breathless wonder expression, soft pastel storybook style',
+        sceneDescription: `${childName} sees Saturn's rings`,
+        layout: 'dramatic-image-only' as const,
+        imageComposition: 'wide cinematic composition, Saturn dominant with rocket alongside, maximum visual impact',
+      },
+      {
+        pageNumber: 13,
+        text: `Far, far away spun pale blue Uranus, tilted on its side like a quiet sleepy giant rolling gently through the dark.`,
+        imagePrompt: 'A serene storybook outer-space scene featuring the planet Uranus as a round pale icy blue and soft teal sphere with a smooth featureless cloudy surface, tilted on its side at a notable angle, a thin faint ring system visible around it, a few tiny moons drifting nearby, deep starry navy black space, the curved silver rocket flying past in the distance, the child seen through a porthole window with a calm gentle smile and one hand resting on the glass, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes (NOT blue like Uranus), warm light brown skin, peaceful curious expression, soft pastel storybook style',
+        sceneDescription: `${childName} flies past Uranus`,
+        layout: 'image-right-text-left' as const,
+        imageComposition: 'place planet and porthole on the RIGHT side, soft starry space on left for text',
+      },
+      {
+        pageNumber: 14,
+        text: `Last of all came Neptune — a deep ocean-blue planet with windy white wisps streaking across its surface. "Goodbye, Neptune!" ${childName} whispered, turning the rocket toward home.`,
+        imagePrompt: 'A storybook outer-space scene featuring Neptune as a round deep ocean-blue planet with thin streaking white wisp clouds and faint darker storm patterns, soft glowing edges, a single small grey moon nearby, deep starry navy black space behind, the curved silver rocket beginning a graceful turn back toward a faint warm light of the inner solar system in the far distance, the child seen through a round porthole window giving a small farewell wave, wearing the clear transparent bubble astronaut helmet with thin gold rim (face fully visible through the clear glass), white astronaut suit with red and blue accents, the child has dark brown hair and dark brown eyes (NOT blue like Neptune), warm light brown skin, gentle farewell smile, soft pastel storybook style',
+        sceneDescription: `${childName} waves goodbye to Neptune and turns home`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep planet and porthole in upper two-thirds, soft starry space at bottom for text',
+      },
+      {
+        pageNumber: 15,
+        text: `Whoosh! The rocket dove back through the soft blue sky and landed gently on the launchpad. ${childName} stepped out with starlight still sparkling in ${possessive} eyes.`,
+        imagePrompt: 'A warm storybook landing scene at sunset with a tall silver rocket ship resting on a concrete launchpad, soft pink and gold sunset clouds in the sky behind, a few flags fluttering nearby, white steam venting gently from the rocket base, distant rolling hills in soft amber light, the child stepping down the gantry stairs with arms gently outstretched, holding the bubble helmet in one hand at the side, wearing the white astronaut suit with red and blue accents and gold rocket emblem, the child face fully visible (no helmet on), the child has dark brown hair and dark brown eyes, warm light brown skin, proud peaceful smile, soft pastel storybook style',
+        sceneDescription: `${childName} lands safely back on Earth`,
+        layout: 'full-bleed-text-bottom' as const,
+        imageComposition: 'keep rocket and child in upper two-thirds, soft launchpad at bottom for text',
+      },
+      {
+        pageNumber: 16,
+        text: `That night, snug in bed, ${childName} closed ${possessive} eyes and smiled. The stars outside the window twinkled — as if waving goodnight to a brave little space explorer. The End.`,
+        imagePrompt: 'A cozy storybook bedroom at night, a small wooden bed with a soft star-patterned quilt and a fluffy pillow, a window above the bed showing a deep navy starry sky with a thin crescent moon, warm amber bedside lamp casting golden glow, a tiny toy rocket on the bedside table, a small space helmet resting on a chair nearby, the child sleeping peacefully curled on the pillow with a gentle dream smile, the child wearing soft cream pajamas with tiny rocket patterns, the child has dark brown hair and dark brown eyes, warm light brown skin, peaceful dreaming expression, soft pastel storybook style',
+        sceneDescription: `${childName} sleeps after the journey, dreaming of the stars`,
+        layout: 'full-bleed-text-center' as const,
+        imageComposition: 'place child and window at edges, soft sky in center for text',
+      },
+    ],
+  };
+}

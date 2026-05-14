@@ -24,13 +24,15 @@ export type CatalogCategory =
   | 'Adventure'
   | 'Fantasy'
   | 'Animals'
-  | 'Sports';
+  | 'Sports'
+  | 'Education';
 
 export const CATALOG_CATEGORIES: CatalogCategory[] = [
   'Adventure',
   'Fantasy',
   'Animals',
   'Sports',
+  'Education',
 ];
 
 const T = '/thumbnails'; // base path
@@ -55,5 +57,75 @@ export const BOOK_CATALOG: CatalogBook[] = [
     slug: 'tooth-fairy',
     gender: 'girl',
     ageRange: '3-7',
+  },
+  {
+    id: 'counting-adventure',
+    title: 'The Counting Adventure',
+    subtitle: 'Count 1 to 10 through a magical day outdoors',
+    thumbnail: `${T}/the-counting-adventure.svg`,
+    category: 'Education',
+    slug: 'counting-fun',
+    gender: 'neutral',
+    ageRange: '3-6',
+  },
+  {
+    id: 'alphabet-adventure',
+    title: 'The Alphabet Adventure',
+    subtitle: 'A to Z through a forest of friendly animals',
+    thumbnail: `${T}/the-alphabet-adventure.svg`,
+    category: 'Education',
+    slug: 'alphabets',
+    gender: 'neutral',
+    ageRange: '3-6',
+  },
+  {
+    id: 'space-explorer',
+    title: 'The Space Explorer',
+    subtitle: 'Blast off through every planet of the solar system',
+    thumbnail: `${T}/the-space-explorer.svg`,
+    category: 'Adventure',
+    slug: 'space-mission',
+    gender: 'neutral',
+    ageRange: '4-8',
+  },
+  {
+    id: 'zoo-day',
+    title: 'A Day at the Zoo',
+    subtitle: 'A cheerful tour past every favourite animal',
+    thumbnail: `${T}/a-day-at-the-zoo.svg`,
+    category: 'Animals',
+    slug: 'zoo-visit',
+    gender: 'neutral',
+    ageRange: '3-7',
+  },
+  {
+    id: 'spider-man',
+    title: 'Spider-Hero for a Day',
+    subtitle: 'Swing into a day of friendly-neighborhood adventures',
+    thumbnail: `${T}/spider-man-for-a-day.svg`,
+    category: 'Fantasy',
+    slug: 'spider-man-day',
+    gender: 'neutral',
+    ageRange: '4-8',
+  },
+  {
+    id: 'superman',
+    title: 'Super-Hero for a Day',
+    subtitle: 'Fly, lift, and save the day with super-strength',
+    thumbnail: `${T}/superman-for-a-day.svg`,
+    category: 'Fantasy',
+    slug: 'superman-day',
+    gender: 'neutral',
+    ageRange: '4-8',
+  },
+  {
+    id: 'batman',
+    title: 'Bat-Hero for a Night',
+    subtitle: 'Investigate, leap, and become the caped detective',
+    thumbnail: `${T}/batman-for-a-night.svg`,
+    category: 'Fantasy',
+    slug: 'batman-day',
+    gender: 'neutral',
+    ageRange: '4-8',
   },
 ];

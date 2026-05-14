@@ -499,9 +499,9 @@ export function LoginPage() {
                   fontFamily: "'Inter', sans-serif",
                 }}>
                   I agree to the{' '}
-                  <span style={{ color: '#E86B4A', fontWeight: 500, cursor: 'pointer' }}>Terms of Service</span>
+                  <Link to="/terms" style={{ color: '#E86B4A', fontWeight: 500, textDecoration: 'none' }}>Terms of Service</Link>
                   {' '}and{' '}
-                  <span style={{ color: '#E86B4A', fontWeight: 500, cursor: 'pointer' }}>Privacy Policy</span>
+                  <Link to="/privacy-policy" style={{ color: '#E86B4A', fontWeight: 500, textDecoration: 'none' }}>Privacy Policy</Link>
                 </span>
               </label>
 

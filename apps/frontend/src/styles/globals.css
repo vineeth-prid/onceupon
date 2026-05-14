@@ -114,4 +114,62 @@ html, body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea 
   .btn-outline-white:active {
     transform: translateY(0);
   }
+
+  /* ─── Hero — brand-aligned text on video, no backdrop card ─── */
+  .hero-headline {
+    color: #2C1810;                            /* brand brown.dark */
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .hero-sub {
+    color: #5C3D2E;                            /* brand brown.light */
+  }
+
+  .hero-magical {
+    font-style: italic;
+    background: linear-gradient(
+      120deg,
+      #B8862C 0%,
+      #D4A373 22%,
+      #F0CC8A 48%,
+      #D4A373 75%,
+      #B8862C 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: magical-shimmer 4.5s ease-in-out infinite;
+    filter: drop-shadow(0 1px 8px rgba(212, 163, 115, 0.45));
+  }
+
+  .hero-cta-brand {
+    background: #3B2316 !important;            /* brand brown */
+    color: #FAF5ED !important;                 /* brand cream */
+    border: 1px solid #2C1810 !important;
+    box-shadow:
+      0 10px 28px rgba(44, 24, 16, 0.32),
+      0 2px 8px rgba(44, 24, 16, 0.18) !important;
+  }
+  .hero-cta-brand:hover {
+    background: #2C1810 !important;
+    transform: translateY(-2px);
+  }
+  .hero-cta-brand:active {
+    background: #D4A373 !important;            /* brand gold on press */
+    color: #2C1810 !important;
+    border-color: #D4A373 !important;
+    transform: translateY(0);
+  }
+}
+
+@keyframes magical-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }

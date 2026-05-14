@@ -170,20 +170,41 @@ export function Footer() {
               >
                 Contact Us
               </Link>
-              <a
-                href="#"
+              <Link
+                to="/privacy-policy"
                 className="font-body no-underline"
                 style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
                 Privacy Policy
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/terms"
                 className="font-body no-underline"
                 style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
               >
-                Terms
-              </a>
+                Terms & Conditions
+              </Link>
+              <Link
+                to="/return-policy"
+                className="font-body no-underline"
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
+              >
+                Return Policy
+              </Link>
+              <Link
+                to="/shipping-policy"
+                className="font-body no-underline"
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
+              >
+                Shipping Policy
+              </Link>
+              <Link
+                to="/refund-policy"
+                className="font-body no-underline"
+                style={{ fontSize: "0.85rem", color: "#6F6F6F" }}
+              >
+                Refund & Cancellation
+              </Link>
             </nav>
           </div>
         </div>

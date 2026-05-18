@@ -51,6 +51,46 @@ export const BOOK_ASSETS: Record<string, BookAssetSet> = {
       '/books/tooth-fairy/image-4.png',
     ],
   },
+  'batman-day': {
+    images: [
+      '/books/batman-day/image-1.jpg',
+      '/books/batman-day/image-2.jpg',
+      '/books/batman-day/image-3.jpg',
+      '/books/batman-day/image-4.jpg',
+    ],
+  },
+  'superman-day': {
+    images: [
+      '/books/superman-day/image-1.jpg',
+      '/books/superman-day/image-2.jpg',
+      '/books/superman-day/image-3.jpg',
+      '/books/superman-day/image-4.jpg',
+    ],
+  },
+  'spider-man-day': {
+    images: [
+      '/books/spider-man-day/image-1.jpg',
+      '/books/spider-man-day/image-2.jpg',
+      '/books/spider-man-day/image-3.jpg',
+      '/books/spider-man-day/image-4.jpg',
+    ],
+  },
+  'zoo-visit': {
+    images: [
+      '/books/zoo-visit/image-1.jpg',
+      '/books/zoo-visit/image-2.jpg',
+      '/books/zoo-visit/image-3.jpg',
+      '/books/zoo-visit/image-4.jpg',
+    ],
+  },
+  'space-mission': {
+    images: [
+      '/books/space-mission/image-1.jpg',
+      '/books/space-mission/image-2.jpg',
+      '/books/space-mission/image-3.jpg',
+      '/books/space-mission/image-4.jpg',
+    ],
+  },
 };
 
 /**

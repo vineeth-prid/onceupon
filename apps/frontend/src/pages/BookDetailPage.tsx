@@ -16,6 +16,20 @@ const BOOK_DESCRIPTIONS: Record<string, string> = {
     "Strap on your cape and step into the enchanted forest! Your child meets Spark, a tiny green baby dragon with bright orange wings, and together they cross a crystal river, outwit pixies, and rescue Spark's mother from a fallen ancient tree. A heartwarming tale of bravery, teamwork, and an unbreakable friendship between a brave little hero and a baby dragon.",
   'girl-tooth-fairy':
     "When your child loses her first tooth and tucks it under the pillow, a tiny pixie named Twinkle appears in a swirl of golden sparkles. Together they fly past clouds and stars to a crystal castle in the sky, where she discovers the magical secret of where every lost tooth goes — a gentle bedtime tale about wonder, courage, and the magic hiding in everyday moments.",
+  'counting-adventure':
+    "Join Dillan on a magical journey through the sunny meadow! From 1 bright golden sun to 10 little stars in the night sky, your child will learn to count while exploring nature and meeting friendly animals. A beautifully illustrated educational adventure that makes learning numbers a joyful and immersive experience.",
+  'alphabet-adventure':
+    "Embark on a letter-filled journey from A to Z! Your child joins Aithan in a lush forest where every leaf and animal hides a new letter to discover. From apples under the trees to bears in the bushes, this interactive story makes learning the alphabet a magical exploration of friendship and discovery.",
+  'batman':
+    "Fly through the night sky and protect the city! Your child becomes the Bat-Hero for a night, solving clues, leaping across rooftops, and driving a high-tech Bat-Mobile. A thrilling story of logic, bravery, and detective smarts in a stunning Disney/Pixar 3D CGI art style.",
+  'superman':
+    "Unleash super-strength, soar high above the clouds, and save the day! Your child becomes the Super-Hero for a day, zooming past tall sunflowers in the garden, helping friendly animals, and discovering the hero inside themselves. A heartwarming story about kindness, courage, and believing in yourself, rendered in magnificent Disney/Pixar 3D CGI style.",
+  'spider-man':
+    "Swing into a day of friendly-neighborhood adventures! Your child becomes the Spider-Hero for a day, awakening with a tingle of spider-sense, crawling through the backyard jungle on a silky thread, and keeping a watchful eye on the neighborhood. A delightful story about courage, imagination, and being your own hero, rendered in spectacular Disney/Pixar 3D CGI style.",
+  'zoo-day':
+    "Skip through the giant wooden gates and begin a wild adventure! Your child takes a cheerful tour past all their favorite animals at the Big Bright Zoo, wearing their favorite striped hat, looking way up to meet gentle giraffes, and sharing leafy snacks. A delightful story about discovery, kindness to animals, and the joy of new experiences, beautifully illustrated in colorful Disney/Pixar 3D CGI art.",
+  'space-explorer':
+    "Three... two... one... blast off! Your child becomes the Commander of a grand galactic mission, zooming past fluffy white clouds, watching the big blue Earth grow smaller, and steering toward a giant silver moon covered in soft, sparkly craters. A thrilling story of curiosity, courage, and astronomical wonders, rendered in breathtaking Disney/Pixar 3D CGI art.",
 };
 
 const BOOK_FEATURES: Record<string, { icon: string; text: string }[]> = {

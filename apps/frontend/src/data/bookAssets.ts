@@ -31,24 +31,35 @@ export interface BookAssetSet {
 
 export const BOOK_ASSETS: Record<string, BookAssetSet> = {
   'dragon-friend': {
-    video: {
-      src: '/books/dragon-friend/preview.mp4',
-      thumb: '/books/dragon-friend/video-thumb.webp',
-    },
     images: [
-      '/books/dragon-friend/image-1.webp',
-      '/books/dragon-friend/image-2.webp',
-      '/books/dragon-friend/image-3.webp',
-      '/books/dragon-friend/image-4.webp',
-      '/books/dragon-friend/image-5.webp',
+      '/books/dragon-friend/image-1.jpg',
+      '/books/dragon-friend/image-2.jpg',
+      '/books/dragon-friend/image-3.jpg',
+      '/books/dragon-friend/image-4.jpg',
     ],
   },
   'tooth-fairy': {
     images: [
-      '/books/tooth-fairy/image-1.png',
-      '/books/tooth-fairy/image-2.png',
-      '/books/tooth-fairy/image-3.png',
-      '/books/tooth-fairy/image-4.png',
+      '/books/tooth-fairy/image-1.jpg',
+      '/books/tooth-fairy/image-2.jpg',
+      '/books/tooth-fairy/image-3.jpg',
+      '/books/tooth-fairy/image-4.jpg',
+    ],
+  },
+  'alphabets': {
+    images: [
+      '/books/alphabets/image-1.jpg',
+      '/books/alphabets/image-2.jpg',
+      '/books/alphabets/image-3.jpg',
+      '/books/alphabets/image-4.jpg',
+    ],
+  },
+  'counting-fun': {
+    images: [
+      '/books/counting-fun/image-1.jpg',
+      '/books/counting-fun/image-2.jpg',
+      '/books/counting-fun/image-3.jpg',
+      '/books/counting-fun/image-4.jpg',
     ],
   },
   'batman-day': {

@@ -18,7 +18,7 @@ const occasions: Occasion[] = [
     title: 'Wedding & Anniversary',
     tag: 'Wedding',
     description: 'Turn your love story into a keepsake storybook — from the first meet to the big day.',
-    image: '/occasions/wedding.webp',
+    image: '/occasions/wedding.jpg',
     gradient: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%)',
   },
   {
@@ -26,7 +26,7 @@ const occasions: Occasion[] = [
     title: 'Welcoming the First-Born',
     tag: 'Newborn',
     description: "Capture those magical first months — baby's arrival, tiny hands, and unforgettable moments.",
-    image: '/occasions/first-born.webp',
+    image: '/occasions/first-born.jpg',
     gradient: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%)',
   },
   {
@@ -34,7 +34,7 @@ const occasions: Occasion[] = [
     title: 'Graduation Day',
     tag: 'Graduation',
     description: 'Celebrate the cap-and-gown moment with a personalised story of years of hard work.',
-    image: '/occasions/graduation.webp',
+    image: '/occasions/graduation.jpg',
     gradient: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%)',
   },
   {
@@ -42,7 +42,7 @@ const occasions: Occasion[] = [
     title: 'Birthday Celebration',
     tag: 'Birthday',
     description: "A custom storybook that makes the birthday star the hero of their own magical year.",
-    image: '/occasions/birthday.webp',
+    image: '/occasions/birthday.jpg',
     gradient: 'linear-gradient(135deg, #fed7aa 0%, #fdba74 50%, #fb923c 100%)',
   },
   {
@@ -50,7 +50,7 @@ const occasions: Occasion[] = [
     title: 'Family Memories',
     tag: 'Family',
     description: 'Reunions, holidays, road trips — turn your favourite family chapters into a book.',
-    image: '/occasions/family-memories.webp',
+    image: '/occasions/family-memories.jpg',
     gradient: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #6ee7b7 100%)',
   },
   {
@@ -58,7 +58,7 @@ const occasions: Occasion[] = [
     title: 'Life Milestones',
     tag: 'Milestone',
     description: 'New home, new job, retirement — every milestone deserves its own story.',
-    image: '/occasions/milestone.webp',
+    image: '/occasions/milestone.jpg',
     gradient: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 50%, #c4b5fd 100%)',
   },
 ];

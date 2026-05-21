@@ -283,6 +283,7 @@ export function PreviewPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const bookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isFlipping = useRef(false);

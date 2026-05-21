@@ -11,7 +11,8 @@ type Tab =
   | 'coupons'
   | 'users'
   | 'books'
-  | 'payments';
+  | 'payments'
+  | 'messages';
 
 const tabPaths: Record<Tab, string> = {
   dashboard: '/admin',
@@ -21,7 +22,35 @@ const tabPaths: Record<Tab, string> = {
   users: '/admin/users',
   books: '/admin/books',
   payments: '/admin/payments',
+  messages: '/admin/messages',
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  CREATED: 'Created',
+  STORY_GENERATING: 'Story Generating',
+  STORY_COMPLETE: 'Story Complete',
+  IMAGES_GENERATING: 'Images Generating',
+  IMAGES_COMPLETE: 'Images Complete',
+  PDF_GENERATING: 'PDF Generating',
+  PREVIEW_READY: 'Preview Ready',
+  PAYMENT_PENDING: 'Payment Pending',
+  PAID: 'Paid',
+  ORDER_CONFIRMED: 'Order Confirmed',
+  PRINTING: 'Printing',
+  SHIPPED: 'Shipped',
+  DELIVERED: 'Delivered',
+  FAILED: 'Failed',
+};
+
+function statusLabel(status: string): string {
+  return STATUS_LABELS[status] || status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const ALL_ORDER_STATUSES = [
+  'CREATED', 'STORY_GENERATING', 'STORY_COMPLETE', 'IMAGES_GENERATING',
+  'IMAGES_COMPLETE', 'PDF_GENERATING', 'PREVIEW_READY', 'PAYMENT_PENDING',
+  'PAID', 'ORDER_CONFIRMED', 'PRINTING', 'SHIPPED', 'DELIVERED', 'FAILED',
+];
 
 function getTabFromPath(pathname: string): Tab {
   const match = Object.entries(tabPaths).find(([, path]) => pathname === path);
@@ -60,6 +89,7 @@ const navSections: NavSection[] = [
     title: 'Integrations',
     items: [
       { id: 'payments', label: 'Payments', emoji: '💳' },
+      { id: 'messages', label: 'Messages', emoji: '✉️' },
     ],
   },
 ];
@@ -72,6 +102,7 @@ const tabTitles: Record<Tab, { title: string; subtitle: string }> = {
   users: { title: 'Users', subtitle: 'Manage registered users' },
   books: { title: 'Books', subtitle: 'All generated storybooks' },
   payments: { title: 'Payments', subtitle: 'Transaction history & analytics' },
+  messages: { title: 'Messages', subtitle: 'Contact form submissions' },
 };
 
 /* ── Shared Styles ── */

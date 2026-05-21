@@ -3,15 +3,15 @@ import { useRef, useState, useCallback, useEffect } from "react";
 const TESTIMONIALS = [
   {
     id: 1,
-    video: "/testimonials/testimonial-1.mp4",
-    name: "Sarah & Ayden",
-    occasion: "Baby's First Year",
+    video: "/testimonials/isha-tooth-fairy.mp4",
+    name: "Isha",
+    occasion: "The Girl and the Tooth Fairy",
   },
   {
     id: 2,
-    video: "/testimonials/testimonial-2.mp4",
-    name: "Grace & Family",
-    occasion: "Princess Adventure",
+    video: "/testimonials/aaithan-alphabet.mp4",
+    name: "Aaithan",
+    occasion: "The Alphabet Adventure",
   },
   {
     id: 3,
